@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Memoryan Analytics Dashboard</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         body {
@@ -54,6 +55,22 @@
         .memoryan-logo img {
             max-width: 120px;
             margin-bottom: 10px;
+        }
+        /* Spinner animation for refresh button */
+        .bi-spin {
+            animation: bi-spin 1s infinite linear;
+        }
+        @keyframes bi-spin {
+            0% {
+                transform: rotate(0deg);
+            }
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+        /* Style for active range buttons */
+        .btn-group .active {
+            font-weight: bold;
         }
     </style>
 </head>
@@ -113,13 +130,18 @@
                     <div class="col-md-2 mt-4">
                         <button id="apply-date-filter" class="btn btn-primary">Apply</button>
                     </div>
-                    <div class="col-md-6 mt-4">
+                    <div class="col-md-5 mt-4">
                         <div class="btn-group" role="group">
                             <button type="button" class="btn btn-outline-secondary" data-range="7">Last 7 Days</button>
                             <button type="button" class="btn btn-outline-secondary" data-range="30">Last 30 Days</button>
                             <button type="button" class="btn btn-outline-secondary" data-range="90">Last 90 Days</button>
                             <button type="button" class="btn btn-outline-secondary" data-range="all">All Time</button>
                         </div>
+                    </div>
+                    <div class="col-md-1 mt-4">
+                        <button id="refresh-btn" class="btn btn-primary" title="Refresh data">
+                            <i class="bi bi-arrow-clockwise"></i> Refresh
+                        </button>
                     </div>
                 </div>
             </div>
@@ -212,6 +234,71 @@
         let chartsInitialized = false;
         let visitorChart, devicesChart, downloadsChart, durationChart;
         
+        // Dashboard state management
+        const DASHBOARD_STATE = {
+            // Save current dashboard state to localStorage
+            saveState: function() {
+                const state = {
+                    startDate: document.getElementById('start-date').value,
+                    endDate: document.getElementById('end-date').value,
+                    lastActiveRange: this.getActiveRangeButton()
+                };
+                localStorage.setItem('memoryan_analytics_state', JSON.stringify(state));
+                console.log('Dashboard state saved:', state);
+            },
+            
+            // Load dashboard state from localStorage
+            loadState: function() {
+                try {
+                    const savedState = localStorage.getItem('memoryan_analytics_state');
+                    if (savedState) {
+                        const state = JSON.parse(savedState);
+                        console.log('Loading saved dashboard state:', state);
+                        
+                        // Apply saved dates if they exist
+                        if (state.startDate) {
+                            document.getElementById('start-date').value = state.startDate;
+                        }
+                        if (state.endDate) {
+                            document.getElementById('end-date').value = state.endDate;
+                        }
+                        
+                        // Highlight the active range button
+                        if (state.lastActiveRange) {
+                            this.setActiveRangeButton(state.lastActiveRange);
+                        }
+                        
+                        return true;
+                    }
+                } catch (error) {
+                    console.error('Error loading dashboard state:', error);
+                }
+                return false;
+            },
+            
+            // Get the currently active range button
+            getActiveRangeButton: function() {
+                const activeButton = document.querySelector('[data-range].active');
+                return activeButton ? activeButton.getAttribute('data-range') : null;
+            },
+            
+            // Set active range button
+            setActiveRangeButton: function(range) {
+                // Remove active class from all buttons
+                document.querySelectorAll('[data-range]').forEach(btn => {
+                    btn.classList.remove('active', 'btn-secondary');
+                    btn.classList.add('btn-outline-secondary');
+                });
+                
+                // Add active class to the selected button
+                const targetButton = document.querySelector(`[data-range="${range}"]`);
+                if (targetButton) {
+                    targetButton.classList.remove('btn-outline-secondary');
+                    targetButton.classList.add('active', 'btn-secondary');
+                }
+            }
+        };
+        
         // Login form submission
         document.getElementById('login-form').addEventListener('submit', async function(e) {
             e.preventDefault();
@@ -289,8 +376,16 @@
                 supabase = await window.MemoryanSupabase.initialize(supabaseUrl, supabaseKey);
                 console.log('Supabase client ready:', !!supabase);
                 
-                // Set default date range (last 30 days)
-                setDateRange(30);
+                // Try to load saved state, or set default (30 days)
+                const stateLoaded = DASHBOARD_STATE.loadState();
+                if (!stateLoaded) {
+                    // Set default range if no saved state
+                    setDateRange(30);
+                    DASHBOARD_STATE.setActiveRangeButton('30');
+                }
+                
+                // Set up additional event listeners
+                setupDashboardEventListeners();
                 
                 // Load initial data
                 await loadAnalyticsData();
@@ -301,6 +396,59 @@
                 console.error('Error initializing dashboard:', error);
                 throw new Error('Failed to initialize dashboard: ' + error.message);
             }
+        }
+        
+        // Set up additional dashboard event listeners
+        function setupDashboardEventListeners() {
+            // Refresh button click handler
+            document.getElementById('refresh-btn').addEventListener('click', async function() {
+                // Show spinning icon while refreshing
+                const refreshBtn = this;
+                const originalContent = refreshBtn.innerHTML;
+                refreshBtn.innerHTML = '<i class="bi bi-arrow-clockwise bi-spin"></i> Refreshing...';
+                refreshBtn.disabled = true;
+                
+                try {
+                    // Reload analytics data
+                    await loadAnalyticsData();
+                    console.log('Dashboard data refreshed');
+                } catch (error) {
+                    console.error('Error refreshing data:', error);
+                } finally {
+                    // Restore button state
+                    setTimeout(() => {
+                        refreshBtn.innerHTML = originalContent;
+                        refreshBtn.disabled = false;
+                    }, 500);
+                }
+            });
+            
+            // Save state when date range changes
+            document.querySelectorAll('[data-range]').forEach(button => {
+                const originalClickHandler = button.onclick;
+                button.onclick = function(e) {
+                    // Highlight this button as active
+                    DASHBOARD_STATE.setActiveRangeButton(this.getAttribute('data-range'));
+                    
+                    // Save state after a short delay to ensure date values are updated
+                    setTimeout(() => DASHBOARD_STATE.saveState(), 100);
+                };
+            });
+            
+            // Apply custom date filter
+            document.getElementById('apply-date-filter').addEventListener('click', function() {
+                // Clear active class from range buttons for custom range
+                document.querySelectorAll('[data-range]').forEach(btn => {
+                    btn.classList.remove('active', 'btn-secondary');
+                    btn.classList.add('btn-outline-secondary');
+                });
+                
+                // Save the current state
+                DASHBOARD_STATE.saveState();
+                
+                // Load data with custom date range
+                loadAnalyticsData();
+            });
         }
         
         // Logout functionality
@@ -315,6 +463,10 @@
         document.querySelectorAll('[data-range]').forEach(button => {
             button.addEventListener('click', function() {
                 const days = this.getAttribute('data-range');
+                
+                // Mark this button as active
+                DASHBOARD_STATE.setActiveRangeButton(days);
+                
                 if (days === 'all') {
                     // Set to one year ago as default for "All Time"
                     const startDate = new Date();
@@ -324,13 +476,13 @@
                 } else {
                     setDateRange(parseInt(days));
                 }
+                
+                // Save state for persistence
+                DASHBOARD_STATE.saveState();
+                
+                // Load data with new date range
                 loadAnalyticsData();
             });
-        });
-        
-        // Apply custom date filter
-        document.getElementById('apply-date-filter').addEventListener('click', function() {
-            loadAnalyticsData();
         });
         
         // Helper to set date range
