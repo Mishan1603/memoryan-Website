@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Memoryan - A better brain for your digital life</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- Google Fonts: Sans & Lato -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&family=Open+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <!-- AOS Animation Library -->
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    <!-- Swiper.js CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@9/swiper-bundle.min.css" />
+</head>
+<body>
+    <!-- Animated Gradient Background -->
+    <div class="animated-gradient"></div>
+
+    <!-- Header Section with Glassmorphism -->
+    <header class="glass-panel">
+        <img src="images/memoryan-logo.png" alt="Memoryan App Logo" class="logo">
+        <nav>
+            <a href="#features" class="magnetic-element">Features</a>
+            <a href="#screenshots" class="magnetic-element">Screenshots</a>
+            <a href="#download-qr" class="magnetic-element">Download</a>
+        </nav>
+    </header>
+
+    <!-- Hero Section with Floating App Mockup -->
+    <section id="hero">
+        <div class="hero-content" data-aos="fade-up" data-aos-delay="100" data-aos-duration="800">
+            <div class="hero-title-container">
+                <img src="images/memoryan-logo.png" alt="Memoryan App Logo" class="hero-logo">
+                <h1>This is Memoryan</h1>
+            </div>
+            <h2>An app that redefines how people save and apply valuable content from anywhere.</h2>
+            <p>It's not just about saving — it's about cherishing, organizing, and effortlessly rediscovering what truly matters to you.</p>
+        </div>
+        
+        <!-- Special Offer and Trailer in flex container for mobile -->
+        <div class="mobile-flex-container">
+            <!-- Special Launch Offer -->
+            <div class="hero-announcement" data-aos="zoom-in" data-aos-delay="300">
+                <div class="glass-special-card">
+                    <h2>Special Launch Offer!</h2>
+                    <div class="announcement-text">
+                        <div class="glow-text">🎉 FREE PREMIUM Until the 1st of June! 🎉</div>
+                        <p>Beta Testing starts 25th May. Be among the first to experience the full power of Memoryan.</p>
+                    </div>
+                    <div class="announcement-decoration"></div>
+                </div>
+            </div>
+            
+            <!-- Video Trailer Placeholder -->
+            <div class="trailer-container" data-aos="fade-up" data-aos-delay="400">
+                <div class="trailer-placeholder">
+                    <div class="trailer-text">Trailer is soon</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section with Vector Illustrations -->
+    <section id="features">
+        <h2 data-aos="fade-up">Key Features of Memoryan</h2>
+        <div class="features-grid">
+            <div class="feature-item glass-card" data-aos="fade-up" data-aos-delay="100">
+                <div class="feature-icon">
+                    <img src="images/feature-chambers.png" alt="Chambers Creation Icon" class="feature-svg" loading="lazy" onerror="this.src='images/feature-chambers.svg'">
+                </div>
+                <h3>Chambers Creation</h3>
+                <p>Organize your content into visually stunning customizable Chambers.</p>
+                <div class="gradient-border"></div>
+            </div>
+            <div class="feature-item glass-card" data-aos="fade-up" data-aos-delay="200">
+                <div class="feature-icon">
+                    <img src="images/feature-customization.png" alt="Rich Customization Icon" class="feature-svg" loading="lazy" onerror="this.src='images/feature-customization.svg'">
+                </div>
+                <h3>Rich Customization</h3>
+                <p>Personalize the look and feel of your Chambers and Blocks with gradients and themes.</p>
+                <div class="gradient-border"></div>
+            </div>
+            <div class="feature-item glass-card" data-aos="fade-up" data-aos-delay="300">
+                <div class="feature-icon">
+                    <img src="images/feature-ai-title.png" alt="AI Title Generation Icon" class="feature-svg" loading="lazy" onerror="this.src='images/feature-ai-title.svg'">
+                </div>
+                <h3>AI Title Generation</h3>
+                <p>Let AI craft the perfect titles for your saved content automatically.</p>
+                <div class="gradient-border"></div>
+            </div>
+            <div class="feature-item glass-card" data-aos="fade-up" data-aos-delay="400">
+                <div class="feature-icon">
+                    <img src="images/feature-tag-system.png" alt="Smart Tag System Icon" class="feature-svg" loading="lazy" onerror="this.src='images/feature-tag-system.svg'">
+                </div>
+                <h3>Smart Tag System</h3>
+                <p>Categorize with our unique "Save-Enjoy-Apply" tagging approach for better recall.</p>
+                <div class="gradient-border"></div>
+            </div>
+            <div class="feature-item glass-card" data-aos="fade-up" data-aos-delay="500">
+                <div class="feature-icon">
+                    <img src="images/feature-content-blocks.png" alt="Content Blocks Icon" class="feature-svg" loading="lazy" onerror="this.src='images/feature-content-blocks.svg'">
+                </div>
+                <h3>Beautiful Content Blocks</h3>
+                <p>Visually appealing displays for your links, notes, and other saved content.</p>
+                <div class="gradient-border"></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Premium Swiper Carousel for Screenshots -->
+    <section id="screenshots" class="premium-screenshots">
+        <h2 data-aos="fade-up">Experience Memoryan</h2>
+        
+        <div class="screenshots-container" data-aos="fade-up">
+            <div class="swiper screenshot-swiper">
+                <div class="swiper-wrapper">
+                    <!-- Screenshot 1 -->
+                    <div class="swiper-slide">
+                        <div class="screenshot-card">
+                            <div class="screenshot-image">
+                                <img src="images/MemoryHub_6_chambers.jpg" alt="MemoryHub with multiple chambers" loading="lazy">
+                            </div>
+                            <div class="screenshot-caption">
+                                <span class="caption-number">01</span>
+                                <h3>MemoryHub</h3>
+                                <p>Your personalized home for all your chambers and collections.</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Screenshot 2 -->
+                    <div class="swiper-slide">
+                        <div class="screenshot-card">
+                            <div class="screenshot-image">
+                                <img src="images/Chamber_creation_final_gradient.jpg" alt="Chamber creation process" loading="lazy">
+                            </div>
+                            <div class="screenshot-caption">
+                                <span class="caption-number">02</span>
+                                <h3>Create Beautiful Chambers</h3>
+                                <p>Design your own chambers with customizable gradients and styles.</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Screenshot 3 -->
+                    <div class="swiper-slide">
+                        <div class="screenshot-card">
+                            <div class="screenshot-image">
+                                <img src="images/Link_creation_final_phase.jpg" alt="Link saving interface" loading="lazy">
+                            </div>
+                            <div class="screenshot-caption">
+                                <span class="caption-number">03</span>
+                                <h3>Save Content Effortlessly</h3>
+                                <p>Quickly save links, notes and more with our intuitive interface.</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Screenshot 4 -->
+                    <div class="swiper-slide">
+                        <div class="screenshot-card">
+                            <div class="screenshot-image">
+                                <img src="images/Example_blocks_screen.jpg" alt="Links and Notes blocks" loading="lazy">
+                            </div>
+                            <div class="screenshot-caption">
+                                <span class="caption-number">04</span>
+                                <h3>Beautiful Block Display</h3>
+                                <p>See your content organized in visually appealing blocks.</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Screenshot 5 -->
+                    <div class="swiper-slide">
+                        <div class="screenshot-card">
+                            <div class="screenshot-image">
+                                <img src="images/Note editor.jpg" alt="Note editor interface" loading="lazy">
+                            </div>
+                            <div class="screenshot-caption">
+                                <span class="caption-number">05</span>
+                                <h3>Rich Note Editor</h3>
+                                <p>Create detailed notes with our powerful yet simple editor.</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Screenshot 6 -->
+                    <div class="swiper-slide">
+                        <div class="screenshot-card">
+                            <div class="screenshot-image">
+                                <img src="images/Tag_settings.jpg" alt="Tags feature" loading="lazy">
+                            </div>
+                            <div class="screenshot-caption">
+                                <span class="caption-number">06</span>
+                                <h3>Powerful Tagging System</h3>
+                                <p>Organize content with our unique Save-Enjoy-Apply approach.</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Screenshot 7 -->
+                    <div class="swiper-slide">
+                        <div class="screenshot-card">
+                            <div class="screenshot-image">
+                                <img src="images/Chambers_creation_palette.jpg" alt="Chamber creation palette" loading="lazy">
+                            </div>
+                            <div class="screenshot-caption">
+                                <span class="caption-number">07</span>
+                                <h3>Rich Color Palette</h3>
+                                <p>Choose from beautiful gradient options for your chambers.</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Screenshot 8 -->
+                    <div class="swiper-slide">
+                        <div class="screenshot-card">
+                            <div class="screenshot-image">
+                                <img src="images/Deadline details.jpg" alt="Deadline details" loading="lazy">
+                            </div>
+                            <div class="screenshot-caption">
+                                <span class="caption-number">08</span>
+                                <h3>Deadline Management</h3>
+                                <p>Keep track of important deadlines and priorities.</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Screenshot 9 -->
+                    <div class="swiper-slide">
+                        <div class="screenshot-card">
+                            <div class="screenshot-image">
+                                <img src="images/link_chamber_assigning.jpg" alt="Link chamber assigning" loading="lazy">
+                            </div>
+                            <div class="screenshot-caption">
+                                <span class="caption-number">09</span>
+                                <h3>Intelligent Sorting</h3>
+                                <p>Easily assign content to your preferred chambers.</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Screenshot 10 -->
+                    <div class="swiper-slide">
+                        <div class="screenshot-card">
+                            <div class="screenshot-image">
+                                <img src="images/Blocks_screen_optionMenu.jpg" alt="Block options menu" loading="lazy">
+                            </div>
+                            <div class="screenshot-caption">
+                                <span class="caption-number">10</span>
+                                <h3>Advanced Options</h3>
+                                <p>Full control over your content with our intuitive options menu.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Swiper Navigation -->
+                <div class="swiper-button-next"></div>
+                <div class="swiper-button-prev"></div>
+                
+                <!-- Swiper Pagination -->
+                <div class="swiper-pagination"></div>
+            </div>
+            
+            <!-- Keyboard Navigation Hint -->
+            <div class="keyboard-hint">
+                <span>Use keyboard arrows (←→) to navigate</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- QR Codes Section with Interactive Flip Cards -->
+    <section id="download-qr">
+        <h2 data-aos="fade-up">Get Memoryan Now!</h2>
+        <div class="qr-codes-container">
+            <div class="qr-code-item" data-aos="fade-up" data-aos-delay="100">
+                <div class="flip-card magnetic-element">
+                    <div class="flip-card-inner">
+                        <!-- Reversed order - back is now the front (buttons showing first) -->
+                        <div class="flip-card-front glass-card">
+                            <h3>Download for iOS</h3>
+                            <p>Tap to see QR code or click below</p>
+                            <button class="store-button">App Store</button>
+                        </div>
+                        <div class="flip-card-back glass-card">
+                            <img src="images/qr-ios.jpg" alt="QR Code for iOS" loading="lazy">
+                            <div class="qr-label">iOS</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="qr-code-item" data-aos="fade-up" data-aos-delay="300">
+                <div class="flip-card magnetic-element">
+                    <div class="flip-card-inner">
+                        <!-- Reversed order - back is now the front (buttons showing first) -->
+                        <div class="flip-card-front glass-card">
+                            <h3>Download for Android</h3>
+                            <p>Tap to see QR code or click below</p>
+                            <button class="store-button">Google Play</button>
+                        </div>
+                        <div class="flip-card-back glass-card">
+                            <img src="images/qr-android.jpg" alt="QR Code for Android" loading="lazy">
+                            <div class="qr-label">Android</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer Section with Glassmorphism -->
+    <footer class="glass-panel">
+        <p>&copy; 2024 Memoryan. All rights reserved.</p>
+        <div class="footer-links">
+            <a href="#" title="Privacy Policy" class="magnetic-element">Privacy Policy</a> | 
+            <a href="#" title="Terms of Service" class="magnetic-element">Terms of Service</a>
+        </div>
+        <div class="social-links">
+            <a href="#" title="Memoryan on X" class="magnetic-element">X (Twitter)</a> | 
+            <a href="#" title="Memoryan on Instagram" class="magnetic-element">Instagram</a>
+        </div>
+    </footer>
+
+    <!-- JavaScript Libraries -->
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/swiper@9/swiper-bundle.min.js"></script>
+    <script src="js/main.js"></script>
+</body>
+</html> 
