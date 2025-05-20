@@ -347,17 +347,39 @@
         async function loadAnalyticsData() {
             if (!supabase) return;
             
-            const startDate = document.getElementById('start-date').value;
-            const endDate = document.getElementById('end-date').value;
+            // Get dates and ensure they're in the correct format (YYYY-MM-DD)
+            const startInput = document.getElementById('start-date');
+            const endInput = document.getElementById('end-date');
+            
+            if (!startInput.value || !endInput.value) {
+                console.error('Date inputs are not properly set');
+                return;
+            }
+            
+            // Format as dates for the SQL function
+            const startDate = startInput.value;
+            const endDate = endInput.value;
             
             try {
+                console.log(`Fetching analytics data from ${startDate} to ${endDate}`);
+                
                 // Get summary data using the get_analytics_summary function
                 const { data: summaryData, error: summaryError } = await supabase.rpc(
                     'get_analytics_summary',
-                    { start_date: startDate, end_date: endDate }
+                    { 
+                        start_date: startDate,
+                        end_date: endDate
+                    }
                 );
                 
-                if (summaryError) throw summaryError;
+                if (summaryError) {
+                    console.error('Summary data error:', summaryError);
+                    throw summaryError;
+                }
+                
+                if (!summaryData || summaryData.length === 0) {
+                    console.log('No analytics data found for the selected period');
+                }
                 
                 // Process the summary data
                 let totalVisitors = 0;
@@ -454,7 +476,50 @@
                 
             } catch (error) {
                 console.error('Error loading analytics data:', error);
-                alert('Error loading analytics data. Please check the console for details.');
+                
+                // Handle specific errors
+                let errorMessage = 'Error loading analytics data.';
+                
+                // Check for specific error types
+                if (error.code === '42804') {
+                    errorMessage = 'Data type mismatch error. Please make sure the get_analytics_summary function is correctly configured in Supabase.';
+                } else if (error.code === '42883') {
+                    errorMessage = 'Function not found. Please make sure you have created the get_analytics_summary function in your Supabase database.';
+                } else if (error.message && error.message.includes('NetworkError')) {
+                    errorMessage = 'Network error. Please check your internet connection and try again.';
+                }
+                
+                // Show error in a more user-friendly way
+                const dashboardSection = document.getElementById('dashboard-section');
+                if (dashboardSection) {
+                    // Create error alert if it doesn't exist
+                    let errorAlert = document.getElementById('dashboard-error');
+                    if (!errorAlert) {
+                        errorAlert = document.createElement('div');
+                        errorAlert.id = 'dashboard-error';
+                        errorAlert.className = 'alert alert-danger';
+                        errorAlert.style.marginBottom = '20px';
+                        dashboardSection.insertBefore(errorAlert, dashboardSection.firstChild);
+                    }
+                    
+                    // Show error details
+                    errorAlert.innerHTML = `
+                        <strong>Error:</strong> ${errorMessage}
+                        <hr>
+                        <p>Technical details: ${error.message || 'Unknown error'}</p>
+                        <p>Please check the browser console for more information or contact the administrator.</p>
+                        <button class="btn btn-sm btn-outline-secondary" onclick="document.getElementById('dashboard-error').style.display='none'">Dismiss</button>
+                    `;
+                } else {
+                    // Fallback to alert if DOM elements aren't found
+                    alert(errorMessage + ' Please check the console for details.');
+                }
+                
+                // Make sure charts still show up, just with empty data
+                if (!chartsInitialized) {
+                    initializeCharts([], [], {mobile: 0, desktop: 0}, {}, []);
+                    chartsInitialized = true;
+                }
             }
         }
         
