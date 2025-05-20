@@ -596,16 +596,18 @@ header {
     margin: 0 20px 40px;
 }
 
-/* Completely reset and simplify flip card styling */
+/* Ultra-simplified flip card styling */
 .flip-card {
     position: relative;
     width: 100%;
     height: 100%;
     cursor: pointer;
-    transform-style: preserve-3d;
-    transform: translateZ(0); /* Force hardware acceleration */
-    will-change: transform;
-    transition: none; /* Remove transition that could cause issues */
+    transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1); /* Smooth, slightly bouncy curve */
+}
+
+/* Simple hover effect - ONLY translateY, nothing else */
+.flip-card:hover {
+    transform: translateY(-5px);
 }
 
 .flip-card-inner {
@@ -613,13 +615,8 @@ header {
     width: 100%;
     height: 100%;
     text-align: center;
-    transition: transform 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    transition: transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275); /* Smooth, elastic curve for flipping */
     transform-style: preserve-3d;
-    will-change: transform;
-}
-
-.flip-card:hover {
-    transform: none !important; /* Force no transform on hover */
 }
 
 .flip-card-front, .flip-card-back {
@@ -638,12 +635,11 @@ header {
 
 .flip-card-front {
     background: rgba(44, 54, 69, 0.2);
-    transform: rotateY(0deg); /* Front now shows first */
 }
 
 .flip-card-back {
     background: rgba(44, 54, 69, 0.3);
-    transform: rotateY(180deg); /* Back now shows on flip */
+    transform: rotateY(180deg);
 }
 
 .flip-card-back img {
@@ -651,6 +647,7 @@ header {
     height: 180px;
     border: none;
     margin-bottom: 20px;
+    border-radius: var(--border-radius);
 }
 
 .qr-label {
@@ -718,8 +715,47 @@ footer a:hover {
     color: var(--color-primary-light);
 }
 
-.footer-links, .social-links {
+.footer-links, .social-links, .contact-email {
     margin: 15px 0;
+}
+
+/* Email copy functionality */
+.contact-email {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    position: relative;
+}
+
+.email-copy {
+    cursor: pointer;
+    border-bottom: 1px dashed var(--color-primary);
+    padding-bottom: 2px;
+}
+
+.email-copy:hover {
+    border-bottom-style: solid;
+}
+
+.copy-message {
+    position: absolute;
+    top: -25px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(94, 96, 206, 0.9);
+    color: white;
+    padding: 5px 10px;
+    border-radius: 4px;
+    font-size: 0.85em;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.coming-soon-text {
+    color: var(--color-primary);
+    opacity: 0.8;
+    font-style: italic;
 }
 
 /* Magnetic Elements */
@@ -995,9 +1031,10 @@ footer a:hover {
     display: block;
     object-fit: contain;
     aspect-ratio: 9/16;
-    transform: translateY(+20px); /* Starting position for hover effect */
+    transform: translateY(+5px); /* Starting position for hover effect */
     transition: transform 0.4s ease-out;
     will-change: transform;
+    border-radius: 20px; /* Explicit 20px border radius directly to the image */
 }
 
 .screenshot-card:hover .screenshot-image img {
@@ -1038,18 +1075,20 @@ footer a:hover {
 /* Custom Swiper Navigation & Pagination */
 .swiper-button-next,
 .swiper-button-prev {
-    color: var(--color-primary);
-    background: transparent; /* Remove dark background */
+    color: rgba(255, 255, 255, 0.4); /* White with 0.4 opacity by default */
+    background: transparent;
     width: 50px;
     height: 50px;
     border-radius: 50%;
-    transition: all 0.3s ease;
+    transition: color 0.3s, background 0.3s, opacity 0.3s;
+    opacity: 1;
+    pointer-events: auto;
 }
 
 .swiper-button-next:hover,
 .swiper-button-prev:hover {
-    color: var(--color-primary-light);
-    text-shadow: 0 0 10px var(--color-glow); /* Add glow effect instead */
+    color: #f7f6f6f1; /* User's current hover color preference */
+    text-shadow: 0 0 10px var(--color-glow);
 }
 
 .swiper-button-next:after,
@@ -1124,6 +1163,11 @@ footer a:hover {
     
     .screenshot-caption {
         min-height: 80px;
+    }
+    .swiper-button-next,
+    .swiper-button-prev {
+        opacity: 0 !important;
+        pointer-events: none !important;
     }
 }
 
@@ -1346,5 +1390,265 @@ footer a:hover {
         top: 15px;
         right: 15px;
         font-size: 24px;
+    }
+}
+
+/* --- Hide Swiper Pagination Dots --- */
+.swiper-pagination {
+    display: none !important;
+}
+
+/* --- Screenshot Hover: Zoom & Rounded Edges --- */
+.screenshot-image img {
+    border-radius: 20px; /* Explicit 20px border radius directly to the image */
+    transition: transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1), box-shadow 0.4s;
+    transform: scale(1);
+}
+.screenshot-card:hover .screenshot-image img {
+    transform: scale(1.04); /* Zoom on hover */
+    box-shadow: 0 8px 32px rgba(191,201,241,0.18);
+}
+
+/* Upcoming Features Section */
+#upcoming-features {
+    padding: 120px 20px 80px;
+    position: relative;
+    margin: 80px auto;
+    max-width: 1200px;
+}
+
+#upcoming-features h2 {
+    margin-bottom: 30px;
+    font-size: 2.5rem;
+    font-weight: 700;
+    background: var(--gradient-primary);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    text-align: center;
+    position: relative;
+}
+
+#upcoming-features h2::after {
+    content: '';
+    position: absolute;
+    bottom: -15px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 80px;
+    height: 3px;
+    background: var(--gradient-interactive);
+}
+
+.upcoming-description {
+    max-width: 800px;
+    margin: 0 auto 60px;
+    text-align: center;
+    font-size: 1.2rem;
+    color: var(--color-primary-light);
+    opacity: 0.9;
+}
+
+.upcoming-features-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 40px;
+    width: 100%;
+    margin: 0 auto;
+    position: relative;
+    z-index: 2;
+}
+
+.upcoming-feature-item {
+    padding: 30px;
+    border-radius: var(--border-radius);
+    text-align: center;
+    position: relative;
+    min-height: 180px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.upcoming-feature-item:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-strong);
+}
+
+.upcoming-feature-item h3 {
+    font-size: 1.4rem;
+    margin-bottom: 15px;
+    color: var(--color-primary);
+    position: relative;
+    padding-bottom: 12px;
+}
+
+.upcoming-feature-item h3::after {
+    display: none; /* Remove the underline since we're using gradient border */
+}
+
+.upcoming-feature-item .gradient-border {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    height: 3px;
+    width: 100%;
+    background: var(--gradient-interactive);
+    transform: scaleX(0.3);
+    transform-origin: left;
+    transition: transform 0.5s ease;
+}
+
+.upcoming-feature-item:hover .gradient-border {
+    transform: scaleX(1);
+}
+
+.upcoming-feature-item p {
+    font-size: 1rem;
+    color: var(--color-primary-light);
+    opacity: 0.85;
+    line-height: 1.5;
+}
+
+/* Responsive styles for upcoming features */
+@media (max-width: 768px) {
+    #upcoming-features {
+        padding: 80px 20px 60px;
+        margin: 60px auto;
+        max-width: 100%;
+    }
+    
+    #upcoming-features h2 {
+        font-size: 2rem;
+    }
+    
+    .upcoming-description {
+        font-size: 1.1rem;
+        margin-bottom: 40px;
+    }
+    
+    .upcoming-features-grid {
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 20px;
+    }
+    
+    .upcoming-feature-item {
+        padding: 25px;
+        min-height: 160px;
+    }
+    
+    .upcoming-feature-item h3 {
+        font-size: 1.3rem;
+    }
+}
+
+@media (max-width: 480px) {
+    #upcoming-features {
+        padding: 60px 15px 40px;
+        margin: 40px auto;
+        max-width: 100%;
+    }
+    
+    #upcoming-features h2 {
+        font-size: 1.8rem;
+    }
+    
+    .upcoming-description {
+        font-size: 1rem;
+        margin-bottom: 30px;
+    }
+    
+    .upcoming-features-grid {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+    
+    .upcoming-feature-item {
+        padding: 20px;
+        min-height: 140px;
+    }
+    
+    .upcoming-feature-item h3 {
+        font-size: 1.2rem;
+        margin-bottom: 10px;
+        padding-bottom: 10px;
+    }
+    
+    .upcoming-feature-item p {
+        font-size: 0.9rem;
+    }
+}
+
+/* Language Switcher Styling */
+.language-switcher {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 1000;
+    display: flex;
+    gap: 10px;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    background: rgba(39, 48, 69, 0.3);
+    border-radius: 30px;
+    padding: 5px;
+    border: 1px solid rgba(191, 201, 241, 0.15);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    transition: all 0.3s ease;
+}
+
+.language-switcher:hover {
+    box-shadow: 1px 1px 12px rgba(246, 246, 246, 0.25);
+}
+
+.language-switcher button {
+    background: transparent;
+    border: none;
+    color: var(--color-primary-light);
+    cursor: pointer;
+    font-size: 0.9rem;
+    padding: 8px 12px;
+    border-radius: 20px;
+    transition: all 0.3s ease;
+    opacity: 0.7;
+}
+
+.language-switcher button:hover {
+    opacity: 1;
+    text-shadow: 0 0 3px rgba(215, 165, 230, 0.423);
+}
+
+.language-switcher button.active {
+    background: rgba(94, 96, 206, 0.3);
+    color: var(--color-primary-light);
+    opacity: 1;
+    box-shadow: 0 0 3px rgba(94, 96, 206, 0.4);
+    font-weight: bold;
+}
+
+/* Responsive styles for language switcher */
+@media (max-width: 768px) {
+    .language-switcher {
+        top: 10px;
+        right: 10px;
+        padding: 3px;
+    }
+    
+    .language-switcher button {
+        font-size: 0.8rem;
+        padding: 6px 10px;
+    }
+}
+
+@media (max-width: 480px) {
+    .language-switcher {
+        top: 5px;
+        right: 5px;
+    }
+    
+    .language-switcher button {
+        font-size: 0.75rem;
+        padding: 5px 8px;
     }
 } 
