@@ -5,24 +5,12 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     // Initialize analytics if available and enabled
-    if (window.Memoryan && window.MemoryanConfig) {
+    if (window.Memoryan && window.Memoryan.Analytics && window.MemoryanConfig) {
         if (window.MemoryanConfig.analytics.enabled) {
-            // Initialize regular analytics
-            if (window.Memoryan.Analytics) {
-                window.Memoryan.Analytics.init(
-                    window.MemoryanConfig.supabase.url,
-                    window.MemoryanConfig.supabase.anonKey
-                );
-            }
-            
-            // Initialize debug analytics
-            if (window.Memoryan.AnalyticsDebug) {
-                console.log('Initializing Analytics Debug system...');
-                window.Memoryan.AnalyticsDebug.init(
-                    window.MemoryanConfig.supabase.url,
-                    window.MemoryanConfig.supabase.anonKey
-                );
-            }
+            window.Memoryan.Analytics.init(
+                window.MemoryanConfig.supabase.url,
+                window.MemoryanConfig.supabase.anonKey
+            );
         }
     }
     
@@ -384,7 +372,7 @@ document.addEventListener('DOMContentLoaded', function() {
         console.log("🔄 Running fixSwiperTranslations");
         // Get all slides including duplicates
         const allSlides = document.querySelectorAll('.swiper-slide');
-        console.log(`Found ${allSlides.length} swiper slides to translate`);
+        console.log(`�� Found ${allSlides.length} swiper slides to translate`);
         
         // Current language for debugging
         const currentLang = window.i18n ? window.i18n.getCurrentLanguage() : 'en';
