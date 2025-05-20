@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Memoryan Analytics Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: 'Open Sans', sans-serif;
+            background-color: #f8f9fa;
+            padding: 20px;
+        }
+        .card {
+            border-radius: 15px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+        .card-header {
+            background-color: #4a6cf7;
+            color: white;
+            border-radius: 15px 15px 0 0 !important;
+            padding: 15px 20px;
+        }
+        .stats-card {
+            text-align: center;
+            padding: 20px;
+        }
+        .stats-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #4a6cf7;
+        }
+        .stats-label {
+            font-size: 1rem;
+            color: #6c757d;
+            text-transform: uppercase;
+        }
+        .date-selector {
+            margin-bottom: 20px;
+        }
+        .login-section {
+            max-width: 400px;
+            margin: 100px auto;
+        }
+        canvas {
+            max-width: 100%;
+        }
+        .memoryan-logo {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .memoryan-logo img {
+            max-width: 120px;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Login Section (Shown by default) -->
+    <div id="login-section" class="login-section">
+        <div class="memoryan-logo">
+            <img src="images/memoryan-logo.png" alt="Memoryan Logo">
+            <h2>Analytics Dashboard</h2>
+        </div>
+        <div class="card">
+            <div class="card-header">
+                <h3 class="mb-0">Dashboard Access</h3>
+            </div>
+            <div class="card-body p-4">
+                <form id="login-form">
+                    <div class="mb-3">
+                        <label for="password" class="form-label">Dashboard Password</label>
+                        <input type="password" class="form-control" id="password" required>
+                    </div>
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary">Access Dashboard</button>
+                    </div>
+                    <div class="alert alert-danger mt-3 d-none" id="login-error"></div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Dashboard Section (Hidden by default) -->
+    <div id="dashboard-section" class="d-none">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1>Memoryan Website Analytics</h1>
+            <button id="logout-btn" class="btn btn-outline-danger">Logout</button>
+        </div>
+
+        <!-- Date Range Selector -->
+        <div class="card date-selector">
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col-md-2">
+                        <label for="start-date" class="form-label">Start Date</label>
+                        <input type="date" class="form-control" id="start-date">
+                    </div>
+                    <div class="col-md-2">
+                        <label for="end-date" class="form-label">End Date</label>
+                        <input type="date" class="form-control" id="end-date">
+                    </div>
+                    <div class="col-md-2 mt-4">
+                        <button id="apply-date-filter" class="btn btn-primary">Apply</button>
+                    </div>
+                    <div class="col-md-6 mt-4">
+                        <div class="btn-group" role="group">
+                            <button type="button" class="btn btn-outline-secondary" data-range="7">Last 7 Days</button>
+                            <button type="button" class="btn btn-outline-secondary" data-range="30">Last 30 Days</button>
+                            <button type="button" class="btn btn-outline-secondary" data-range="90">Last 90 Days</button>
+                            <button type="button" class="btn btn-outline-secondary" data-range="all">All Time</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Summary Stats -->
+        <div class="row">
+            <div class="col-md-3">
+                <div class="card stats-card">
+                    <div class="stats-value" id="total-visitors">0</div>
+                    <div class="stats-label">Unique Visitors</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card stats-card">
+                    <div class="stats-value" id="total-page-visits">0</div>
+                    <div class="stats-label">Page Visits</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card stats-card">
+                    <div class="stats-value" id="total-downloads">0</div>
+                    <div class="stats-label">Downloads</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card stats-card">
+                    <div class="stats-value" id="avg-duration">0:00</div>
+                    <div class="stats-label">Avg. Session Duration</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts -->
+        <div class="row mt-4">
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">Daily Visitors</h5>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="visitors-chart"></canvas>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">Device Distribution</h5>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="devices-chart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row mt-4">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">Downloads by Platform</h5>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="downloads-chart"></canvas>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">Session Duration Distribution</h5>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="duration-chart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.36.0/dist/umd/supabase.min.js"></script>
+    <script src="js/config.js"></script>
+    <script src="js/dashboard-access.js"></script>
+    <script>
+        // Global variables
+        let supabase = null;
+        let chartsInitialized = false;
+        let visitorChart, devicesChart, downloadsChart, durationChart;
+        
+        // Login form submission
+        document.getElementById('login-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const password = document.getElementById('password').value;
+            const errorEl = document.getElementById('login-error');
+            
+            try {
+                // Validate password using our simple protection
+                const isValid = await DASHBOARD_ACCESS.verifyPassword(password);
+                
+                if (!isValid) {
+                    throw new Error('Invalid password');
+                }
+                
+                // Initialize the analytics dashboard
+                await initializeAnalyticsDashboard();
+                
+                // Show dashboard and hide login
+                document.getElementById('login-section').classList.add('d-none');
+                document.getElementById('dashboard-section').classList.remove('d-none');
+                
+            } catch (error) {
+                errorEl.textContent = error.message || 'An error occurred during login';
+                errorEl.classList.remove('d-none');
+                console.error('Login error:', error);
+            }
+        });
+        
+        // Initialize the analytics dashboard
+        async function initializeAnalyticsDashboard() {
+            try {
+                // Get Supabase configuration from config.js
+                if (!window.MemoryanConfig) {
+                    throw new Error('Configuration not found');
+                }
+                
+                const supabaseUrl = window.MemoryanConfig.supabase.url;
+                const supabaseKey = window.MemoryanConfig.supabase.anonKey;
+                
+                if (!supabaseUrl || !supabaseKey) {
+                    throw new Error('Supabase configuration is incomplete');
+                }
+                
+                // Initialize Supabase client
+                supabase = supabase.createClient(supabaseUrl, supabaseKey);
+                
+                // Set default date range (last 30 days)
+                setDateRange(30);
+                
+                // Load initial data
+                await loadAnalyticsData();
+                
+                console.log('Analytics dashboard initialized successfully');
+                
+            } catch (error) {
+                console.error('Error initializing dashboard:', error);
+                throw new Error('Failed to initialize dashboard: ' + error.message);
+            }
+        }
+        
+        // Logout functionality
+        document.getElementById('logout-btn').addEventListener('click', function() {
+            document.getElementById('dashboard-section').classList.add('d-none');
+            document.getElementById('login-section').classList.remove('d-none');
+            document.getElementById('password').value = '';
+            document.getElementById('login-error').classList.add('d-none');
+        });
+        
+        // Date range preset buttons
+        document.querySelectorAll('[data-range]').forEach(button => {
+            button.addEventListener('click', function() {
+                const days = this.getAttribute('data-range');
+                if (days === 'all') {
+                    // Set to one year ago as default for "All Time"
+                    const startDate = new Date();
+                    startDate.setFullYear(startDate.getFullYear() - 1);
+                    document.getElementById('start-date').valueAsDate = startDate;
+                    document.getElementById('end-date').valueAsDate = new Date();
+                } else {
+                    setDateRange(parseInt(days));
+                }
+                loadAnalyticsData();
+            });
+        });
+        
+        // Apply custom date filter
+        document.getElementById('apply-date-filter').addEventListener('click', function() {
+            loadAnalyticsData();
+        });
+        
+        // Helper to set date range
+        function setDateRange(days) {
+            const endDate = new Date();
+            const startDate = new Date();
+            startDate.setDate(startDate.getDate() - days);
+            
+            document.getElementById('start-date').valueAsDate = startDate;
+            document.getElementById('end-date').valueAsDate = endDate;
+        }
+        
+        // Load analytics data with current date range
+        async function loadAnalyticsData() {
+            if (!supabase) return;
+            
+            const startDate = document.getElementById('start-date').value;
+            const endDate = document.getElementById('end-date').value;
+            
+            try {
+                // Get data summary for the date range
+                const { data: summaryData, error: summaryError } = await supabase
+                    .from('website_analytics')
+                    .select('session_id, event_type, timestamp, duration_seconds')
+                    .gte('timestamp', startDate)
+                    .lte('timestamp', endDate);
+                
+                if (summaryError) throw summaryError;
+                
+                // Process the summary data
+                const uniqueSessions = new Set();
+                let pageVisits = 0;
+                let downloadClicks = 0;
+                let totalDuration = 0;
+                let sessionCount = 0;
+                
+                // Group by date for the chart
+                const dateMap = new Map();
+                
+                summaryData.forEach(event => {
+                    // Add to unique sessions
+                    uniqueSessions.add(event.session_id);
+                    
+                    // Count events by type
+                    if (event.event_type === 'page_visit') {
+                        pageVisits++;
+                    } else if (event.event_type === 'download_click') {
+                        downloadClicks++;
+                    } else if (event.event_type === 'session_end' && event.duration_seconds) {
+                        totalDuration += event.duration_seconds;
+                        sessionCount++;
+                    }
+                    
+                    // Group by date for the chart
+                    const dateStr = event.timestamp.split('T')[0];
+                    if (!dateMap.has(dateStr)) {
+                        dateMap.set(dateStr, new Set());
+                    }
+                    
+                    // Add session to the date
+                    dateMap.get(dateStr).add(event.session_id);
+                });
+                
+                // Prepare data for the visitors chart
+                const sortedDates = Array.from(dateMap.keys()).sort();
+                const visitorCounts = sortedDates.map(date => dateMap.get(date).size);
+                
+                // Get device distribution
+                const { data: deviceData, error: deviceError } = await supabase
+                    .from('website_analytics')
+                    .select('is_mobile, event_type')
+                    .eq('event_type', 'page_visit')
+                    .gte('timestamp', startDate)
+                    .lte('timestamp', endDate);
+                
+                if (deviceError) throw deviceError;
+                
+                let mobileCount = 0;
+                let desktopCount = 0;
+                
+                deviceData.forEach(event => {
+                    if (event.is_mobile) {
+                        mobileCount++;
+                    } else {
+                        desktopCount++;
+                    }
+                });
+                
+                // Get downloads by platform
+                const { data: downloadData, error: downloadError } = await supabase
+                    .from('website_analytics')
+                    .select('platform, event_type')
+                    .eq('event_type', 'download_click')
+                    .gte('timestamp', startDate)
+                    .lte('timestamp', endDate);
+                
+                if (downloadError) throw downloadError;
+                
+                // Count downloads by platform
+                const platformCounts = {};
+                downloadData.forEach(event => {
+                    const platform = event.platform || 'Unknown';
+                    if (!platformCounts[platform]) {
+                        platformCounts[platform] = 0;
+                    }
+                    platformCounts[platform]++;
+                });
+                
+                // Get session durations
+                const { data: durationData, error: durationError } = await supabase
+                    .from('website_analytics')
+                    .select('duration_seconds')
+                    .eq('event_type', 'session_end')
+                    .gte('timestamp', startDate)
+                    .lte('timestamp', endDate);
+                
+                if (durationError) throw durationError;
+                
+                // Update stats display
+                document.getElementById('total-visitors').textContent = uniqueSessions.size;
+                document.getElementById('total-page-visits').textContent = pageVisits;
+                document.getElementById('total-downloads').textContent = downloadClicks;
+                
+                const avgDuration = sessionCount > 0 ? Math.floor(totalDuration / sessionCount) : 0;
+                document.getElementById('avg-duration').textContent = formatDuration(avgDuration);
+                
+                // Format dates for display
+                const formattedDates = sortedDates.map(date => formatDate(date));
+                
+                // Update charts
+                updateCharts(
+                    formattedDates, 
+                    visitorCounts, 
+                    { mobile: mobileCount, desktop: desktopCount },
+                    platformCounts,
+                    durationData
+                );
+                
+            } catch (error) {
+                console.error('Error loading analytics data:', error);
+                alert('Error loading analytics data. Please check the console for details.');
+            }
+        }
+        
+        // Update all charts with new data
+        function updateCharts(dates, visitorCounts, deviceData, platformCounts, durationData) {
+            if (!chartsInitialized) {
+                initializeCharts(dates, visitorCounts, deviceData, platformCounts, durationData);
+                chartsInitialized = true;
+            } else {
+                // Update existing charts
+                visitorChart.data.labels = dates;
+                visitorChart.data.datasets[0].data = visitorCounts;
+                visitorChart.update();
+                
+                devicesChart.data.datasets[0].data = [deviceData.desktop, deviceData.mobile];
+                devicesChart.update();
+                
+                // Process download data
+                const downloadLabels = Object.keys(platformCounts);
+                const downloadCounts = downloadLabels.map(platform => platformCounts[platform]);
+                
+                downloadsChart.data.labels = downloadLabels;
+                downloadsChart.data.datasets[0].data = downloadCounts;
+                downloadsChart.update();
+                
+                // Process duration data
+                const durationRanges = {
+                    'Less than 1 min': 0,
+                    '1-5 mins': 0,
+                    '5-15 mins': 0,
+                    '15-30 mins': 0,
+                    'Over 30 mins': 0
+                };
+                
+                durationData.forEach(session => {
+                    const duration = session.duration_seconds;
+                    if (duration < 60) {
+                        durationRanges['Less than 1 min']++;
+                    } else if (duration < 300) {
+                        durationRanges['1-5 mins']++;
+                    } else if (duration < 900) {
+                        durationRanges['5-15 mins']++;
+                    } else if (duration < 1800) {
+                        durationRanges['15-30 mins']++;
+                    } else {
+                        durationRanges['Over 30 mins']++;
+                    }
+                });
+                
+                durationChart.data.datasets[0].data = Object.values(durationRanges);
+                durationChart.update();
+            }
+        }
+        
+        // Initialize all charts
+        function initializeCharts(dates, visitorCounts, deviceData, platformCounts, durationData) {
+            // Visitors Chart
+            const visitorsCtx = document.getElementById('visitors-chart').getContext('2d');
+            visitorChart = new Chart(visitorsCtx, {
+                type: 'line',
+                data: {
+                    labels: dates,
+                    datasets: [{
+                        label: 'Unique Visitors',
+                        data: visitorCounts,
+                        backgroundColor: 'rgba(74, 108, 247, 0.2)',
+                        borderColor: 'rgba(74, 108, 247, 1)',
+                        borderWidth: 2,
+                        tension: 0.3
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                precision: 0
+                            }
+                        }
+                    }
+                }
+            });
+            
+            // Devices Chart
+            const devicesCtx = document.getElementById('devices-chart').getContext('2d');
+            devicesChart = new Chart(devicesCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Desktop', 'Mobile'],
+                    datasets: [{
+                        data: [deviceData.desktop, deviceData.mobile],
+                        backgroundColor: [
+                            'rgba(54, 162, 235, 0.6)',
+                            'rgba(255, 99, 132, 0.6)'
+                        ],
+                        borderColor: [
+                            'rgba(54, 162, 235, 1)',
+                            'rgba(255, 99, 132, 1)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true
+                }
+            });
+            
+            // Downloads Chart
+            const downloadLabels = Object.keys(platformCounts);
+            const downloadCounts = downloadLabels.map(platform => platformCounts[platform]);
+            
+            const downloadsCtx = document.getElementById('downloads-chart').getContext('2d');
+            downloadsChart = new Chart(downloadsCtx, {
+                type: 'bar',
+                data: {
+                    labels: downloadLabels,
+                    datasets: [{
+                        label: 'Downloads',
+                        data: downloadCounts,
+                        backgroundColor: 'rgba(255, 159, 64, 0.6)',
+                        borderColor: 'rgba(255, 159, 64, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                precision: 0
+                            }
+                        }
+                    }
+                }
+            });
+            
+            // Process duration data
+            const durationRanges = {
+                'Less than 1 min': 0,
+                '1-5 mins': 0,
+                '5-15 mins': 0,
+                '15-30 mins': 0,
+                'Over 30 mins': 0
+            };
+            
+            durationData.forEach(session => {
+                const duration = session.duration_seconds;
+                if (duration < 60) {
+                    durationRanges['Less than 1 min']++;
+                } else if (duration < 300) {
+                    durationRanges['1-5 mins']++;
+                } else if (duration < 900) {
+                    durationRanges['5-15 mins']++;
+                } else if (duration < 1800) {
+                    durationRanges['15-30 mins']++;
+                } else {
+                    durationRanges['Over 30 mins']++;
+                }
+            });
+            
+            // Duration Chart
+            const durationCtx = document.getElementById('duration-chart').getContext('2d');
+            durationChart = new Chart(durationCtx, {
+                type: 'pie',
+                data: {
+                    labels: Object.keys(durationRanges),
+                    datasets: [{
+                        data: Object.values(durationRanges),
+                        backgroundColor: [
+                            'rgba(75, 192, 192, 0.6)',
+                            'rgba(153, 102, 255, 0.6)',
+                            'rgba(255, 205, 86, 0.6)',
+                            'rgba(201, 203, 207, 0.6)',
+                            'rgba(255, 99, 132, 0.6)'
+                        ],
+                        borderColor: [
+                            'rgba(75, 192, 192, 1)',
+                            'rgba(153, 102, 255, 1)',
+                            'rgba(255, 205, 86, 1)',
+                            'rgba(201, 203, 207, 1)',
+                            'rgba(255, 99, 132, 1)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true
+                }
+            });
+        }
+        
+        // Helper function to format date
+        function formatDate(dateStr) {
+            const date = new Date(dateStr);
+            return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+        }
+        
+        // Helper function to format duration
+        function formatDuration(seconds) {
+            const minutes = Math.floor(seconds / 60);
+            const remainingSeconds = Math.floor(seconds % 60);
+            return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
+        }
+    </script>
+</body>
+</html> 
