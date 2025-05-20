@@ -1,4 +1,56 @@
 document.addEventListener('DOMContentLoaded', function() {
+    // Initialize i18n if available
+    if (window.i18n && typeof window.i18n.init === 'function') {
+        window.i18n.init();
+    }
+    
+    // Initialize analytics if available and enabled
+    if (window.Memoryan && window.Memoryan.Analytics && window.MemoryanConfig) {
+        if (window.MemoryanConfig.analytics.enabled) {
+            window.Memoryan.Analytics.init(
+                window.MemoryanConfig.supabase.url,
+                window.MemoryanConfig.supabase.anonKey
+            );
+        }
+    }
+    
+    // GLOBAL FIX: Protect flip cards from ANY external mouse effects
+    // Must run before any other code
+    (function protectFlipCards() {
+        // Find all flip cards in the document
+        const allFlipCards = document.querySelectorAll('.flip-card, .flip-card-inner, .flip-card-front, .flip-card-back');
+        
+        // Apply protection to each element
+        allFlipCards.forEach(card => {
+            // Prevent these elements from getting any transform changes from other scripts
+            const originalTransform = window.getComputedStyle(card).transform;
+            
+            // Override transform setter for these elements
+            Object.defineProperty(card.style, 'transform', {
+                set: function(value) {
+                    // Only allow vertical translations and rotateY transforms
+                    // Block any other transform changes to these elements
+                    if (value === '' || 
+                        value.includes('translateY') || 
+                        value.includes('rotateY')) {
+                        card.style.cssText += `transform: ${value};`;
+                    }
+                },
+                configurable: true
+            });
+            
+            // Block mousemove events completely
+            card.addEventListener('mousemove', function(e) {
+                e.stopPropagation();
+            }, true);
+        });
+        
+        // Also disable magnetic effect on these elements by class
+        document.querySelectorAll('.flip-card.magnetic-element').forEach(card => {
+            card.classList.remove('magnetic-element');
+        });
+    })();
+    
     // Initialize AOS (Animate On Scroll) library
     AOS.init({
         duration: 800,
@@ -99,81 +151,113 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
-    // Fix for QR Code flip cards - only flip on click, not hover
+    // Completely isolated flip card implementation with extensive exception handling
     const setupFlipCards = () => {
         const flipCardItems = document.querySelectorAll('.qr-code-item');
         
         flipCardItems.forEach(item => {
-            // Get the flip card inside this item
-            const card = item.querySelector('.flip-card');
-            if (!card) return;
-            
-            // Clean up any existing event listeners
-            const clone = card.cloneNode(true);
-            card.parentNode.replaceChild(clone, card);
-            
-            // Work with the fresh clone
-            const freshCard = item.querySelector('.flip-card');
-            
-            // Explicitly remove magnetic effect and any hover behaviors
-            freshCard.classList.remove('magnetic-element');
-            freshCard.style.transform = 'none';
-            
-            // Set perspective on the container
-            item.style.perspective = '1000px';
-            
-            // Manual click toggle for flipping
-            freshCard.addEventListener('click', function(e) {
-                e.preventDefault();
-                e.stopPropagation(); // Prevent event bubbling
+            try {
+                // Get original card
+                const originalCard = item.querySelector('.flip-card');
+                if (!originalCard) return;
                 
-                const inner = this.querySelector('.flip-card-inner');
-                if (inner) {
+                // Store card content
+                const cardHTML = originalCard.innerHTML;
+                
+                // Create parent node reference for insertion
+                const parentNode = originalCard.parentNode;
+                
+                // Remove the original card completely
+                originalCard.remove();
+                
+                // Create a new card from scratch with minimal attributes
+                const newCard = document.createElement('div');
+                newCard.className = 'flip-card';
+                newCard.innerHTML = cardHTML;
+                
+                // Get reference to the inner card that will flip
+                const inner = newCard.querySelector('.flip-card-inner');
+                
+                // Make sure inner element exists
+                if (!inner) {
+                    console.error('Flip card inner element not found');
+                    return;
+                }
+                
+                // Set perspective on container for 3D effect
+                item.style.perspective = '1000px';
+                
+                // Define click handler inline - no references to outside scope
+                const handleCardClick = function(event) {
+                    // Stop event propagation to other handlers
+                    event.stopPropagation();
+                    event.preventDefault();
+                    
+                    // Toggle flip state
                     if (inner.style.transform === 'rotateY(180deg)') {
-                        inner.style.transform = 'rotateY(0deg)';
+                        inner.style.transform = '';
                     } else {
                         inner.style.transform = 'rotateY(180deg)';
                     }
-                }
-            });
-            
-            // Prevent any mouse events from causing transform changes
-            ['mouseover', 'mouseleave', 'mousemove'].forEach(eventType => {
-                freshCard.addEventListener(eventType, function(e) {
-                    e.stopPropagation();
-                    this.style.transform = 'none';
-                });
-            });
-            
-            // Handle touch events for mobile
-            let touchStartTime = 0;
-            
-            freshCard.addEventListener('touchstart', function(e) {
-                touchStartTime = new Date().getTime();
-            });
-            
-            freshCard.addEventListener('touchend', function(e) {
-                const touchEndTime = new Date().getTime();
-                const touchDuration = touchEndTime - touchStartTime;
+                };
                 
-                // Only flip if it was a quick tap (not a scroll)
-                if (touchDuration < 200) {
-                    const inner = this.querySelector('.flip-card-inner');
-                    if (inner) {
-                        if (inner.style.transform === 'rotateY(180deg)') {
-                            inner.style.transform = 'rotateY(0deg)';
-                        } else {
-                            inner.style.transform = 'rotateY(180deg)';
+                // Clear any existing handlers and add only the click handler
+                newCard.onclick = handleCardClick;
+                
+                // EVENT BLOCKING: Prevent ANY mouse movement events from causing transforms
+                // Use capture phase to intercept events before they reach other handlers
+                const blockEvent = function(event) {
+                    event.stopPropagation();
+                    // Don't call preventDefault() as it interferes with CSS hover effects
+                };
+                
+                // Block these events explicitly to prevent any transform conflicts
+                ['mousemove', 'mouseover', 'mouseenter'].forEach(eventType => {
+                    newCard.addEventListener(eventType, blockEvent, true);
+                    
+                    // Also block events on inner, front and back cards to be thorough
+                    inner.addEventListener(eventType, blockEvent, true);
+                    
+                    const front = newCard.querySelector('.flip-card-front');
+                    if (front) front.addEventListener(eventType, blockEvent, true);
+                    
+                    const back = newCard.querySelector('.flip-card-back');
+                    if (back) back.addEventListener(eventType, blockEvent, true);
+                });
+                
+                // Make transform property read-only on inner element to prevent other scripts
+                // from changing it except through our click handler
+                let currentTransform = '';
+                Object.defineProperty(inner.style, 'transform', {
+                    get: function() { 
+                        return currentTransform; 
+                    },
+                    set: function(value) {
+                        // Only allow transforms via our click handler
+                        if (value === 'rotateY(180deg)' || value === '') {
+                            currentTransform = value;
+                            inner.style.cssText += `transform: ${value};`;
                         }
-                    }
-                    e.preventDefault(); // Prevent default behavior
-                    e.stopPropagation(); // Prevent event bubbling
-                }
-            });
+                    },
+                    configurable: true
+                });
+                
+                // Disable pointer events on front/back to prevent bubbling
+                const front = newCard.querySelector('.flip-card-front');
+                const back = newCard.querySelector('.flip-card-back');
+                if (front) front.style.pointerEvents = 'none';
+                if (back) back.style.pointerEvents = 'none';
+                
+                // Add the new card to the DOM
+                parentNode.appendChild(newCard);
+                
+            } catch (error) {
+                console.error('Error setting up flip card:', error);
+            }
         });
     };
     
-    // Cleanup any flip card issues
+    // Initialize cards with the isolated implementation
     setupFlipCards();
     
     // Animated gradient background with parallax scrolling effect
@@ -283,56 +367,183 @@ document.addEventListener('DOMContentLoaded', function() {
     // Call createStars to add twinkling effect
     createStars();
     
-    // Initialize Swiper.js for the screenshot carousel
-    const screenshotSwiper = new Swiper('.screenshot-swiper', {
-        slidesPerView: 'auto',
-        centeredSlides: true,
-        spaceBetween: 30,
-        loop: true,
-        grabCursor: true,
-        keyboard: {
-            enabled: true,
-        },
-        pagination: {
-            el: '.swiper-pagination',
-            clickable: true,
-            dynamicBullets: true,
-        },
-        navigation: {
-            nextEl: '.swiper-button-next',
-            prevEl: '.swiper-button-prev',
-        },
-        breakpoints: {
-            320: {
-                slidesPerView: 1.2,
-                spaceBetween: 20,
+    // Improved function to fix Swiper translations
+    function fixSwiperTranslations() {
+        console.log("🔄 Running fixSwiperTranslations");
+        // Get all slides including duplicates
+        const allSlides = document.querySelectorAll('.swiper-slide');
+        console.log(`�� Found ${allSlides.length} swiper slides to translate`);
+        
+        // Current language for debugging
+        const currentLang = window.i18n ? window.i18n.getCurrentLanguage() : 'en';
+        console.log(`🌐 Current language: ${currentLang}`);
+        
+        // Function to translate a specific slide
+        function translateSlide(slide, index) {
+            const elementsToTranslate = slide.querySelectorAll('[data-i18n]');
+            console.log(`🔍 Slide ${index}: Found ${elementsToTranslate.length} elements with data-i18n`);
+            
+            // Directly modify DOM for consistent results
+            elementsToTranslate.forEach(element => {
+                const key = element.getAttribute('data-i18n');
+                
+                // Get translation directly from i18n
+                if (window.i18n && typeof window.i18n.t === 'function') {
+                    const translation = window.i18n.t(key);
+                    if (translation && typeof translation === 'string') {
+                        // Update the content
+                        element.textContent = translation;
+                        console.log(`✅ Translated "${key}" to: "${translation.substring(0, 30)}${translation.length > 30 ? '...' : ''}"`);
+                    } else {
+                        console.warn(`❌ No translation found for key: ${key} in language: ${currentLang}`);
+                        console.warn(`  Key structure: ${key.split('.').join(' > ')}`);
+                    }
+                }
+            });
+        }
+        
+        // Translate all slides with index for debugging
+        allSlides.forEach((slide, index) => translateSlide(slide, index));
+    }
+    
+    // Hook into the language change event for Swiper translations
+    if (window.i18n) {
+        // Override the changeLanguage method to ensure Swiper slides are translated
+        const originalChangeLanguage = window.i18n.changeLanguage;
+        window.i18n.changeLanguage = function(lang) {
+            console.log(`🔄 Language change detected to: ${lang}`);
+            
+            // Call original method
+            originalChangeLanguage(lang);
+            
+            // Translate all Swiper slides at different intervals to catch all dynamic content
+            [50, 200, 500, 1000].forEach(delay => {
+                setTimeout(fixSwiperTranslations, delay);
+            });
+        };
+        
+        // Add a global function to force translation of Swiper
+        window.fixSwiperTranslations = fixSwiperTranslations;
+        
+        // Add a debug function to window for console access
+        window.debugSwiper = function() {
+            console.log("🔍 Debugging Swiper translations");
+            // Print translations debug info
+            window.i18n.t('debug.translations');
+            
+            // Count and log slides
+            const allSlides = document.querySelectorAll('.swiper-slide');
+            console.log(`Total slides: ${allSlides.length}`);
+            
+            // Log all data-i18n elements in each slide
+            allSlides.forEach((slide, index) => {
+                const elementsToTranslate = slide.querySelectorAll('[data-i18n]');
+                console.log(`Slide ${index} has ${elementsToTranslate.length} data-i18n elements`);
+                
+                elementsToTranslate.forEach(el => {
+                    const key = el.getAttribute('data-i18n');
+                    console.log(`  Key: ${key}, Current text: "${el.textContent}"`);
+                });
+            });
+            
+            // Force translation refresh
+            fixSwiperTranslations();
+            
+            return "Debug information printed to console";
+        };
+    }
+    
+    // Initialize Swiper with translations support
+    function initializeSwiper() {
+        // Initialize Swiper.js for the screenshot carousel
+        const screenshotSwiper = new Swiper('.screenshot-swiper', {
+            slidesPerView: 'auto',
+            centeredSlides: true,
+            spaceBetween: 30,
+            loop: true,
+            grabCursor: true,
+            keyboard: {
+                enabled: true,
             },
-            576: {
-                slidesPerView: 1.4,
-                spaceBetween: 25,
+            pagination: {
+                el: '.swiper-pagination',
+                clickable: true,
+                dynamicBullets: true,
             },
-            768: {
-                slidesPerView: 1.6,
-                spaceBetween: 30,
+            navigation: {
+                nextEl: '.swiper-button-next',
+                prevEl: '.swiper-button-prev',
             },
-            992: {
-                slidesPerView: 2,
-                spaceBetween: 40,
+            breakpoints: {
+                320: {
+                    slidesPerView: 1.2,
+                    spaceBetween: 20,
+                },
+                576: {
+                    slidesPerView: 1.4,
+                    spaceBetween: 25,
+                },
+                768: {
+                    slidesPerView: 1.6,
+                    spaceBetween: 30,
+                },
+                992: {
+                    slidesPerView: 2,
+                    spaceBetween: 40,
+                },
+                1200: {
+                    slidesPerView: 2.2,
+                    spaceBetween: 50,
+                }
             },
-            1200: {
-                slidesPerView: 2.2,
-                spaceBetween: 50,
+            effect: 'coverflow',
+            coverflowEffect: {
+                rotate: 5,
+                stretch: 0,
+                depth: 100,
+                modifier: 2,
+                slideShadows: false,
+            },
+            on: {
+                init: function() {
+                    console.log("Swiper initialized");
+                    
+                    // Give a little time for Swiper to fully render
+                    setTimeout(fixSwiperTranslations, 100);
+                },
+                loopCreate: function() {
+                    // This event fires when Swiper creates loop duplicates
+                    setTimeout(fixSwiperTranslations, 100);
+                },
+                slideChangeTransitionEnd: function() {
+                    // When slides are changed, ensure translations are correct
+                    setTimeout(fixSwiperTranslations, 50);
+                }
             }
-        },
-        effect: 'coverflow',
-        coverflowEffect: {
-            rotate: 5,
-            stretch: 0,
-            depth: 100,
-            modifier: 2,
-            slideShadows: false,
-        },
+        });
+        
+        return screenshotSwiper;
+    }
+    
+    // Call the initialization function
+    const swiper = initializeSwiper();
+    
+    // Also run translation when the page fully loads
+    window.addEventListener('load', function() {
+        console.log("📄 Page fully loaded, applying translations to Swiper");
+        // Allow Swiper to initialize fully
+        setTimeout(fixSwiperTranslations, 300);
+        setTimeout(fixSwiperTranslations, 1000);
     });
+    
+    // Monitor and fix translations periodically
+    // This is a failsafe mechanism in case other scripts manipulate the DOM
+    const translationInterval = setInterval(fixSwiperTranslations, 2000);
+    // Stop the interval after 30 seconds to avoid unnecessary processing
+    setTimeout(() => {
+        console.log("⏱️ Stopping periodic translation checks");
+        clearInterval(translationInterval);
+    }, 30000);
     
     // Privacy Policy and Terms of Service Modal Implementation
     const setupModals = () => {
