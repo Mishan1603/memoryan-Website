@@ -1,659 +1,466 @@
 /**
- * Memoryan Website Analytics
- * Tracks user visits, time spent, and download button clicks
- * Securely sends data to Supabase
+ * Supabase Debug Tool
+ * This script helps diagnose issues with Supabase connections
  */
 
-// Make sure the Analytics class is accessible globally
-window.Analytics = class Analytics {
-    constructor() {
-        this.supabaseUrl = null;
-        this.supabaseKey = null;
-        this.isInitialized = false;
-        this.sessionId = this._generateSessionId();
-        this.startTime = Date.now();
-        this.rateLimiter = new RateLimiter('analytics', 10, 60000); // 10 requests per minute
-        this.events = [];
-        this.isSubmitting = false;
-        this.pageLoadTime = Date.now();
-        this.lastInteractionTime = Date.now();
-        this.deviceInfo = this._collectDeviceInfo();
-        this.debug = true; // Enable debugging
-        this.eventQueue = [];
+// Add a diagnostic panel to the page
+window.addEventListener('load', function() {
+    // Create diagnostic panel
+    const panel = document.createElement('div');
+    panel.id = 'supabase-debug-panel';
+    panel.style.position = 'fixed';
+    panel.style.bottom = '50px';
+    panel.style.right = '10px';
+    panel.style.width = '300px';
+    panel.style.maxHeight = '400px';
+    panel.style.overflowY = 'auto';
+    panel.style.backgroundColor = 'rgba(0, 0, 0, 0.8)';
+    panel.style.color = '#00ff00';
+    panel.style.padding = '10px';
+    panel.style.borderRadius = '5px';
+    panel.style.fontFamily = 'monospace';
+    panel.style.fontSize = '12px';
+    panel.style.zIndex = '10000';
+    panel.style.display = 'none'; // Initially hidden
+    
+    // Create content
+    panel.innerHTML = `
+        <h3 style="color: #00ff00; margin-top: 0;">Supabase Diagnostics</h3>
+        <div id="supabase-status">Checking Supabase status...</div>
+        <div id="diagnostics-list" style="margin-top: 10px;"></div>
+        <div style="margin-top: 10px;">
+            <button id="test-supabase-btn" style="background: #333; color: #fff; border: 1px solid #00ff00; padding: 5px 10px; cursor: pointer; margin-right: 5px;">Test Connection</button>
+            <button id="init-analytics-btn" style="background: #333; color: #fff; border: 1px solid #00ff00; padding: 5px 10px; cursor: pointer; margin-right: 5px;">Init Analytics</button>
+            <button id="toggle-panel-btn" style="background: #333; color: #fff; border: 1px solid #00ff00; padding: 5px 10px; cursor: pointer;">Hide Panel</button>
+        </div>
+    `;
+    
+    document.body.appendChild(panel);
+    
+    // Add toggle button
+    const toggleButton = document.createElement('button');
+    toggleButton.id = 'show-debug-panel';
+    toggleButton.textContent = 'Supabase Debug';
+    toggleButton.style.position = 'fixed';
+    toggleButton.style.bottom = '10px';
+    toggleButton.style.left = '10px';
+    toggleButton.style.padding = '5px 10px';
+    toggleButton.style.backgroundColor = 'rgba(0, 0, 0, 0.7)';
+    toggleButton.style.color = '#00ff00';
+    toggleButton.style.border = '1px solid #00ff00';
+    toggleButton.style.borderRadius = '3px';
+    toggleButton.style.fontFamily = 'monospace';
+    toggleButton.style.fontSize = '12px';
+    toggleButton.style.cursor = 'pointer';
+    toggleButton.style.zIndex = '10000';
+    
+    document.body.appendChild(toggleButton);
+    
+    // Toggle panel visibility
+    toggleButton.addEventListener('click', function() {
+        panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+    });
+    
+    document.getElementById('toggle-panel-btn').addEventListener('click', function() {
+        panel.style.display = 'none';
+    });
+    
+    // Init analytics button
+    document.getElementById('init-analytics-btn').addEventListener('click', function() {
+        initializeAnalytics();
+    });
+    
+    // Run diagnostics
+    runDiagnostics();
+    
+    // Test button
+    document.getElementById('test-supabase-btn').addEventListener('click', function() {
+        testSupabaseConnection();
+    });
+    
+    // Periodically refresh status
+    setInterval(runDiagnostics, 15000); // Refresh every 15 seconds
+});
+
+// Add a log to the diagnostics panel
+function addDiagnostic(message, isError = false) {
+    const diagList = document.getElementById('diagnostics-list');
+    if (diagList) {
+        const item = document.createElement('div');
+        item.style.marginBottom = '5px';
+        item.style.color = isError ? '#ff3333' : '#00ff00';
+        item.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+        diagList.appendChild(item);
         
-        // Debug logs
-        this._log('Analytics constructor called');
-        this._log(`Session ID: ${this.sessionId}`);
-    }
-
-    /**
-     * Initialize the analytics with Supabase credentials
-     * @param {string} supabaseUrl - Supabase project URL
-     * @param {string} supabaseKey - Supabase anonymous key
-     */
-    async init(supabaseUrl, supabaseKey) {
-        if (this.isInitialized) {
-            console.warn('Analytics already initialized');
-            return true;
-        }
-
-        if (!supabaseUrl || !supabaseKey) {
-            console.error('Missing Supabase credentials for analytics');
-            return false;
-        }
-
-        this.supabaseUrl = supabaseUrl;
-        this.supabaseKey = supabaseKey;
-        
-        try {
-            this._log('Analytics init started');
-            
-            // Get or initialize Supabase client
-            let supabaseClient = null;
-            
-            // First check if window.supabase already exists
-            if (window.supabase) {
-                this._log('Using existing Supabase client from window.supabase');
-                supabaseClient = window.supabase;
-            } 
-            // Otherwise check if we have MemoryanSupabase available to initialize
-            else if (window.MemoryanSupabase) {
-                this._log('Initializing Supabase client via MemoryanSupabase');
-                try {
-                    supabaseClient = await window.MemoryanSupabase.initialize(supabaseUrl, supabaseKey);
-                    this._log('Successfully initialized Supabase client');
-                } catch (supabaseError) {
-                    this._error('Error initializing Supabase client', supabaseError);
-                    return false;
-                }
-            } else {
-                this._error('No method available to initialize Supabase - missing both window.supabase and MemoryanSupabase');
-                return false;
-            }
-            
-            // Verify we have a valid client
-            if (!supabaseClient) {
-                this._error('Failed to get valid Supabase client');
-                return false;
-            }
-            
-            // Set up global access to the client
-            window.supabase = supabaseClient;
-            
-            // Mark as initialized only after we confirm Supabase is available
-            this.isInitialized = true;
-            this._log('Analytics initialized successfully');
-            
-            // Process any queued events
-            await this._processQueue();
-            
-            // Track initial page visit
-            this.trackPageVisit();
-            
-            // Setup beforeunload event for session tracking
-            window.addEventListener('beforeunload', () => {
-                this.trackSessionEnd();
-            });
-            
-            // Attach to all download buttons
-            this._attachToDownloadButtons();
-            
-            return true;
-        } catch (error) {
-            this._error('Error initializing analytics', error);
-            return false;
-        }
-    }
-
-    /**
-     * Track an event
-     * @param {string} eventType - Type of event (page_visit, download_click)
-     * @param {Object} eventData - Additional data about the event
-     */
-    trackEvent(eventType, eventData = {}) {
-        if (!this.isInitialized) {
-            console.warn('Cannot track events before analytics is initialized');
-            return;
-        }
-
-        // Update last interaction time
-        this.lastInteractionTime = Date.now();
-
-        // Create event object
-        const event = {
-            session_id: this.sessionId,
-            event_type: eventType,
-            timestamp: new Date().toISOString(),
-            page_url: window.location.href,
-            referrer: document.referrer || null,
-            time_on_page: Date.now() - this.pageLoadTime,
-            ...eventData,
-            ...this.deviceInfo
-        };
-
-        // Add to event queue
-        this.events.push(event);
-
-        // Send events if we have enough or for important events
-        if (this.events.length >= 3 || eventType === 'download_click') {
-            this._sendEvents();
-        }
-    }
-
-    /**
-     * Track a page visit
-     */
-    trackPageVisit() {
-        try {
-            this._log('Tracking page visit');
-            const eventData = {
-                event_type: 'page_visit',
-                page_url: window.location.href,
-                referrer: document.referrer || null,
-                time_on_page: 0,
-                platform: this._detectPlatform(),
-                screen_width: window.innerWidth,
-                screen_height: window.innerHeight,
-                user_language: navigator.language || navigator.userLanguage,
-                is_mobile: this._isMobile()
-            };
-            
-            this._log('Page visit data:', eventData);
-            this._trackEvent(eventData);
-        } catch (error) {
-            this._error('Error tracking page visit', error);
-        }
-    }
-    
-    /**
-     * Track a button click
-     * @param {HTMLElement} buttonElement The button that was clicked
-     */
-    trackButtonClick(buttonElement) {
-        try {
-            if (!buttonElement) {
-                this._error('Button element is null or undefined');
-                return;
-            }
-            
-            this._log('Tracking button click', buttonElement);
-            
-            // Extract button information
-            const buttonId = buttonElement.id || buttonElement.getAttribute('data-analytics') || 'unknown';
-            const buttonText = buttonElement.textContent || 'unknown';
-            
-            const eventData = {
-                event_type: 'button_click',
-                page_url: window.location.href,
-                platform: this._detectPlatform(),
-                is_mobile: this._isMobile(),
-                button_id: buttonId,
-                button_text: buttonText
-            };
-            
-            this._log('Button click data:', eventData);
-            this._trackEvent(eventData);
-        } catch (error) {
-            this._error('Error tracking button click', error);
-        }
-    }
-    
-    /**
-     * Track a download button click
-     * @param {HTMLElement} buttonElement The button that was clicked
-     */
-    trackDownloadClick(buttonElement) {
-        try {
-            if (!buttonElement) {
-                this._error('Download button element is null or undefined');
-                return;
-            }
-            
-            this._log('Tracking download click', buttonElement);
-            
-            // Extract platform information from button
-            const platform = buttonElement.getAttribute('data-platform') || 'unknown';
-            
-            const eventData = {
-                event_type: 'download_click',
-                page_url: window.location.href,
-                platform: this._detectPlatform(),
-                is_mobile: this._isMobile(),
-                button_id: buttonElement.id || `${platform}-download`,
-                button_text: buttonElement.textContent || 'Download'
-            };
-            
-            this._log('Download click data:', eventData);
-            this._trackEvent(eventData);
-        } catch (error) {
-            this._error('Error tracking download click', error);
-        }
-    }
-    
-    /**
-     * Track session end when user leaves the page
-     */
-    trackSessionEnd() {
-        try {
-            this._log('Tracking session end');
-            const sessionDuration = Math.floor((Date.now() - this.pageLoadTime) / 1000);
-            
-            const eventData = {
-                event_type: 'session_end',
-                page_url: window.location.href,
-                platform: this._detectPlatform(),
-                is_mobile: this._isMobile(),
-                duration_seconds: sessionDuration
-            };
-            
-            this._log('Session end data:', eventData);
-            this._trackEvent(eventData, true); // Force immediate send on page unload
-        } catch (error) {
-            this._error('Error tracking session end', error);
-        }
-    }
-    
-    /**
-     * Test function to manually trigger an event for debugging
-     */
-    testAnalytics() {
-        this._log('Running analytics test');
-        if (!this.isInitialized) {
-            this._log('Analytics not initialized, attempting to initialize now');
-            this.init(this.supabaseUrl, this.supabaseKey).then(success => {
-                if (success) {
-                    this._sendTestEvent();
-                } else {
-                    this._error('Failed to initialize analytics for test');
-                    alert('Analytics initialization failed. Check console for details.');
-                }
-            });
-        } else {
-            this._sendTestEvent();
-        }
-    }
-    
-    /**
-     * Send a test event to Supabase
-     * @private
-     */
-    _sendTestEvent() {
-        try {
-            const testEvent = {
-                event_type: 'test_event',
-                page_url: window.location.href,
-                referrer: 'test-referrer',
-                platform: this._detectPlatform(),
-                screen_width: window.innerWidth,
-                screen_height: window.innerHeight,
-                user_language: navigator.language,
-                is_mobile: this._isMobile(),
-                button_id: 'test-button',
-                button_text: 'Test Analytics'
-            };
-            
-            this._log('Sending test event:', testEvent);
-            
-            // Force immediate processing
-            this._trackEvent(testEvent, true).then(result => {
-                if (result) {
-                    this._log('Test event sent successfully');
-                    alert('Test event sent successfully! Check Supabase.');
-                } else {
-                    this._error('Test event failed to send');
-                    alert('Test event failed. Check console for details.');
-                }
-            });
-        } catch (error) {
-            this._error('Error sending test event', error);
-            alert(`Error: ${error.message}`);
-        }
-    }
-    
-    /**
-     * Private method to track an event
-     * @param {Object} eventData The event data to track
-     * @param {boolean} immediate Whether to send immediately (for beforeunload)
-     * @private
-     */
-    async _trackEvent(eventData, immediate = false) {
-        try {
-            // Add session ID to event data
-            const fullEventData = {
-                ...eventData,
-                session_id: this.sessionId
-            };
-            
-            this._log(`Preparing to track event: ${eventData.event_type}`, fullEventData);
-            
-            if (!this.isInitialized) {
-                this._log('Analytics not initialized, queueing event');
-                this.eventQueue.push(fullEventData);
-                return false;
-            }
-            
-            // If we need to send immediately (e.g., beforeunload)
-            if (immediate) {
-                this._log('Sending event immediately (bypassing rate limit)');
-                return await this._sendToSupabase(fullEventData);
-            }
-            
-            // Otherwise, use rate limiting
-            if (this.rateLimiter.canMakeRequest()) {
-                this._log('Rate limit allows request, sending event');
-                return await this._sendToSupabase(fullEventData);
-            } else {
-                this._log('Rate limited, queueing event');
-                this.eventQueue.push(fullEventData);
-                return false;
-            }
-        } catch (error) {
-            this._error('Error in _trackEvent', error);
-            return false;
-        }
-    }
-    
-    /**
-     * Send event data to Supabase
-     * @param {Object} eventData The event data to send
-     * @private
-     */
-    async _sendToSupabase(eventData) {
-        try {
-            if (!window.supabase) {
-                // Try to get client from MemoryanSupabase
-                if (window.MemoryanSupabase && window.MemoryanSupabase.client) {
-                    window.supabase = window.MemoryanSupabase.client;
-                    this._log('Retrieved Supabase client from MemoryanSupabase');
-                } else if (window.MemoryanConfig && window.MemoryanConfig.supabase) {
-                    // Try to initialize
-                    this._log('Trying to initialize Supabase client');
-                    const { url, anonKey } = window.MemoryanConfig.supabase;
-                    if (window.MemoryanSupabase) {
-                        try {
-                            const client = await window.MemoryanSupabase.initialize(url, anonKey);
-                            this._log('Successfully initialized Supabase client');
-                            window.supabase = client;
-                        } catch (initError) {
-                            this._error('Failed to initialize Supabase', initError);
-                            return false;
-                        }
-                    } else {
-                        this._error('MemoryanSupabase not available for initialization');
-                        return false;
-                    }
-                } else {
-                    this._error('Supabase client not found when sending data');
-                    return false;
-                }
-            }
-            
-            this._log('Sending to Supabase:', eventData);
-            
-            // Directly submit to Supabase
-            const { data, error } = await window.supabase
-                .from('website_analytics')
-                .insert(eventData)
-                .select();
-            
-            if (error) {
-                this._error('Supabase error when sending data', error);
-                return false;
-            }
-            
-            this._log('Successfully sent event to Supabase', data);
-            return true;
-        } catch (error) {
-            this._error('Exception when sending to Supabase', error);
-            return false;
-        }
-    }
-    
-    /**
-     * Process any queued events
-     * @private
-     */
-    async _processQueue() {
-        if (this.eventQueue.length === 0) {
-            this._log('No events in queue to process');
-            return;
+        // Limit the number of messages to prevent overflow
+        while (diagList.children.length > 20) {
+            diagList.removeChild(diagList.firstChild);
         }
         
-        this._log(`Processing queue of ${this.eventQueue.length} events`);
-        
-        // Clone and clear the queue
-        const queueToProcess = [...this.eventQueue];
-        this.eventQueue = [];
-        
-        // Process each event
-        for (const eventData of queueToProcess) {
-            if (this.rateLimiter.canMakeRequest()) {
-                this._log('Processing queued event', eventData);
-                await this._sendToSupabase(eventData);
-            } else {
-                this._log('Rate limit hit while processing queue, re-queueing event');
-                this.eventQueue.push(eventData);
-                break;
-            }
-        }
+        // Auto-scroll to bottom
+        diagList.scrollTop = diagList.scrollHeight;
     }
     
-    /**
-     * Attach event listeners to download buttons
-     * @private
-     */
-    _attachToDownloadButtons() {
-        try {
-            this._log('Attaching to download buttons');
-            const downloadButtons = document.querySelectorAll('.download-button');
-            
-            this._log(`Found ${downloadButtons.length} download buttons`);
-            
-            downloadButtons.forEach(button => {
-                button.addEventListener('click', (e) => {
-                    this._log('Download button clicked', e.target);
-                    this.trackDownloadClick(e.target);
-                });
-            });
-        } catch (error) {
-            this._error('Error attaching to download buttons', error);
-        }
-    }
-
-    /**
-     * Generate a unique session ID
-     * @private
-     */
-    _generateSessionId() {
-        return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-            const r = Math.random() * 16 | 0, 
-                  v = c === 'x' ? r : (r & 0x3 | 0x8);
-            return v.toString(16);
-        });
-    }
-
-    /**
-     * Collect basic, non-PII device information
-     * @private
-     */
-    _collectDeviceInfo() {
-        return {
-            screen_width: window.screen.width,
-            screen_height: window.screen.height,
-            user_language: navigator.language,
-            platform: navigator.platform,
-            is_mobile: /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
-        };
-    }
-
-    /**
-     * Detect the user's platform
-     * @returns {string} The detected platform
-     * @private
-     */
-    _detectPlatform() {
-        const ua = navigator.userAgent.toLowerCase();
-        
-        if (ua.indexOf('android') > -1) return 'android';
-        if (ua.indexOf('iphone') > -1 || ua.indexOf('ipad') > -1 || ua.indexOf('ipod') > -1) return 'ios';
-        if (ua.indexOf('windows') > -1) return 'windows';
-        if (ua.indexOf('mac os x') > -1) return 'mac';
-        if (ua.indexOf('linux') > -1) return 'linux';
-        
-        return 'unknown';
-    }
-    
-    /**
-     * Check if the user is on a mobile device
-     * @returns {boolean} Whether the user is on a mobile device
-     * @private
-     */
-    _isMobile() {
-        return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-    }
-    
-    /**
-     * Log a debug message
-     * @param {string} message The message to log
-     * @param {*} data Optional data to log
-     * @private
-     */
-    _log(message, data) {
-        if (this.debug) {
-            if (data) {
-                console.log(`📊 Analytics: ${message}`, data);
-            } else {
-                console.log(`📊 Analytics: ${message}`);
-            }
-        }
-    }
-    
-    /**
-     * Log an error message
-     * @param {string} message The error message
-     * @param {Error} error Optional error object
-     * @private
-     */
-    _error(message, error) {
-        console.error(`❌ Analytics Error: ${message}`, error || '');
+    // Also log to console
+    if (isError) {
+        console.error(message);
+    } else {
+        console.log(message);
     }
 }
 
-// Create global analytics instance
-window.Memoryan = window.Memoryan || {};
-window.Memoryan.Analytics = new Analytics();
-
-// Automatically initialize analytics when config is available
-document.addEventListener('DOMContentLoaded', function() {
-    console.log('📊 Analytics: DOM loaded, checking for config...');
+// Run initial diagnostics
+function runDiagnostics() {
+    addDiagnostic('Starting Supabase diagnostics...');
     
-    // Create window.analytics alias for compatibility with older code
-    if (!window.analytics && window.Memoryan && window.Memoryan.Analytics) {
-        window.analytics = window.Memoryan.Analytics;
-        console.log('📊 Analytics: Created window.analytics alias');
+    const statusElement = document.getElementById('supabase-status');
+    if (statusElement) {
+        statusElement.innerHTML = '<span style="color: #ffcc00;">Running diagnostics...</span>';
     }
     
-    // Add test button to page for debugging
-    setTimeout(() => {
-        // This runs after a small delay to ensure the DOM is fully ready
-        const footer = document.querySelector('footer');
-        if (footer) {
-            // Create test button
-            const testButton = document.createElement('button');
-            testButton.id = 'test-analytics-button';
-            testButton.textContent = 'Test Analytics';
-            testButton.style.position = 'fixed';
-            testButton.style.bottom = '10px';
-            testButton.style.right = '10px';
-            testButton.style.zIndex = '9999';
-            testButton.style.padding = '8px 12px';
-            testButton.style.backgroundColor = 'rgba(0, 128, 255, 0.8)';
-            testButton.style.color = 'white';
-            testButton.style.border = 'none';
-            testButton.style.borderRadius = '4px';
-            testButton.style.cursor = 'pointer';
-            testButton.style.fontFamily = 'Lato, sans-serif';
-            testButton.style.fontSize = '14px';
-            testButton.style.boxShadow = '0 2px 5px rgba(0,0,0,0.2)';
-            
-            // Add click event
-            testButton.addEventListener('click', () => {
-                if (window.Memoryan && window.Memoryan.Analytics) {
-                    window.Memoryan.Analytics.testAnalytics();
-                } else {
-                    console.error('❌ Analytics object not found');
-                    alert('Analytics object not found');
-                }
-            });
-            
-            // Add to page
-            document.body.appendChild(testButton);
-            console.log('📊 Analytics: Test button added to page');
-        }
-    }, 500);
-    
-    // Function to initialize analytics
-    function initializeAnalytics() {
-        // Check if already initialized
-        if (window.Memoryan && window.Memoryan.Analytics && window.Memoryan.Analytics.isInitialized) {
-            console.log('📊 Analytics: Already initialized');
-            return;
-        }
+    // Check if MemoryanConfig exists
+    if (window.MemoryanConfig) {
+        addDiagnostic('✅ MemoryanConfig found');
         
-        // Check if config is available
-        if (window.MemoryanConfig && window.MemoryanConfig.analytics && window.MemoryanConfig.analytics.enabled) {
-            console.log('📊 Analytics: Config found, initializing...');
+        // Check Supabase config
+        if (window.MemoryanConfig.supabase) {
+            const { url, anonKey } = window.MemoryanConfig.supabase;
             
-            if (window.Memoryan && window.Memoryan.Analytics) {
-                // Check if Supabase is ready
-                if (window.supabase) {
-                    console.log('📊 Analytics: Supabase already available, initializing now');
-                    window.Memoryan.Analytics.init(
-                        window.MemoryanConfig.supabase.url, 
-                        window.MemoryanConfig.supabase.anonKey
-                    ).then(success => {
-                        console.log('📊 Analytics: Initialization ' + (success ? 'successful' : 'failed'));
-                        
-                        // Create global window.analytics for compatibility with existing code
-                        window.analytics = window.Memoryan.Analytics;
-                    });
-                } else if (window.MemoryanSupabase) {
-                    console.log('📊 Analytics: Waiting for Supabase to be initialized first');
-                    
-                    // Check if supabase-loader has already started initialization
-                    const checkInterval = setInterval(() => {
-                        if (window.supabase) {
-                            clearInterval(checkInterval);
-                            console.log('📊 Analytics: Supabase became available, initializing now');
-                            
-                            window.Memoryan.Analytics.init(
-                                window.MemoryanConfig.supabase.url, 
-                                window.MemoryanConfig.supabase.anonKey
-                            ).then(success => {
-                                console.log('📊 Analytics: Delayed initialization ' + (success ? 'successful' : 'failed'));
-                                window.analytics = window.Memoryan.Analytics;
-                            });
-                        }
-                    }, 100); // Check every 100ms
-                    
-                    // Stop checking after 10 seconds to avoid infinite loop
-                    setTimeout(() => {
-                        if (checkInterval) {
-                            clearInterval(checkInterval);
-                            console.error('❌ Analytics: Timed out waiting for Supabase to initialize');
-                        }
-                    }, 10000);
-                } else {
-                    console.error('❌ Analytics: No Supabase library available to initialize');
-                }
+            if (url && anonKey) {
+                addDiagnostic(`✅ Supabase URL: ${maskString(url)}`);
+                addDiagnostic(`✅ Supabase Key: ${maskString(anonKey)}`);
             } else {
-                console.error('❌ Analytics: Memoryan.Analytics not available');
+                addDiagnostic('❌ Missing Supabase URL or key in config!', true);
             }
         } else {
-            console.log('📊 Analytics: Config not found or analytics disabled');
+            addDiagnostic('❌ Missing Supabase config!', true);
+        }
+    } else {
+        addDiagnostic('❌ MemoryanConfig not found!', true);
+    }
+    
+    // Check if Supabase library is loaded
+    if (window.supabase) {
+        addDiagnostic('✅ Supabase library loaded');
+        updateSupabaseStatus(true);
+    } else {
+        addDiagnostic('⚠️ Supabase library not loaded', true);
+        
+        // Check if MemoryanSupabase is available
+        if (window.MemoryanSupabase) {
+            addDiagnostic('✅ MemoryanSupabase loader found, attempting to initialize...');
+            
+            if (window.MemoryanConfig && window.MemoryanConfig.supabase) {
+                const { url, anonKey } = window.MemoryanConfig.supabase;
+                
+                window.MemoryanSupabase.initialize(url, anonKey)
+                    .then(client => {
+                        window.supabase = client;
+                        addDiagnostic('✅ Supabase client initialized successfully');
+                        updateSupabaseStatus(true);
+                        
+                        // Re-check analytics since Supabase is now initialized
+                        checkAnalyticsStatus();
+                    })
+                    .catch(error => {
+                        addDiagnostic(`❌ Failed to initialize Supabase: ${error.message}`, true);
+                        updateSupabaseStatus(false);
+                    });
+            }
+        } else {
+            addDiagnostic('❌ MemoryanSupabase loader not found!', true);
         }
     }
     
-    // Wait a short time for other scripts to load and initialize
-    setTimeout(initializeAnalytics, 100);
-}); 
+    // Check analytics
+    checkAnalyticsStatus();
+    
+    // Check download buttons
+    const downloadButtons = document.querySelectorAll('.download-button, [data-analytics="download"]');
+    addDiagnostic(`Found ${downloadButtons.length} download buttons`);
+    
+    // Check for analytics attached attribute
+    const attachedButtons = document.querySelectorAll('[data-analytics-attached="true"]');
+    addDiagnostic(`${attachedButtons.length}/${downloadButtons.length} buttons have analytics handlers attached`);
+    
+    if (attachedButtons.length < downloadButtons.length) {
+        addDiagnostic('⚠️ Some download buttons may not be tracked correctly', true);
+    }
+}
+
+// Separate function to check analytics status
+function checkAnalyticsStatus() {
+    // First check Memoryan.Analytics (preferred)
+    if (window.Memoryan && window.Memoryan.Analytics) {
+        addDiagnostic('✅ Memoryan.Analytics object found');
+        
+        try {
+            if (window.Memoryan.Analytics.isInitialized) {
+                addDiagnostic('✅ Analytics is initialized');
+                addDiagnostic(`✅ Session ID: ${window.Memoryan.Analytics.sessionId}`);
+                
+                // Check if the object is functional by checking critical methods
+                const hasMethods = typeof window.Memoryan.Analytics.trackEvent === 'function' &&
+                                  typeof window.Memoryan.Analytics.trackDownloadClick === 'function';
+                                  
+                if (hasMethods) {
+                    addDiagnostic('✅ Analytics methods verified');
+                } else {
+                    addDiagnostic('⚠️ Analytics object missing required methods', true);
+                }
+                
+                // Assign to window.analytics for compatibility if not already done
+                if (!window.analytics) {
+                    window.analytics = window.Memoryan.Analytics;
+                    addDiagnostic('✅ Set window.analytics = Memoryan.Analytics for compatibility');
+                } else if (window.analytics !== window.Memoryan.Analytics) {
+                    addDiagnostic('⚠️ window.analytics is not the same as Memoryan.Analytics!', true);
+                    
+                    // Fix the reference
+                    window.analytics = window.Memoryan.Analytics;
+                    addDiagnostic('✅ Fixed window.analytics reference');
+                }
+                
+                // Check live stats functionality
+                if (window.Memoryan.Analytics.liveStats) {
+                    addDiagnostic(`✅ Live stats available - ${window.Memoryan.Analytics.liveStats.uniqueVisitors} unique visitors today`);
+                } else {
+                    addDiagnostic('⚠️ Live stats not yet available');
+                    // Request stats refresh
+                    if (typeof window.Memoryan.Analytics._fetchLiveStats === 'function') {
+                        window.Memoryan.Analytics._fetchLiveStats();
+                        addDiagnostic('🔄 Triggered stats refresh');
+                    }
+                }
+                
+                // Force Button Attachment
+                addDiagnostic('🔄 Forcing button attachment verification...');
+                if (typeof window.Memoryan.Analytics._attachToDownloadButtons === 'function') {
+                    try {
+                        window.Memoryan.Analytics._attachToDownloadButtons();
+                        addDiagnostic('✅ Button attachment verification complete');
+                    } catch (buttonError) {
+                        addDiagnostic(`❌ Error during button verification: ${buttonError.message}`, true);
+                    }
+                }
+            } else {
+                addDiagnostic('❌ Analytics not initialized', true);
+                
+                // Check if it's currently initializing
+                if (window.Memoryan.Analytics.isInitializing) {
+                    addDiagnostic('⏳ Analytics is currently initializing... please wait');
+                } else {
+                    addDiagnostic('🔄 Use the Init Analytics button to manually initialize');
+                }
+            }
+        } catch (error) {
+            addDiagnostic(`❌ Error checking Memoryan.Analytics status: ${error.message}`, true);
+        }
+    } 
+    // Fallback to window.analytics check
+    else if (window.analytics) {
+        addDiagnostic('⚠️ Only legacy window.analytics object found');
+        
+        try {
+            if (window.analytics.isInitialized) {
+                addDiagnostic('✅ Legacy analytics is initialized');
+                
+                // Create the proper structure
+                window.Memoryan = window.Memoryan || {};
+                window.Memoryan.Analytics = window.analytics;
+                addDiagnostic('✅ Created Memoryan.Analytics from legacy window.analytics');
+            } else {
+                addDiagnostic('❌ Legacy analytics not initialized', true);
+            }
+        } catch (error) {
+            addDiagnostic(`❌ Error checking legacy analytics status: ${error.message}`, true);
+        }
+    } else {
+        addDiagnostic('❌ Analytics objects not found!', true);
+        
+        // Check if Analytics class is available to create an instance
+        if (typeof window.Analytics === 'function') {
+            addDiagnostic('✅ Analytics class is available, can create instance');
+            addDiagnostic('🔄 Use the Init Analytics button to create and initialize');
+        } else {
+            addDiagnostic('❌ Analytics class not available', true);
+        }
+    }
+}
+
+// Initialize analytics manually
+function initializeAnalytics() {
+    addDiagnostic('🔄 Manually initializing analytics...');
+    
+    // Make sure Supabase is initialized first
+    if (!window.supabase) {
+        addDiagnostic('⚠️ Supabase not initialized, initializing first...');
+        if (window.ensureSupabaseInitialized) {
+            window.ensureSupabaseInitialized()
+                .then(client => {
+                    addDiagnostic('✅ Supabase initialized via helper');
+                    window.supabase = client;
+                    // Now initialize analytics
+                    _initializeAnalyticsWithSupabase();
+                })
+                .catch(error => {
+                    addDiagnostic(`❌ Supabase initialization failed: ${error.message}`, true);
+                });
+        } else if (window.MemoryanSupabase && window.MemoryanConfig && window.MemoryanConfig.supabase) {
+            const { url, anonKey } = window.MemoryanConfig.supabase;
+            window.MemoryanSupabase.initialize(url, anonKey)
+                .then(client => {
+                    addDiagnostic('✅ Supabase initialized via MemoryanSupabase');
+                    window.supabase = client;
+                    // Now initialize analytics
+                    _initializeAnalyticsWithSupabase();
+                })
+                .catch(error => {
+                    addDiagnostic(`❌ Supabase initialization failed: ${error.message}`, true);
+                });
+        } else {
+            addDiagnostic('❌ No method available to initialize Supabase!', true);
+        }
+    } else {
+        // Supabase already initialized
+        _initializeAnalyticsWithSupabase();
+    }
+}
+
+// Helper function to initialize analytics once Supabase is ready
+function _initializeAnalyticsWithSupabase() {
+    // Create instance if needed
+    if (!window.Memoryan || !window.Memoryan.Analytics) {
+        if (typeof window.Analytics === 'function') {
+            addDiagnostic('Creating new Analytics instance...');
+            window.Memoryan = window.Memoryan || {};
+            window.Memoryan.Analytics = new window.Analytics();
+            window.analytics = window.Memoryan.Analytics;
+            addDiagnostic('✅ Created new Analytics instance');
+        } else {
+            addDiagnostic('❌ Analytics class not available, cannot create instance', true);
+            return;
+        }
+    }
+    
+    // Force page load and session tracking restart
+    const analytics = window.Memoryan.Analytics;
+    analytics.pageLoadTime = Date.now();
+    analytics.lastInteractionTime = Date.now();
+    analytics.sessionActive = true;
+    
+    // Initialize if we have Supabase config
+    if (window.MemoryanConfig && window.MemoryanConfig.supabase) {
+        const { url, anonKey } = window.MemoryanConfig.supabase;
+        
+        addDiagnostic('Initializing with Supabase credentials...');
+        
+        window.Memoryan.Analytics.init(url, anonKey)
+            .then(success => {
+                if (success) {
+                    addDiagnostic('✅ Successfully initialized analytics');
+                    // Ensure window.analytics is set too
+                    window.analytics = window.Memoryan.Analytics;
+                    
+                    // Force immediate attachment to download buttons
+                    setTimeout(() => {
+                        addDiagnostic('🔄 Force attaching to download buttons...');
+                        if (typeof window.Memoryan.Analytics._attachToDownloadButtons === 'function') {
+                            window.Memoryan.Analytics._attachToDownloadButtons();
+                            // Check how many buttons were attached
+                            const buttons = document.querySelectorAll('.download-button, [data-analytics="download"]');
+                            const attachedButtons = document.querySelectorAll('[data-analytics-attached="true"]');
+                            addDiagnostic(`✅ Attached to ${attachedButtons.length}/${buttons.length} download buttons`);
+                        }
+                    }, 500);
+                } else {
+                    addDiagnostic('❌ Failed to initialize analytics', true);
+                }
+                
+                // Update status after initialization attempt
+                checkAnalyticsStatus();
+            })
+            .catch(error => {
+                addDiagnostic(`❌ Error initializing analytics: ${error.message}`, true);
+            });
+    } else {
+        addDiagnostic('❌ Missing Supabase config, cannot initialize analytics', true);
+    }
+}
+
+// Update Supabase status display
+function updateSupabaseStatus(success) {
+    const statusElement = document.getElementById('supabase-status');
+    if (statusElement) {
+        if (success) {
+            statusElement.innerHTML = '<span style="color: #00ff00;">✅ Supabase Connected</span>';
+        } else {
+            statusElement.innerHTML = '<span style="color: #ff3333;">❌ Supabase Disconnected</span>';
+        }
+    }
+}
+
+// Test Supabase connection by sending a test query
+async function testSupabaseConnection() {
+    addDiagnostic('Running Supabase connection test...');
+    
+    try {
+        if (!window.supabase) {
+            addDiagnostic('❌ Supabase client not available for test', true);
+            
+            if (window.MemoryanSupabase && window.MemoryanConfig && window.MemoryanConfig.supabase) {
+                const { url, anonKey } = window.MemoryanConfig.supabase;
+                
+                addDiagnostic('Attempting to initialize Supabase first...');
+                try {
+                    const client = await window.MemoryanSupabase.initialize(url, anonKey);
+                    window.supabase = client;
+                    addDiagnostic('✅ Successfully initialized Supabase');
+                } catch (error) {
+                    addDiagnostic(`❌ Failed to initialize Supabase: ${error.message}`, true);
+                    updateSupabaseStatus(false);
+                    return;
+                }
+            } else {
+                addDiagnostic('❌ Cannot initialize Supabase - missing loader or config', true);
+                updateSupabaseStatus(false);
+                return;
+            }
+        }
+        
+        // Run test query
+        const startTime = performance.now();
+        const { data, error } = await window.supabase
+            .from('website_analytics')
+            .select('count(*)', { count: 'exact' })
+            .limit(1);
+        const endTime = performance.now();
+        const queryTime = (endTime - startTime).toFixed(2);
+        
+        if (error) {
+            addDiagnostic(`❌ Test query failed: ${error.message}`, true);
+            updateSupabaseStatus(false);
+        } else {
+            const count = data ? data[0].count : 'unknown';
+            addDiagnostic(`✅ Test query successful (${queryTime}ms) - Analytics table has ${count} records`);
+            updateSupabaseStatus(true);
+            
+            // Check analytics after successful Supabase test
+            checkAnalyticsStatus();
+        }
+    } catch (error) {
+        addDiagnostic(`❌ Exception during test: ${error.message}`, true);
+        updateSupabaseStatus(false);
+    }
+}
+
+// Mask sensitive strings for display
+function maskString(str) {
+    if (!str) return 'undefined';
+    
+    if (str.length > 10) {
+        return str.substring(0, 4) + '...' + str.substring(str.length - 4);
+    }
+    
+    return str;
+} 
