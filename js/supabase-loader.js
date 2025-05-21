@@ -22,8 +22,11 @@ window.MemoryanSupabase = {
             await this.ensureSupabaseLoaded();
             
             // Create client
-            this.client = window.supabase.createClient(supabaseUrl, supabaseKey);
+            this.client = window.supabaseJs.createClient(supabaseUrl, supabaseKey);
             console.log('Supabase client initialized successfully');
+            
+            // Make client globally available
+            window.supabase = this.client;
             
             return this.client;
         } catch (error) {
@@ -39,8 +42,8 @@ window.MemoryanSupabase = {
     ensureSupabaseLoaded: function() {
         return new Promise((resolve, reject) => {
             // If Supabase is already available, resolve immediately
-            if (window.supabase) {
-                resolve(window.supabase);
+            if (window.supabaseJs) {
+                resolve(window.supabaseJs);
                 return;
             }
             
@@ -53,7 +56,9 @@ window.MemoryanSupabase = {
             script.onload = function() {
                 console.log('Supabase library loaded successfully');
                 if (window.supabase) {
-                    resolve(window.supabase);
+                    // Assign to supabaseJs to avoid conflicts
+                    window.supabaseJs = window.supabase;
+                    resolve(window.supabaseJs);
                 } else {
                     reject(new Error('Supabase loaded but global object not found'));
                 }
@@ -80,3 +85,22 @@ window.MemoryanSupabase = {
         return this.client;
     }
 }; 
+
+// Initialize Supabase when config is available
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('Checking for Supabase config...');
+    if (window.MemoryanConfig && window.MemoryanConfig.supabase) {
+        const { url, anonKey } = window.MemoryanConfig.supabase;
+        
+        if (url && anonKey) {
+            console.log('Supabase config found, initializing...');
+            window.MemoryanSupabase.initialize(url, anonKey)
+                .then(client => {
+                    console.log('Supabase initialized automatically on page load');
+                })
+                .catch(error => {
+                    console.error('Error initializing Supabase:', error);
+                });
+        }
+    }
+}); 
