@@ -17,6 +17,12 @@ class Analytics {
         this.pageLoadTime = Date.now();
         this.lastInteractionTime = Date.now();
         this.deviceInfo = this._collectDeviceInfo();
+        this.debug = true; // Enable debugging
+        this.eventQueue = [];
+        
+        // Debug logs
+        this._log('Analytics constructor called');
+        this._log(`Session ID: ${this.sessionId}`);
     }
 
     /**
@@ -39,29 +45,34 @@ class Analytics {
         this.supabaseKey = supabaseKey;
         
         try {
-            // Initialize Supabase if the loader is available
-            if (window.MemoryanSupabase) {
-                await window.MemoryanSupabase.initialize(supabaseUrl, supabaseKey);
-                console.log('Analytics using shared Supabase client');
+            this._log('Analytics init started');
+            // Make sure Supabase is loaded
+            if (window.supabase) {
+                this.isInitialized = true;
+                this._log('Supabase found, Analytics initialized successfully');
+                
+                // Process any queued events
+                await this._processQueue();
+                
+                // Track initial page visit
+                this.trackPageVisit();
+                
+                // Setup beforeunload event for session tracking
+                window.addEventListener('beforeunload', () => {
+                    this.trackSessionEnd();
+                });
+                
+                // Attach to all download buttons
+                this._attachToDownloadButtons();
+                
+                return true;
+            } else {
+                this._error('Supabase not found during initialization');
+                return false;
             }
-            
-            this.isInitialized = true;
-            
-            // Track page visit
-            this.trackEvent('page_visit');
-    
-            // Set up listeners
-            this._setupEventListeners();
-    
-            // Schedule periodic updates for session duration
-            this._scheduleDurationUpdates();
-    
-            // Setup beforeunload event to send final data
-            window.addEventListener('beforeunload', () => this._handleBeforeUnload());
-    
-            console.log('Analytics initialized successfully');
         } catch (error) {
-            console.error('Error initializing analytics:', error);
+            this._error('Error initializing analytics', error);
+            return false;
         }
     }
 
@@ -101,6 +112,326 @@ class Analytics {
     }
 
     /**
+     * Track a page visit
+     */
+    trackPageVisit() {
+        try {
+            this._log('Tracking page visit');
+            const eventData = {
+                event_type: 'page_visit',
+                page_url: window.location.href,
+                referrer: document.referrer || null,
+                time_on_page: 0,
+                platform: this._detectPlatform(),
+                screen_width: window.innerWidth,
+                screen_height: window.innerHeight,
+                user_language: navigator.language || navigator.userLanguage,
+                is_mobile: this._isMobile()
+            };
+            
+            this._log('Page visit data:', eventData);
+            this._trackEvent(eventData);
+        } catch (error) {
+            this._error('Error tracking page visit', error);
+        }
+    }
+    
+    /**
+     * Track a button click
+     * @param {HTMLElement} buttonElement The button that was clicked
+     */
+    trackButtonClick(buttonElement) {
+        try {
+            if (!buttonElement) {
+                this._error('Button element is null or undefined');
+                return;
+            }
+            
+            this._log('Tracking button click', buttonElement);
+            
+            // Extract button information
+            const buttonId = buttonElement.id || buttonElement.getAttribute('data-analytics') || 'unknown';
+            const buttonText = buttonElement.textContent || 'unknown';
+            
+            const eventData = {
+                event_type: 'button_click',
+                page_url: window.location.href,
+                platform: this._detectPlatform(),
+                is_mobile: this._isMobile(),
+                button_id: buttonId,
+                button_text: buttonText
+            };
+            
+            this._log('Button click data:', eventData);
+            this._trackEvent(eventData);
+        } catch (error) {
+            this._error('Error tracking button click', error);
+        }
+    }
+    
+    /**
+     * Track a download button click
+     * @param {HTMLElement} buttonElement The button that was clicked
+     */
+    trackDownloadClick(buttonElement) {
+        try {
+            if (!buttonElement) {
+                this._error('Download button element is null or undefined');
+                return;
+            }
+            
+            this._log('Tracking download click', buttonElement);
+            
+            // Extract platform information from button
+            const platform = buttonElement.getAttribute('data-platform') || 'unknown';
+            
+            const eventData = {
+                event_type: 'download_click',
+                page_url: window.location.href,
+                platform: this._detectPlatform(),
+                is_mobile: this._isMobile(),
+                button_id: buttonElement.id || `${platform}-download`,
+                button_text: buttonElement.textContent || 'Download'
+            };
+            
+            this._log('Download click data:', eventData);
+            this._trackEvent(eventData);
+        } catch (error) {
+            this._error('Error tracking download click', error);
+        }
+    }
+    
+    /**
+     * Track session end when user leaves the page
+     */
+    trackSessionEnd() {
+        try {
+            this._log('Tracking session end');
+            const sessionDuration = Math.floor((Date.now() - this.pageLoadTime) / 1000);
+            
+            const eventData = {
+                event_type: 'session_end',
+                page_url: window.location.href,
+                platform: this._detectPlatform(),
+                is_mobile: this._isMobile(),
+                duration_seconds: sessionDuration
+            };
+            
+            this._log('Session end data:', eventData);
+            this._trackEvent(eventData, true); // Force immediate send on page unload
+        } catch (error) {
+            this._error('Error tracking session end', error);
+        }
+    }
+    
+    /**
+     * Test function to manually trigger an event for debugging
+     */
+    testAnalytics() {
+        this._log('Running analytics test');
+        if (!this.isInitialized) {
+            this._log('Analytics not initialized, attempting to initialize now');
+            this.init(this.supabaseUrl, this.supabaseKey).then(success => {
+                if (success) {
+                    this._sendTestEvent();
+                } else {
+                    this._error('Failed to initialize analytics for test');
+                    alert('Analytics initialization failed. Check console for details.');
+                }
+            });
+        } else {
+            this._sendTestEvent();
+        }
+    }
+    
+    /**
+     * Send a test event to Supabase
+     * @private
+     */
+    _sendTestEvent() {
+        try {
+            const testEvent = {
+                event_type: 'test_event',
+                page_url: window.location.href,
+                referrer: 'test-referrer',
+                platform: this._detectPlatform(),
+                screen_width: window.innerWidth,
+                screen_height: window.innerHeight,
+                user_language: navigator.language,
+                is_mobile: this._isMobile(),
+                button_id: 'test-button',
+                button_text: 'Test Analytics'
+            };
+            
+            this._log('Sending test event:', testEvent);
+            
+            // Force immediate processing
+            this._trackEvent(testEvent, true).then(result => {
+                if (result) {
+                    this._log('Test event sent successfully');
+                    alert('Test event sent successfully! Check Supabase.');
+                } else {
+                    this._error('Test event failed to send');
+                    alert('Test event failed. Check console for details.');
+                }
+            });
+        } catch (error) {
+            this._error('Error sending test event', error);
+            alert(`Error: ${error.message}`);
+        }
+    }
+    
+    /**
+     * Private method to track an event
+     * @param {Object} eventData The event data to track
+     * @param {boolean} immediate Whether to send immediately (for beforeunload)
+     * @private
+     */
+    async _trackEvent(eventData, immediate = false) {
+        try {
+            // Add session ID to event data
+            const fullEventData = {
+                ...eventData,
+                session_id: this.sessionId
+            };
+            
+            this._log(`Preparing to track event: ${eventData.event_type}`, fullEventData);
+            
+            if (!this.isInitialized) {
+                this._log('Analytics not initialized, queueing event');
+                this.eventQueue.push(fullEventData);
+                return false;
+            }
+            
+            // If we need to send immediately (e.g., beforeunload)
+            if (immediate) {
+                this._log('Sending event immediately (bypassing rate limit)');
+                return await this._sendToSupabase(fullEventData);
+            }
+            
+            // Otherwise, use rate limiting
+            if (this.rateLimiter.canMakeRequest()) {
+                this._log('Rate limit allows request, sending event');
+                return await this._sendToSupabase(fullEventData);
+            } else {
+                this._log('Rate limited, queueing event');
+                this.eventQueue.push(fullEventData);
+                return false;
+            }
+        } catch (error) {
+            this._error('Error in _trackEvent', error);
+            return false;
+        }
+    }
+    
+    /**
+     * Send event data to Supabase
+     * @param {Object} eventData The event data to send
+     * @private
+     */
+    async _sendToSupabase(eventData) {
+        try {
+            if (!window.supabase) {
+                // Try to get client from MemoryanSupabase
+                if (window.MemoryanSupabase && window.MemoryanSupabase.client) {
+                    window.supabase = window.MemoryanSupabase.client;
+                    this._log('Retrieved Supabase client from MemoryanSupabase');
+                } else if (window.MemoryanConfig && window.MemoryanConfig.supabase) {
+                    // Try to initialize
+                    this._log('Trying to initialize Supabase client');
+                    const { url, anonKey } = window.MemoryanConfig.supabase;
+                    if (window.MemoryanSupabase) {
+                        try {
+                            const client = await window.MemoryanSupabase.initialize(url, anonKey);
+                            this._log('Successfully initialized Supabase client');
+                            window.supabase = client;
+                        } catch (initError) {
+                            this._error('Failed to initialize Supabase', initError);
+                            return false;
+                        }
+                    } else {
+                        this._error('MemoryanSupabase not available for initialization');
+                        return false;
+                    }
+                } else {
+                    this._error('Supabase client not found when sending data');
+                    return false;
+                }
+            }
+            
+            this._log('Sending to Supabase:', eventData);
+            
+            // Directly submit to Supabase
+            const { data, error } = await window.supabase
+                .from('website_analytics')
+                .insert(eventData)
+                .select();
+            
+            if (error) {
+                this._error('Supabase error when sending data', error);
+                return false;
+            }
+            
+            this._log('Successfully sent event to Supabase', data);
+            return true;
+        } catch (error) {
+            this._error('Exception when sending to Supabase', error);
+            return false;
+        }
+    }
+    
+    /**
+     * Process any queued events
+     * @private
+     */
+    async _processQueue() {
+        if (this.eventQueue.length === 0) {
+            this._log('No events in queue to process');
+            return;
+        }
+        
+        this._log(`Processing queue of ${this.eventQueue.length} events`);
+        
+        // Clone and clear the queue
+        const queueToProcess = [...this.eventQueue];
+        this.eventQueue = [];
+        
+        // Process each event
+        for (const eventData of queueToProcess) {
+            if (this.rateLimiter.canMakeRequest()) {
+                this._log('Processing queued event', eventData);
+                await this._sendToSupabase(eventData);
+            } else {
+                this._log('Rate limit hit while processing queue, re-queueing event');
+                this.eventQueue.push(eventData);
+                break;
+            }
+        }
+    }
+    
+    /**
+     * Attach event listeners to download buttons
+     * @private
+     */
+    _attachToDownloadButtons() {
+        try {
+            this._log('Attaching to download buttons');
+            const downloadButtons = document.querySelectorAll('.download-button');
+            
+            this._log(`Found ${downloadButtons.length} download buttons`);
+            
+            downloadButtons.forEach(button => {
+                button.addEventListener('click', (e) => {
+                    this._log('Download button clicked', e.target);
+                    this.trackDownloadClick(e.target);
+                });
+            });
+        } catch (error) {
+            this._error('Error attaching to download buttons', error);
+        }
+    }
+
+    /**
      * Generate a unique session ID
      * @private
      */
@@ -127,141 +458,55 @@ class Analytics {
     }
 
     /**
-     * Set up event listeners for tracked interactions
+     * Detect the user's platform
+     * @returns {string} The detected platform
      * @private
      */
-    _setupEventListeners() {
-        // Track download button clicks
-        document.querySelectorAll('.download-button, [data-analytics="download"]').forEach(button => {
-            button.addEventListener('click', () => {
-                this.trackEvent('download_click', {
-                    button_id: button.id || null,
-                    button_text: button.textContent.trim(),
-                    platform: button.getAttribute('data-platform') || 'unknown'
-                });
-            });
-        });
-
-        // Track page scrolling activity
-        let lastScrollPosition = 0;
-        window.addEventListener('scroll', () => {
-            const currentScrollPosition = window.scrollY;
-            if (Math.abs(currentScrollPosition - lastScrollPosition) > 100) {
-                this.lastInteractionTime = Date.now();
-                lastScrollPosition = currentScrollPosition;
-            }
-        }, { passive: true });
-
-        // Track user interaction to keep session alive
-        ['click', 'touchstart', 'mousemove'].forEach(eventType => {
-            window.addEventListener(eventType, () => {
-                this.lastInteractionTime = Date.now();
-            }, { passive: true });
-        });
+    _detectPlatform() {
+        const ua = navigator.userAgent.toLowerCase();
+        
+        if (ua.indexOf('android') > -1) return 'android';
+        if (ua.indexOf('iphone') > -1 || ua.indexOf('ipad') > -1 || ua.indexOf('ipod') > -1) return 'ios';
+        if (ua.indexOf('windows') > -1) return 'windows';
+        if (ua.indexOf('mac os x') > -1) return 'mac';
+        if (ua.indexOf('linux') > -1) return 'linux';
+        
+        return 'unknown';
     }
-
+    
     /**
-     * Schedule updates to track session duration
+     * Check if the user is on a mobile device
+     * @returns {boolean} Whether the user is on a mobile device
      * @private
      */
-    _scheduleDurationUpdates() {
-        // Update session duration every minute
-        setInterval(() => {
-            // Check if user is still active (within last 5 minutes)
-            const inactiveTime = Date.now() - this.lastInteractionTime;
-            const isSessionActive = inactiveTime < 5 * 60 * 1000; // 5 minutes
-            
-            if (isSessionActive) {
-                this.trackEvent('session_heartbeat', {
-                    duration_seconds: Math.floor((Date.now() - this.pageLoadTime) / 1000)
-                });
-            }
-        }, 60 * 1000); // Every minute
+    _isMobile() {
+        return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
     }
-
+    
     /**
-     * Handle before unload event to send final analytics
+     * Log a debug message
+     * @param {string} message The message to log
+     * @param {*} data Optional data to log
      * @private
      */
-    _handleBeforeUnload() {
-        // Create final session event
-        const finalEvent = {
-            session_id: this.sessionId,
-            event_type: 'session_end',
-            timestamp: new Date().toISOString(),
-            duration_seconds: Math.floor((Date.now() - this.pageLoadTime) / 1000),
-            page_url: window.location.href,
-            ...this.deviceInfo
-        };
-        
-        this.events.push(finalEvent);
-        
-        // Send events synchronously
-        this._sendEventsSynchronously();
-    }
-
-    /**
-     * Send queued events to Supabase
-     * @private
-     */
-    async _sendEvents() {
-        // Don't send if already submitting or no events
-        if (this.isSubmitting || this.events.length === 0 || !this.isInitialized) return;
-        
-        // Check rate limiter
-        if (!this.rateLimiter.canMakeRequest()) {
-            console.warn('Analytics rate limit reached, will retry later');
-            return;
-        }
-        
-        this.isSubmitting = true;
-        const eventsToSend = [...this.events];
-        this.events = [];
-        
-        try {
-            const response = await fetch(`${this.supabaseUrl}/rest/v1/website_analytics`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'apikey': this.supabaseKey,
-                    'Prefer': 'return=minimal'
-                },
-                body: JSON.stringify(eventsToSend)
-            });
-            
-            if (!response.ok) {
-                throw new Error(`Analytics submission failed: ${response.status}`);
+    _log(message, data) {
+        if (this.debug) {
+            if (data) {
+                console.log(`📊 Analytics: ${message}`, data);
+            } else {
+                console.log(`📊 Analytics: ${message}`);
             }
-            
-            console.log(`Successfully sent ${eventsToSend.length} analytics events`);
-        } catch (error) {
-            console.error('Error sending analytics data:', error);
-            // Put events back in queue for retry
-            this.events = [...eventsToSend, ...this.events];
-        } finally {
-            this.isSubmitting = false;
         }
     }
-
+    
     /**
-     * Send events synchronously (for beforeunload)
+     * Log an error message
+     * @param {string} message The error message
+     * @param {Error} error Optional error object
      * @private
      */
-    _sendEventsSynchronously() {
-        if (this.events.length === 0 || !this.isInitialized) return;
-
-        // Use sendBeacon API for reliable delivery during page unload
-        if (navigator.sendBeacon) {
-            const blob = new Blob([JSON.stringify(this.events)], { type: 'application/json' });
-            navigator.sendBeacon(`${this.supabaseUrl}/rest/v1/website_analytics`, blob);
-        } else {
-            // Fallback to synchronous XHR
-            const xhr = new XMLHttpRequest();
-            xhr.open('POST', `${this.supabaseUrl}/rest/v1/website_analytics`, false);
-            xhr.setRequestHeader('Content-Type', 'application/json');
-            xhr.setRequestHeader('apikey', this.supabaseKey);
-            xhr.send(JSON.stringify(this.events));
-        }
+    _error(message, error) {
+        console.error(`❌ Analytics Error: ${message}`, error || '');
     }
 }
 
