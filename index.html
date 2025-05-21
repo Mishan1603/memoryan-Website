@@ -483,17 +483,19 @@
     <script src="js/analytics.js"></script>
     <script src="js/main.js"></script>
     
-    <!-- Cookie Consent Dialog (will be added by JavaScript) -->
-    <div id="cookie-consent" class="cookie-consent glass-panel">
-        <div class="cookie-content">
-            <h3>We Use Cookies</h3>
+    <!-- Cookie Consent Dialog -->
+<section id="cookie-consent" class="cookie-consent glass-panel" role="region" aria-labelledby="cookie-heading">
+    <div class="cookie-content">
+        <div class="cookie-text">
+            <h3 id="cookie-heading">We Use Cookies</h3>
             <p>We use cookies to enhance your browsing experience, analyze site traffic, and gather website performance and usage information. By clicking "Accept", you consent to the use of cookies.</p>
-            <div class="cookie-buttons">
-                <button id="accept-cookies" class="store-button">Accept</button>
-                <button id="more-cookies" class="neomorphic-button">Cookie Policy</button>
-            </div>
+        </div>
+        <div class="cookie-buttons">
+            <button id="accept-cookies" class="store-button" aria-label="Accept cookies">Accept</button>
+            <button id="more-cookies" class="neomorphic-button" aria-label="Learn more about our cookie policy">Cookie Policy</button>
         </div>
     </div>
+</section>
     
     <!-- Email Clipboard Copy Script -->
     <script>
