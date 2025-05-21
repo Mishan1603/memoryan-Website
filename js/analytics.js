@@ -4,7 +4,8 @@
  * Securely sends data to Supabase
  */
 
-class Analytics {
+// Make sure the Analytics class is accessible globally
+window.Analytics = class Analytics {
     constructor() {
         this.supabaseUrl = null;
         this.supabaseKey = null;
@@ -512,4 +513,66 @@ class Analytics {
 
 // Create global analytics instance
 window.Memoryan = window.Memoryan || {};
-window.Memoryan.Analytics = new Analytics(); 
+window.Memoryan.Analytics = new Analytics();
+
+// Automatically initialize analytics when config is available
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('📊 Analytics: DOM loaded, checking for config...');
+    
+    // Add test button to page for debugging
+    const footer = document.querySelector('footer');
+    if (footer) {
+        // Create test button
+        const testButton = document.createElement('button');
+        testButton.id = 'test-analytics-button';
+        testButton.textContent = 'Test Analytics';
+        testButton.style.position = 'fixed';
+        testButton.style.bottom = '10px';
+        testButton.style.right = '10px';
+        testButton.style.zIndex = '9999';
+        testButton.style.padding = '8px 12px';
+        testButton.style.backgroundColor = 'rgba(0, 128, 255, 0.8)';
+        testButton.style.color = 'white';
+        testButton.style.border = 'none';
+        testButton.style.borderRadius = '4px';
+        testButton.style.cursor = 'pointer';
+        testButton.style.fontFamily = 'Lato, sans-serif';
+        testButton.style.fontSize = '14px';
+        testButton.style.boxShadow = '0 2px 5px rgba(0,0,0,0.2)';
+        
+        // Add click event
+        testButton.addEventListener('click', () => {
+            if (window.Memoryan && window.Memoryan.Analytics) {
+                window.Memoryan.Analytics.testAnalytics();
+            } else {
+                console.error('❌ Analytics object not found');
+                alert('Analytics object not found');
+            }
+        });
+        
+        // Add to page
+        document.body.appendChild(testButton);
+        console.log('📊 Analytics: Test button added to page');
+    }
+    
+    // Initialize analytics if config is available
+    if (window.MemoryanConfig && window.MemoryanConfig.analytics && window.MemoryanConfig.analytics.enabled) {
+        console.log('📊 Analytics: Config found, auto-initializing...');
+        
+        if (window.Memoryan && window.Memoryan.Analytics) {
+            window.Memoryan.Analytics.init(
+                window.MemoryanConfig.supabase.url, 
+                window.MemoryanConfig.supabase.anonKey
+            ).then(success => {
+                console.log('📊 Analytics: Auto-initialization ' + (success ? 'successful' : 'failed'));
+                
+                // Create global window.analytics for compatibility with existing code
+                window.analytics = window.Memoryan.Analytics;
+            });
+        } else {
+            console.error('❌ Analytics: Memoryan.Analytics not available');
+        }
+    } else {
+        console.log('📊 Analytics: Config not found or analytics disabled');
+    }
+}); 
