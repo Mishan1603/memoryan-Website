@@ -12,6 +12,26 @@ document.addEventListener('DOMContentLoaded', function() {
                 window.MemoryanConfig.supabase.anonKey
             );
         }
+    } else {
+        // Fallback analytics initialization - ensures analytics runs even if objects weren't created properly
+        console.log('📊 Main.js: Using fallback analytics initialization');
+        if (window.MemoryanConfig && window.MemoryanConfig.analytics && window.MemoryanConfig.analytics.enabled) {
+            // Create analytics directly
+            setTimeout(function() {
+                if (typeof Analytics === 'function') {
+                    window.Memoryan = window.Memoryan || {};
+                    window.Memoryan.Analytics = new Analytics();
+                    window.Memoryan.Analytics.init(
+                        window.MemoryanConfig.supabase.url,
+                        window.MemoryanConfig.supabase.anonKey
+                    ).then(success => {
+                        console.log('📊 Main.js: Fallback analytics initialization ' + (success ? 'successful' : 'failed'));
+                    });
+                } else {
+                    console.error('❌ Main.js: Analytics class not available for fallback initialization');
+                }
+            }, 1000);
+        }
     }
     
     // GLOBAL FIX: Protect flip cards from ANY external mouse effects
@@ -372,7 +392,7 @@ document.addEventListener('DOMContentLoaded', function() {
         console.log("🔄 Running fixSwiperTranslations");
         // Get all slides including duplicates
         const allSlides = document.querySelectorAll('.swiper-slide');
-        console.log(`�� Found ${allSlides.length} swiper slides to translate`);
+        console.log(`🔍 Found ${allSlides.length} swiper slides to translate`);
         
         // Current language for debugging
         const currentLang = window.i18n ? window.i18n.getCurrentLanguage() : 'en';
