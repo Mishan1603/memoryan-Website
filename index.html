@@ -393,12 +393,107 @@
     <script src="https://cdn.jsdelivr.net/npm/swiper@9/swiper-bundle.min.js"></script>
     <script src="js/i18n.js"></script>
     <script src="js/rate-limiter.js"></script>
-    <!-- Analytics and Configuration -->
+    
+    <!-- Correct loading order for analytics -->
     <script src="js/config.js"></script>
     <script src="js/supabase-loader.js"></script>
+    <script>
+        // Ensure Supabase is fully loaded before initializing analytics
+        let supabaseInitAttempts = 0;
+        const maxInitAttempts = 20;
+        
+        function waitForSupabase() {
+            supabaseInitAttempts++;
+            console.log(`Waiting for Supabase (attempt ${supabaseInitAttempts}/${maxInitAttempts})`);
+            
+            if (window.supabase) {
+                console.log('Supabase detected, proceeding with analytics initialization');
+                initializeAnalytics();
+                return;
+            }
+            
+            if (supabaseInitAttempts >= maxInitAttempts) {
+                console.error('Failed to initialize Supabase after maximum attempts');
+                // Try one last time with direct initialization
+                if (window.MemoryanSupabase && window.MemoryanConfig && window.MemoryanConfig.supabase) {
+                    const { url, anonKey } = window.MemoryanConfig.supabase;
+                    window.MemoryanSupabase.initialize(url, anonKey)
+                        .then(client => {
+                            console.log('Last attempt to initialize Supabase succeeded');
+                            window.supabase = client;
+                            initializeAnalytics();
+                        })
+                        .catch(error => console.error('Final Supabase init failed:', error));
+                }
+                return;
+            }
+            
+            // Try initialization if possible
+            if (window.MemoryanSupabase && window.MemoryanConfig && window.MemoryanConfig.supabase) {
+                const { url, anonKey } = window.MemoryanConfig.supabase;
+                window.MemoryanSupabase.initialize(url, anonKey)
+                    .then(client => {
+                        console.log('Successfully initialized Supabase via loader');
+                        window.supabase = client;
+                        initializeAnalytics();
+                    })
+                    .catch(error => {
+                        console.error('Failed to initialize Supabase:', error);
+                        // Retry after a delay
+                        setTimeout(waitForSupabase, 250);
+                    });
+            } else {
+                // Check again after a short delay
+                setTimeout(waitForSupabase, 250);
+            }
+        }
+        
+        function initializeAnalytics() {
+            if (window.Memoryan && window.Memoryan.Analytics) {
+                console.log('Initializing Memoryan.Analytics...');
+                if (window.MemoryanConfig && window.MemoryanConfig.supabase) {
+                    const { url, anonKey } = window.MemoryanConfig.supabase;
+                    window.Memoryan.Analytics.init(url, anonKey)
+                        .then(success => {
+                            console.log('Analytics initialization ' + (success ? 'successful' : 'failed'));
+                            
+                            // Force re-attach to download buttons for reliability
+                            if (success && window.Memoryan.Analytics._attachToDownloadButtons) {
+                                setTimeout(() => {
+                                    window.Memoryan.Analytics._attachToDownloadButtons();
+                                    console.log('Re-attached to download buttons');
+                                }, 500);
+                            }
+                            
+                            // Bridge objects for compatibility
+                            window.analytics = window.Memoryan.Analytics;
+                        });
+                }
+            } else {
+                console.error('Memoryan.Analytics not available');
+            }
+        }
+        
+        // Start initialization process on page load
+        window.addEventListener('load', function() {
+            console.log('Page loaded, starting Supabase initialization');
+            waitForSupabase();
+        });
+    </script>
     <script src="js/analytics.js"></script>
-    <script src="js/supabase-debug.js"></script>
     <script src="js/main.js"></script>
+    
+    <!-- Cookie Consent Dialog (will be added by JavaScript) -->
+    <div id="cookie-consent" class="cookie-consent glass-panel">
+        <div class="cookie-content">
+            <h3>We Use Cookies</h3>
+            <p>We use cookies to enhance your browsing experience, analyze site traffic, and gather website performance and usage information. By clicking "Accept", you consent to the use of cookies.</p>
+            <div class="cookie-buttons">
+                <button id="accept-cookies" class="store-button">Accept</button>
+                <button id="more-cookies" class="neomorphic-button">Cookie Policy</button>
+            </div>
+        </div>
+    </div>
     
     <!-- Email Clipboard Copy Script -->
     <script>
@@ -423,6 +518,7 @@
             // Show success message
             const currentLanguage = window.i18n && window.i18n.getCurrentLanguage ? window.i18n.getCurrentLanguage() : 'en';
             copyMessage.style.opacity = 1;
+            copyMessage.textContent = window.i18n && window.i18n.t ? window.i18n.t('common.copied') : 'Copied!';
             setTimeout(() => {
                 copyMessage.style.opacity = 0;
             }, 2000);
