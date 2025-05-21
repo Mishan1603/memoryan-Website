@@ -151,15 +151,73 @@ function runDiagnostics() {
     
     // Check analytics
     if (window.analytics) {
-        addDiagnostic('Analytics object found');
+        addDiagnostic('Analytics object (window.analytics) found');
         
         if (window.analytics.isInitialized) {
             addDiagnostic('Analytics is initialized');
         } else {
             addDiagnostic('Analytics not initialized!', true);
         }
+    } else if (window.Memoryan && window.Memoryan.Analytics) {
+        addDiagnostic('Analytics object (Memoryan.Analytics) found');
+        
+        if (window.Memoryan.Analytics.isInitialized) {
+            addDiagnostic('Analytics is initialized');
+            
+            // Assign to window.analytics for compatibility
+            window.analytics = window.Memoryan.Analytics;
+            addDiagnostic('Set window.analytics = Memoryan.Analytics for compatibility');
+        } else {
+            addDiagnostic('Analytics not initialized!', true);
+            
+            // Try to initialize
+            if (window.MemoryanConfig && window.MemoryanConfig.supabase) {
+                const { url, anonKey } = window.MemoryanConfig.supabase;
+                addDiagnostic('Attempting to initialize analytics...');
+                
+                window.Memoryan.Analytics.init(url, anonKey)
+                    .then(success => {
+                        if (success) {
+                            addDiagnostic('Successfully initialized analytics');
+                            window.analytics = window.Memoryan.Analytics;
+                        } else {
+                            addDiagnostic('Failed to initialize analytics', true);
+                        }
+                    })
+                    .catch(error => {
+                        addDiagnostic(`Error initializing analytics: ${error.message}`, true);
+                    });
+            }
+        }
     } else {
-        addDiagnostic('Analytics object not found!', true);
+        addDiagnostic('Analytics objects not found!', true);
+        
+        // Check if Analytics class is available
+        if (typeof Analytics === 'function') {
+            addDiagnostic('Analytics class is available, creating instance...');
+            
+            // Create new Analytics instance
+            window.Memoryan = window.Memoryan || {};
+            window.Memoryan.Analytics = new Analytics();
+            window.analytics = window.Memoryan.Analytics;
+            
+            // Try to initialize
+            if (window.MemoryanConfig && window.MemoryanConfig.supabase) {
+                const { url, anonKey } = window.MemoryanConfig.supabase;
+                
+                window.Memoryan.Analytics.init(url, anonKey)
+                    .then(success => {
+                        if (success) {
+                            addDiagnostic('Successfully created and initialized analytics');
+                        } else {
+                            addDiagnostic('Failed to initialize analytics', true);
+                        }
+                    })
+                    .catch(error => {
+                        addDiagnostic(`Error initializing analytics: ${error.message}`, true);
+                    });
+            }
+        }
     }
 }
 
