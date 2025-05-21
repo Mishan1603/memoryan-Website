@@ -4,35 +4,128 @@ document.addEventListener('DOMContentLoaded', function() {
         window.i18n.init();
     }
     
-    // Initialize analytics if available and enabled
-    if (window.Memoryan && window.Memoryan.Analytics && window.MemoryanConfig) {
-        if (window.MemoryanConfig.analytics.enabled) {
-            window.Memoryan.Analytics.init(
-                window.MemoryanConfig.supabase.url,
-                window.MemoryanConfig.supabase.anonKey
-            );
+    // Cookie Consent Management
+    const setupCookieConsent = () => {
+        const cookieConsent = document.getElementById('cookie-consent');
+        const acceptCookiesBtn = document.getElementById('accept-cookies');
+        const moreCookiesBtn = document.getElementById('more-cookies');
+        
+        // Check if user has already consented
+        const hasConsented = localStorage.getItem('cookieConsent') === 'true';
+        
+        // Show consent dialog if not already consented
+        if (!hasConsented && cookieConsent) {
+            // Prepare the initial state - hidden below viewport
+            cookieConsent.style.transform = 'translateY(100%)';
+            cookieConsent.style.display = 'block';
+            cookieConsent.style.opacity = '0';
+            cookieConsent.style.transition = 'transform 0.5s ease-out, opacity 0.5s ease-out';
+            
+            // Show with slight delay for better UX
+            setTimeout(() => {
+                // Force a layout reflow to ensure the animation works
+                void cookieConsent.offsetWidth;
+                
+                // Animate up from bottom
+                cookieConsent.style.transform = 'translateY(0)';
+                cookieConsent.style.opacity = '1';
+            }, 1500);
+            
+            // Handle accept button click
+            if (acceptCookiesBtn) {
+                acceptCookiesBtn.addEventListener('click', () => {
+                    // Save consent in localStorage
+                    localStorage.setItem('cookieConsent', 'true');
+                    
+                    // Animate down and fade out
+                    cookieConsent.style.transform = 'translateY(100%)';
+                    cookieConsent.style.opacity = '0';
+                    
+                    // Remove from DOM after animation completes
+                    setTimeout(() => {
+                        cookieConsent.style.display = 'none';
+                    }, 500);
+                    
+                    // Initialize analytics after consent
+                    initializeAnalyticsWithConsent();
+                });
+            }
+            
+            // Handle more info button click
+            if (moreCookiesBtn) {
+                moreCookiesBtn.addEventListener('click', () => {
+                    // Show privacy policy modal if it exists
+                    const privacyModal = document.getElementById('privacy-modal');
+                    if (privacyModal) {
+                        privacyModal.style.display = 'flex';
+                        document.body.style.overflow = 'hidden'; // Prevent scrolling
+                    } else {
+                        // Fallback if modal doesn't exist
+                        window.open('privacy-policy.html', '_blank');
+                    }
+                });
+            }
+        } else {
+            // User has already consented, initialize analytics
+            initializeAnalyticsWithConsent();
         }
-    } else {
-        // Fallback analytics initialization - ensures analytics runs even if objects weren't created properly
-        console.log('📊 Main.js: Using fallback analytics initialization');
-        if (window.MemoryanConfig && window.MemoryanConfig.analytics && window.MemoryanConfig.analytics.enabled) {
-            // Create analytics directly
-            setTimeout(function() {
-                if (typeof Analytics === 'function') {
-                    window.Memoryan = window.Memoryan || {};
-                    window.Memoryan.Analytics = new Analytics();
-                    window.Memoryan.Analytics.init(
-                        window.MemoryanConfig.supabase.url,
-                        window.MemoryanConfig.supabase.anonKey
-                    ).then(success => {
-                        console.log('📊 Main.js: Fallback analytics initialization ' + (success ? 'successful' : 'failed'));
-                    });
-                } else {
-                    console.error('❌ Main.js: Analytics class not available for fallback initialization');
-                }
-            }, 1000);
+    };
+    
+    // Initialize analytics only after consent
+    const initializeAnalyticsWithConsent = () => {
+        // Initialize analytics if available and enabled
+        if (window.Memoryan && window.Memoryan.Analytics && window.MemoryanConfig) {
+            if (window.MemoryanConfig.analytics.enabled) {
+                console.log('📊 Initializing analytics with consent...');
+                window.Memoryan.Analytics.init(
+                    window.MemoryanConfig.supabase.url,
+                    window.MemoryanConfig.supabase.anonKey
+                ).then(success => {
+                    if (success) {
+                        console.log('Analytics initialized successfully');
+                        // Verify connection silently
+                        setTimeout(() => {
+                            if (window.Memoryan.Analytics._verifyAnalyticsConnection) {
+                                window.Memoryan.Analytics._verifyAnalyticsConnection()
+                                    .then(verified => {
+                                        console.log(`Analytics connection ${verified ? 'verified' : 'could not be verified'}`);
+                                    });
+                            }
+                        }, 2000); // Wait 2 seconds to ensure everything is ready
+                    }
+                });
+            }
+        } else {
+            // Fallback analytics initialization - ensures analytics runs even if objects weren't created properly
+            console.log('📊 Main.js: Using fallback analytics initialization');
+            if (window.MemoryanConfig && window.MemoryanConfig.analytics && window.MemoryanConfig.analytics.enabled) {
+                // Create analytics directly
+                setTimeout(function() {
+                    if (typeof Analytics === 'function') {
+                        window.Memoryan = window.Memoryan || {};
+                        window.Memoryan.Analytics = new Analytics();
+                        window.Memoryan.Analytics.init(
+                            window.MemoryanConfig.supabase.url,
+                            window.MemoryanConfig.supabase.anonKey
+                        ).then(success => {
+                            console.log('📊 Main.js: Fallback analytics initialization ' + (success ? 'successful' : 'failed'));
+                            // Verify connection for fallback method too
+                            if (success && window.Memoryan.Analytics._verifyAnalyticsConnection) {
+                                setTimeout(() => {
+                                    window.Memoryan.Analytics._verifyAnalyticsConnection();
+                                }, 2000);
+                            }
+                        });
+                    } else {
+                        console.error('❌ Main.js: Analytics class not available for fallback initialization');
+                    }
+                }, 1000);
+            }
         }
-    }
+    };
+    
+    // Run cookie consent setup
+    setupCookieConsent();
     
     // GLOBAL FIX: Protect flip cards from ANY external mouse effects
     // Must run before any other code
