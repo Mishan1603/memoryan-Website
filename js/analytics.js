@@ -20,10 +20,108 @@ window.Analytics = class Analytics {
         this.deviceInfo = this._collectDeviceInfo();
         this.debug = true; // Enable debugging
         this.eventQueue = [];
+        this.initializationAttempts = 0;
+        this.maxInitializationAttempts = 20; // Maximum number of attempts (10 seconds with 500ms interval)
+        this.isInitializing = false; // Flag to prevent multiple simultaneous initialization attempts
+        this.liveStatsCallbacks = []; // Callbacks for live stats updates
+        this.sessionHeartbeatInterval = null; // Interval for sending session heartbeats
+        this.sessionActive = true; // Flag to track if session is active
+        this.lastVisibilityChangeTime = null; // Added for visibility change tracking
+        this.lastStatsRefresh = Date.now(); // Added for real-time stats tracking
         
         // Debug logs
         this._log('Analytics constructor called');
         this._log(`Session ID: ${this.sessionId}`);
+        
+        // Set up visibility change listener for better session tracking
+        this._setupVisibilityListener();
+    }
+
+    /**
+     * Set up page visibility listener for better session tracking
+     * @private
+     */
+    _setupVisibilityListener() {
+        try {
+            document.addEventListener('visibilitychange', () => {
+                if (document.visibilityState === 'hidden') {
+                    this._log('Page hidden, marking time and considering session pause');
+                    this.lastInteractionTime = Date.now();
+                    
+                    // Send "page_blur" event to mark when user navigated away
+                    if (this.isInitialized) {
+                        const eventData = {
+                            event_type: 'page_blur',
+                            time_on_page: Date.now() - this.pageLoadTime,
+                            page_url: window.location.href
+                        };
+                        this._trackEvent(eventData, true); // Send immediately
+                    }
+                } else if (document.visibilityState === 'visible') {
+                    this._log('Page visible again, resuming session tracking');
+                    
+                    // When page comes back to visibility, update metrics
+                    // This handles cases like tab switching without full page unload
+                    if (this.isInitialized) {
+                        const eventData = {
+                            event_type: 'page_focus',
+                            time_on_page: Date.now() - this.pageLoadTime,
+                            page_url: window.location.href
+                        };
+                        this._trackEvent(eventData);
+                        
+                        // Refresh live stats
+                        this._fetchLiveStats();
+                    }
+                }
+            });
+            
+            // Also set up beforeunload for true page exits
+            window.addEventListener('beforeunload', () => {
+                this.trackSessionEnd();
+            });
+            
+            // Setup heartbeat mechanism for better session tracking
+            this._setupSessionHeartbeat();
+        } catch (error) {
+            this._error('Error setting up visibility listener', error);
+        }
+    }
+
+    /**
+     * Set up session heartbeat for accurate session tracking
+     * @private
+     */
+    _setupSessionHeartbeat() {
+        // Clear any existing heartbeat
+        if (this.sessionHeartbeatInterval) {
+            clearInterval(this.sessionHeartbeatInterval);
+        }
+        
+        // Set heartbeat interval (every 30 seconds)
+        const heartbeatInterval = 30000; // 30 seconds
+        
+        this.sessionHeartbeatInterval = setInterval(() => {
+            if (this.isInitialized && this.sessionActive && document.visibilityState === 'visible') {
+                const timeSinceLastInteraction = Date.now() - this.lastInteractionTime;
+                
+                // Update last interaction time to keep session active
+                this.lastInteractionTime = Date.now();
+                
+                // Send heartbeat event if session is active and page is visible
+                const eventData = {
+                    event_type: 'session_heartbeat',
+                    time_on_page: Date.now() - this.pageLoadTime,
+                    idle_time: timeSinceLastInteraction,
+                    page_url: window.location.href
+                };
+                
+                this._trackEvent(eventData);
+                this._log(`Sending session heartbeat (idle: ${Math.round(timeSinceLastInteraction/1000)}s)`);
+            }
+        }, heartbeatInterval);
+        
+        this._log(`Session heartbeat set up (interval: ${heartbeatInterval}ms)`);
     }
 
     /**
@@ -32,13 +130,33 @@ window.Analytics = class Analytics {
      * @param {string} supabaseKey - Supabase anonymous key
      */
     async init(supabaseUrl, supabaseKey) {
+        // If already initialized, return immediately
         if (this.isInitialized) {
-            console.warn('Analytics already initialized');
+            this._log('Analytics already initialized');
             return true;
         }
 
+        // If initialization is in progress, wait for it
+        if (this.isInitializing) {
+            this._log('Initialization already in progress, waiting...');
+            // Wait for current initialization to finish
+            for (let i = 0; i < 20; i++) { // Wait up to 2 seconds
+                await new Promise(resolve => setTimeout(resolve, 100));
+                if (this.isInitialized) {
+                    this._log('Analytics became initialized while waiting');
+                    return true;
+                }
+            }
+            this._log('Timed out waiting for existing initialization to complete');
+            return false;
+        }
+
+        this.isInitializing = true;
+        this.initializationAttempts++;
+
         if (!supabaseUrl || !supabaseKey) {
-            console.error('Missing Supabase credentials for analytics');
+            this._error('Missing Supabase credentials for analytics');
+            this.isInitializing = false;
             return false;
         }
 
@@ -46,7 +164,7 @@ window.Analytics = class Analytics {
         this.supabaseKey = supabaseKey;
         
         try {
-            this._log('Analytics init started');
+            this._log(`Analytics init started (attempt ${this.initializationAttempts}/${this.maxInitializationAttempts})`);
             
             // Get or initialize Supabase client
             let supabaseClient = null;
@@ -64,16 +182,45 @@ window.Analytics = class Analytics {
                     this._log('Successfully initialized Supabase client');
                 } catch (supabaseError) {
                     this._error('Error initializing Supabase client', supabaseError);
+                    
+                    // Retry initialization if we haven't exceeded max attempts
+                    if (this.initializationAttempts < this.maxInitializationAttempts) {
+                        this.isInitializing = false;
+                        // Retry with exponential backoff (500ms, 1000ms, 1500ms, etc.)
+                        const delay = Math.min(500 * this.initializationAttempts, 2000);
+                        this._log(`Retrying initialization in ${delay}ms...`);
+                        setTimeout(() => {
+                            this.init(supabaseUrl, supabaseKey);
+                        }, delay);
+                    } else {
+                        this._error(`Failed to initialize after ${this.maxInitializationAttempts} attempts`);
+                        this.isInitializing = false;
+                    }
                     return false;
                 }
             } else {
-                this._error('No method available to initialize Supabase - missing both window.supabase and MemoryanSupabase');
-                return false;
+                // Last resort - try to use ensureSupabaseInitialized helper if available
+                if (window.ensureSupabaseInitialized) {
+                    try {
+                        this._log('Attempting to initialize via ensureSupabaseInitialized');
+                        supabaseClient = await window.ensureSupabaseInitialized();
+                        this._log('Successfully initialized Supabase via helper');
+                    } catch (helperError) {
+                        this._error('Helper initialization failed', helperError);
+                    }
+                }
+                
+                if (!supabaseClient) {
+                    this._error('No method available to initialize Supabase');
+                    this.isInitializing = false;
+                    return false;
+                }
             }
             
             // Verify we have a valid client
             if (!supabaseClient) {
                 this._error('Failed to get valid Supabase client');
+                this.isInitializing = false;
                 return false;
             }
             
@@ -82,7 +229,14 @@ window.Analytics = class Analytics {
             
             // Mark as initialized only after we confirm Supabase is available
             this.isInitialized = true;
+            this.isInitializing = false;
             this._log('Analytics initialized successfully');
+            
+            // Create bridge between window.analytics and window.Memoryan.Analytics
+            if (window.analytics !== this) {
+                window.analytics = this;
+                this._log('Created bridge: window.analytics → window.Memoryan.Analytics');
+            }
             
             // Process any queued events
             await this._processQueue();
@@ -90,18 +244,224 @@ window.Analytics = class Analytics {
             // Track initial page visit
             this.trackPageVisit();
             
-            // Setup beforeunload event for session tracking
+            // Attach to all download buttons
+            this._attachToDownloadButtons();
+            
+            // Start periodic live stats updates
+            this._startLiveStatsUpdates();
+            
+            // Reset page load time to now to ensure accurate time tracking
+            this.pageLoadTime = Date.now();
+            this.lastInteractionTime = Date.now();
+            this.sessionActive = true;
+            
+            // Set up beforeunload and unload event listeners for better session_end tracking
             window.addEventListener('beforeunload', () => {
                 this.trackSessionEnd();
             });
             
-            // Attach to all download buttons
-            this._attachToDownloadButtons();
+            window.addEventListener('unload', () => {
+                this.trackSessionEnd();
+            });
+            
+            // Also track visibility change for better session tracking
+            document.addEventListener('visibilitychange', () => {
+                if (document.visibilityState === 'hidden') {
+                    // Don't end the session, but record the time for accurate duration
+                    this.lastVisibilityChangeTime = Date.now();
+                } else if (document.visibilityState === 'visible' && this.lastVisibilityChangeTime) {
+                    // Update page load time when coming back to adjust for time away
+                    const timeAway = Date.now() - this.lastVisibilityChangeTime;
+                    if (timeAway > 30000) { // If away for more than 30 seconds
+                        this.pageLoadTime += timeAway;
+                    }
+                }
+            });
             
             return true;
         } catch (error) {
             this._error('Error initializing analytics', error);
+            this.isInitializing = false;
             return false;
+        }
+    }
+
+    /**
+     * Register a callback for live stats updates
+     * @param {Function} callback Function to call with updated stats
+     */
+    registerLiveStatsCallback(callback) {
+        if (typeof callback === 'function') {
+            this.liveStatsCallbacks.push(callback);
+            this._log(`Registered live stats callback, total callbacks: ${this.liveStatsCallbacks.length}`);
+            
+            // If we already have stats, call immediately with current data
+            if (this.liveStats) {
+                callback(this.liveStats);
+            }
+        }
+    }
+    
+    /**
+     * Start periodic updates for live stats
+     * @private
+     */
+    _startLiveStatsUpdates() {
+        if (!this.liveStatsInterval) {
+            this._log('Starting live stats updates');
+            
+            // Initial stats fetch
+            this._fetchLiveStats();
+            
+            // Create ticker for real-time second counter
+            this.tickerInterval = setInterval(() => {
+                if (this.liveStats) {
+                    // Update the timestamp to show real-time counting
+                    this.liveStats.timestamp = new Date().toISOString();
+                    
+                    // Update seconds since last refresh
+                    const secondsSinceRefresh = Math.floor((Date.now() - this.lastStatsRefresh) / 1000);
+                    this.liveStats.secondsSinceRefresh = secondsSinceRefresh;
+                    
+                    // Notify all callbacks with the updated timestamp
+                    this.liveStatsCallbacks.forEach(callback => {
+                        try {
+                            callback(this.liveStats);
+                        } catch (callbackError) {
+                            this._error('Error in live stats ticker callback', callbackError);
+                        }
+                    });
+                }
+            }, 1000); // Update every second for a clock-like effect
+            
+            // Set up interval for regular data refreshes from server (every 10 seconds)
+            this.liveStatsInterval = setInterval(() => {
+                this._fetchLiveStats();
+            }, 10000);
+        }
+    }
+    
+    /**
+     * Fetch live stats from Supabase
+     * @private
+     */
+    async _fetchLiveStats() {
+        if (!this.isInitialized || !window.supabase) {
+            return;
+        }
+        
+        try {
+            // Record refresh time
+            this.lastStatsRefresh = Date.now();
+            
+            // Current timestamp for today's date
+            const now = new Date();
+            const today = new Date(now.getFullYear(), now.getMonth(), now.getDate()).toISOString();
+            
+            // Fetch today's unique visitors
+            const { data: todayData, error: todayError } = await window.supabase
+                .from('website_analytics')
+                .select('session_id')
+                .gte('timestamp', today)
+                .eq('event_type', 'page_visit');
+            
+            if (todayError) {
+                this._error('Error fetching today\'s stats', todayError);
+                return;
+            }
+            
+            // Count unique session IDs
+            const uniqueSessionIds = new Set();
+            if (todayData && todayData.length > 0) {
+                todayData.forEach(row => {
+                    if (row.session_id) uniqueSessionIds.add(row.session_id);
+                });
+            }
+            
+            // Fetch stats for active visitors (last 2 minutes)
+            // We use both heartbeats and page visits for accurate counting
+            const twoMinutesAgo = new Date(now.getTime() - 2 * 60 * 1000).toISOString();
+            const { data: activeData, error: activeError } = await window.supabase
+                .from('website_analytics')
+                .select('session_id, event_type, timestamp')
+                .in('event_type', ['page_visit', 'session_heartbeat', 'page_focus'])
+                .gte('timestamp', twoMinutesAgo);
+            
+            if (activeError) {
+                this._error('Error fetching active visitors', activeError);
+                return;
+            }
+            
+            // Count unique active session IDs
+            // For "active" status, we want the most recent event per session
+            const activeSessionIds = new Set();
+            const sessionLastActivity = {};
+            
+            if (activeData && activeData.length > 0) {
+                // First collect the latest timestamp for each session
+                activeData.forEach(row => {
+                    if (row.session_id) {
+                        const timestamp = new Date(row.timestamp).getTime();
+                        if (!sessionLastActivity[row.session_id] || timestamp > sessionLastActivity[row.session_id]) {
+                            sessionLastActivity[row.session_id] = timestamp;
+                        }
+                    }
+                });
+                
+                // Then count as active if the last activity was within the time window
+                // and we haven't seen a session_end event after that
+                for (const [sessionId, lastActivity] of Object.entries(sessionLastActivity)) {
+                    // Check if this session has ended
+                    const { data: sessionEndData } = await window.supabase
+                        .from('website_analytics')
+                        .select('timestamp')
+                        .eq('event_type', 'session_end')
+                        .eq('session_id', sessionId)
+                        .gte('timestamp', twoMinutesAgo)
+                        .order('timestamp', { ascending: false })
+                        .limit(1);
+                    
+                    // If no session_end event or last activity is newer than last session_end
+                    if (!sessionEndData || sessionEndData.length === 0 || 
+                        lastActivity > new Date(sessionEndData[0].timestamp).getTime()) {
+                        activeSessionIds.add(sessionId);
+                    }
+                }
+            }
+            
+            // Fetch download clicks
+            const { data: downloadData, error: downloadError } = await window.supabase
+                .from('website_analytics')
+                .select('id')
+                .eq('event_type', 'download_click')
+                .gte('timestamp', today);
+            
+            if (downloadError) {
+                this._error('Error fetching download stats', downloadError);
+                return;
+            }
+            
+            // Create stats object
+            this.liveStats = {
+                timestamp: now.toISOString(),
+                secondsSinceRefresh: 0,  // Start at 0 since we just refreshed
+                uniqueVisitors: uniqueSessionIds.size,
+                activeVisitors: activeSessionIds.size,
+                downloadClicks: downloadData ? downloadData.length : 0
+            };
+            
+            this._log('Updated live stats', this.liveStats);
+            
+            // Notify all callbacks
+            this.liveStatsCallbacks.forEach(callback => {
+                try {
+                    callback(this.liveStats);
+                } catch (callbackError) {
+                    this._error('Error in live stats callback', callbackError);
+                }
+            });
+        } catch (error) {
+            this._error('Error fetching live stats', error);
         }
     }
 
@@ -113,6 +473,8 @@ window.Analytics = class Analytics {
     trackEvent(eventType, eventData = {}) {
         if (!this.isInitialized) {
             console.warn('Cannot track events before analytics is initialized');
+            this.eventQueue.push({eventType, eventData});
+            this._log(`Event queued for later: ${eventType}`);
             return;
         }
 
@@ -146,11 +508,17 @@ window.Analytics = class Analytics {
     trackPageVisit() {
         try {
             this._log('Tracking page visit');
+            
+            // Reset page timing on new visit
+            this.pageLoadTime = Date.now();
+            this.lastInteractionTime = Date.now();
+            this.sessionActive = true;
+            
             const eventData = {
                 event_type: 'page_visit',
                 page_url: window.location.href,
                 referrer: document.referrer || null,
-                time_on_page: 0,
+                time_on_page: 0, // Start with 0 since we just loaded the page
                 platform: this._detectPlatform(),
                 screen_width: window.innerWidth,
                 screen_height: window.innerHeight,
@@ -160,6 +528,9 @@ window.Analytics = class Analytics {
             
             this._log('Page visit data:', eventData);
             this._trackEvent(eventData);
+            
+            // Start tracking time on page
+            this._setupSessionHeartbeat();
         } catch (error) {
             this._error('Error tracking page visit', error);
         }
@@ -214,17 +585,33 @@ window.Analytics = class Analytics {
             // Extract platform information from button
             const platform = buttonElement.getAttribute('data-platform') || 'unknown';
             
+            // Ensure we get meaningful button text and ID
+            const buttonId = buttonElement.id || 
+                buttonElement.getAttribute('data-analytics') || 
+                buttonElement.getAttribute('data-platform') || 
+                'download-button';
+                
+            const buttonText = buttonElement.textContent.trim() || 
+                buttonElement.getAttribute('data-i18n') || 
+                'Download';
+            
             const eventData = {
                 event_type: 'download_click',
                 page_url: window.location.href,
                 platform: this._detectPlatform(),
                 is_mobile: this._isMobile(),
-                button_id: buttonElement.id || `${platform}-download`,
-                button_text: buttonElement.textContent || 'Download'
+                download_platform: platform,
+                button_id: buttonId,
+                button_text: buttonText
             };
             
             this._log('Download click data:', eventData);
-            this._trackEvent(eventData);
+            
+            // Force immediate processing
+            this._trackEvent(eventData, true);
+            
+            // Immediately update live stats to reflect new download
+            setTimeout(() => this._fetchLiveStats(), 500);
         } catch (error) {
             this._error('Error tracking download click', error);
         }
@@ -235,7 +622,15 @@ window.Analytics = class Analytics {
      */
     trackSessionEnd() {
         try {
+            // Skip if already processed or not initialized
+            if (!this.sessionActive || !this.isInitialized) {
+                return;
+            }
+            
             this._log('Tracking session end');
+            this.sessionActive = false;
+            
+            // Calculate final session duration
             const sessionDuration = Math.floor((Date.now() - this.pageLoadTime) / 1000);
             
             const eventData = {
@@ -247,7 +642,53 @@ window.Analytics = class Analytics {
             };
             
             this._log('Session end data:', eventData);
-            this._trackEvent(eventData, true); // Force immediate send on page unload
+            
+            // Use navigator.sendBeacon for more reliable delivery during page unload
+            if (navigator.sendBeacon && window.supabase) {
+                try {
+                    // Create a properly formatted endpoint URL for Supabase
+                    const endpoint = `${this.supabaseUrl}/rest/v1/website_analytics`;
+                    
+                    // Create headers with Supabase key
+                    const headers = {
+                        'Content-Type': 'application/json',
+                        'apikey': this.supabaseKey,
+                        'Authorization': `Bearer ${this.supabaseKey}`,
+                        'Prefer': 'return=minimal'
+                    };
+                    
+                    // Prepare the data with session_id
+                    const fullData = {
+                        ...eventData,
+                        session_id: this.sessionId,
+                        timestamp: new Date().toISOString()
+                    };
+                    
+                    // Send using beacon API which is designed for exit events
+                    const blob = new Blob([JSON.stringify(fullData)], { type: 'application/json' });
+                    const beaconSent = navigator.sendBeacon(endpoint, blob);
+                    
+                    this._log(`Beacon send ${beaconSent ? 'successful' : 'failed'}`);
+                } catch (beaconError) {
+                    this._error('Error using sendBeacon', beaconError);
+                    // Fall back to regular send
+                    this._trackEvent(eventData, true);
+                }
+            } else {
+                // Fall back to regular send if beacon not available
+                this._trackEvent(eventData, true);
+            }
+            
+            // Clean up intervals
+            if (this.sessionHeartbeatInterval) {
+                clearInterval(this.sessionHeartbeatInterval);
+                this.sessionHeartbeatInterval = null;
+            }
+            
+            if (this.liveStatsInterval) {
+                clearInterval(this.liveStatsInterval);
+                this.liveStatsInterval = null;
+            }
         } catch (error) {
             this._error('Error tracking session end', error);
         }
@@ -265,7 +706,7 @@ window.Analytics = class Analytics {
                     this._sendTestEvent();
                 } else {
                     this._error('Failed to initialize analytics for test');
-                    alert('Analytics initialization failed. Check console for details.');
+                    console.error('Analytics initialization failed. Check console for details.');
                 }
             });
         } else {
@@ -298,15 +739,15 @@ window.Analytics = class Analytics {
             this._trackEvent(testEvent, true).then(result => {
                 if (result) {
                     this._log('Test event sent successfully');
-                    alert('Test event sent successfully! Check Supabase.');
+                    console.log('Test event sent successfully! Check Supabase.');
                 } else {
                     this._error('Test event failed to send');
-                    alert('Test event failed. Check console for details.');
+                    console.error('Test event failed. Check console for details.');
                 }
             });
         } catch (error) {
             this._error('Error sending test event', error);
-            alert(`Error: ${error.message}`);
+            console.error(`Error: ${error.message}`);
         }
     }
     
@@ -329,6 +770,13 @@ window.Analytics = class Analytics {
             if (!this.isInitialized) {
                 this._log('Analytics not initialized, queueing event');
                 this.eventQueue.push(fullEventData);
+                
+                // Try to initialize analytics if we have credentials
+                if (this.supabaseUrl && this.supabaseKey && !this.isInitializing) {
+                    this._log('Attempting to initialize analytics before processing event');
+                    this.init(this.supabaseUrl, this.supabaseKey);
+                }
+                
                 return false;
             }
             
@@ -439,22 +887,129 @@ window.Analytics = class Analytics {
     }
     
     /**
+     * Internal function to verify analytics data is being sent properly
+     * @private
+     */
+    async _verifyAnalyticsConnection() {
+        if (!this.isInitialized) {
+            this._error('Cannot verify analytics connection before initialization');
+            return false;
+        }
+        
+        try {
+            // Send a very small verification event
+            const verificationEvent = {
+                event_type: 'system_check',
+                session_id: this.sessionId,
+                timestamp: new Date().toISOString(),
+                page_url: window.location.href
+            };
+            
+            this._log('Sending verification event to check connection');
+            const success = await this._sendToSupabase(verificationEvent);
+            
+            if (success) {
+                this._log('✅ Analytics connection verified successfully');
+            } else {
+                this._error('❌ Analytics connection verification failed');
+            }
+            
+            return success;
+        } catch (error) {
+            this._error('Error verifying analytics connection', error);
+            return false;
+        }
+    }
+    
+    /**
      * Attach event listeners to download buttons
      * @private
      */
     _attachToDownloadButtons() {
         try {
             this._log('Attaching to download buttons');
-            const downloadButtons = document.querySelectorAll('.download-button');
+            const downloadButtons = document.querySelectorAll('.download-button, [data-analytics="download"]');
             
             this._log(`Found ${downloadButtons.length} download buttons`);
             
             downloadButtons.forEach(button => {
+                // Skip if already processed
+                if (button.getAttribute('data-analytics-attached') === 'true') {
+                    this._log('Skipping already attached button', button);
+                    return;
+                }
+                
+                this._log('Attaching handler to download button', button);
+                
+                // Mark button as processed
+                button.setAttribute('data-analytics-attached', 'true');
+                
+                // Store original onclick
+                const originalOnClick = button.onclick;
+                
+                // Direct DOM event listener for maximum reliability
                 button.addEventListener('click', (e) => {
-                    this._log('Download button clicked', e.target);
-                    this.trackDownloadClick(e.target);
+                    this._log('Download button clicked via event listener', e.currentTarget);
+                    this.trackDownloadClick(e.currentTarget);
+                    
+                    // Don't return false so the default action still executes
                 });
+                
+                // Also override onclick property for older browsers
+                button.onclick = (e) => {
+                    this._log('Download button clicked via onclick property', e.currentTarget || e.target);
+                    this.trackDownloadClick(e.currentTarget || e.target);
+                    
+                    // Call original handler if it exists
+                    if (typeof originalOnClick === 'function') {
+                        return originalOnClick.call(button, e);
+                    }
+                };
             });
+            
+            // Monitor for future buttons and UI changes
+            if (!this._buttonObserver) {
+                this._log('Setting up observer for new download buttons');
+                
+                const callback = (mutationsList) => {
+                    let needsReattach = false;
+                    
+                    for (const mutation of mutationsList) {
+                        if (mutation.type === 'childList' || mutation.type === 'attributes') {
+                            needsReattach = true;
+                            break;
+                        }
+                    }
+                    
+                    if (needsReattach) {
+                        this._attachToDownloadButtons();
+                    }
+                };
+                
+                // Create observer
+                this._buttonObserver = new MutationObserver(callback);
+                
+                // Observe the download section
+                const downloadSection = document.getElementById('download-qr');
+                if (downloadSection) {
+                    this._buttonObserver.observe(downloadSection, { 
+                        childList: true, 
+                        subtree: true,
+                        attributes: true,
+                        attributeFilter: ['class', 'id', 'data-analytics']
+                    });
+                    this._log('Observer attached to download section');
+                } else {
+                    // Fallback to observing the whole body
+                    this._buttonObserver.observe(document.body, {
+                        childList: true,
+                        subtree: true,
+                        attributes: true,
+                        attributeFilter: ['class', 'id', 'data-analytics']
+                    });
+                    this._log('Observer attached to document body (fallback)');
+                }
+            }
         } catch (error) {
             this._error('Error attaching to download buttons', error);
         }
@@ -494,13 +1049,24 @@ window.Analytics = class Analytics {
     _detectPlatform() {
         const ua = navigator.userAgent.toLowerCase();
         
+        // More comprehensive platform detection
         if (ua.indexOf('android') > -1) return 'android';
-        if (ua.indexOf('iphone') > -1 || ua.indexOf('ipad') > -1 || ua.indexOf('ipod') > -1) return 'ios';
+        if (ua.indexOf('iphone') > -1) return 'ios';
+        if (ua.indexOf('ipad') > -1) return 'ios';
+        if (ua.indexOf('ipod') > -1) return 'ios';
+        if (ua.indexOf('windows phone') > -1) return 'windows-mobile';
         if (ua.indexOf('windows') > -1) return 'windows';
         if (ua.indexOf('mac os x') > -1) return 'mac';
         if (ua.indexOf('linux') > -1) return 'linux';
+        if (ua.indexOf('cros') > -1) return 'chromeos';
         
-        return 'unknown';
+        // Check for specific browsers as fallback
+        if (ua.indexOf('firefox') > -1) return 'firefox';
+        if (ua.indexOf('chrome') > -1) return 'chrome';
+        if (ua.indexOf('safari') > -1) return 'safari';
+        if (ua.indexOf('edge') > -1) return 'edge';
+        
+        return navigator.platform || 'unknown';
     }
     
     /**
@@ -527,7 +1093,7 @@ window.Analytics = class Analytics {
             }
         }
     }
-    
+
     /**
      * Log an error message
      * @param {string} message The error message
@@ -541,7 +1107,7 @@ window.Analytics = class Analytics {
 
 // Create global analytics instance
 window.Memoryan = window.Memoryan || {};
-window.Memoryan.Analytics = new Analytics();
+window.Memoryan.Analytics = new Analytics(); 
 
 // Automatically initialize analytics when config is available
 document.addEventListener('DOMContentLoaded', function() {
@@ -552,45 +1118,6 @@ document.addEventListener('DOMContentLoaded', function() {
         window.analytics = window.Memoryan.Analytics;
         console.log('📊 Analytics: Created window.analytics alias');
     }
-    
-    // Add test button to page for debugging
-    setTimeout(() => {
-        // This runs after a small delay to ensure the DOM is fully ready
-        const footer = document.querySelector('footer');
-        if (footer) {
-            // Create test button
-            const testButton = document.createElement('button');
-            testButton.id = 'test-analytics-button';
-            testButton.textContent = 'Test Analytics';
-            testButton.style.position = 'fixed';
-            testButton.style.bottom = '10px';
-            testButton.style.right = '10px';
-            testButton.style.zIndex = '9999';
-            testButton.style.padding = '8px 12px';
-            testButton.style.backgroundColor = 'rgba(0, 128, 255, 0.8)';
-            testButton.style.color = 'white';
-            testButton.style.border = 'none';
-            testButton.style.borderRadius = '4px';
-            testButton.style.cursor = 'pointer';
-            testButton.style.fontFamily = 'Lato, sans-serif';
-            testButton.style.fontSize = '14px';
-            testButton.style.boxShadow = '0 2px 5px rgba(0,0,0,0.2)';
-            
-            // Add click event
-            testButton.addEventListener('click', () => {
-                if (window.Memoryan && window.Memoryan.Analytics) {
-                    window.Memoryan.Analytics.testAnalytics();
-                } else {
-                    console.error('❌ Analytics object not found');
-                    alert('Analytics object not found');
-                }
-            });
-            
-            // Add to page
-            document.body.appendChild(testButton);
-            console.log('📊 Analytics: Test button added to page');
-        }
-    }, 500);
     
     // Function to initialize analytics
     function initializeAnalytics() {
