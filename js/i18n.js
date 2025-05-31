@@ -43,7 +43,7 @@
                 "description": "It's not just about saving links and notes — it's about effortlessly organizing and rediscovering them like never before.",
                 "specialOffer": "Special Launch Offer!",
                 "freePremium": "🎉 FREE PREMIUM Until the 15th of June! 🎉",
-                "betaTesting": "Beta Testing starts 30th May. Be among the first to experience the full power of Memoryan.",
+                "betaTesting": "Beta Testing starts 2nd May. Be among the first to experience the full power of Memoryan.",
                 "trailerSoon": "Trailer is soon"
             },
             "features": {
@@ -206,7 +206,7 @@
                 "description": "Это не просто сохранение ссылок и заметок — это искусство ценить, систематизировать и открывать что то новое.",
                 "specialOffer": "Стартовое предложение!",
                 "freePremium": "🎉 Бесплатный Премиум до 15 июня! 🎉",
-                "betaTesting": "Бета-тестирование с 30 мая — станьте первыми героями Memoryan!",
+                "betaTesting": "Бета-тестирование с 2 июня — станьте первыми героями Memoryan!",
                 "trailerSoon": "Трейлер - скоро"
             },
             "features": {
