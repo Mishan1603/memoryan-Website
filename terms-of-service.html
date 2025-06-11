@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="en" id="html-root">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Terms of Service - Memoryan</title>
+    <meta name="description" content="Memoryan Terms of Service - Rules and guidelines for using Memoryan responsibly and legally.">
+    <meta name="keywords" content="memoryan, terms of service, terms and conditions, legal, guidelines">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="images/memoryan-logo.png">
+    
+    <!-- CSS -->
+    <link rel="stylesheet" href="style.css">
+    <!-- Google Fonts: Sans & Lato -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&family=Open+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <!-- AOS Animation Library -->
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    
+    <style>
+        /* Page-specific styles */
+        .policy-container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+        
+        .policy-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        
+        .policy-header h1 {
+            font-size: 2.5rem;
+            color: var(--color-primary);
+            margin-bottom: 10px;
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .policy-header .last-updated {
+            color: var(--color-primary-light);
+            opacity: 0.7;
+            font-size: 1rem;
+        }
+        
+        .policy-content {
+            background: rgba(44, 54, 69, 0.2);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            padding: 40px;
+            margin-bottom: 40px;
+        }
+        
+        .policy-intro {
+            display: flex;
+            align-items: center;
+            margin-bottom: 40px;
+            padding-bottom: 30px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .policy-icon {
+            width: 60px;
+            height: 60px;
+            background: rgba(59, 130, 246, 0.15);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 20px;
+            flex-shrink: 0;
+        }
+        
+        .policy-icon svg {
+            width: 30px;
+            height: 30px;
+            fill: #3B82F6;
+        }
+        
+        .policy-intro-text h2 {
+            color: var(--color-primary-light);
+            font-size: 1.5rem;
+            margin: 0 0 8px 0;
+        }
+        
+        .policy-intro-text p {
+            color: var(--color-primary-light);
+            opacity: 0.8;
+            margin: 0;
+            font-size: 1rem;
+        }
+        
+        .policy-section {
+            margin-bottom: 32px;
+        }
+        
+        .policy-section h3 {
+            color: var(--color-primary-light);
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 16px;
+        }
+        
+        .policy-section p, .policy-section li {
+            color: var(--color-primary-light);
+            opacity: 0.85;
+            line-height: 1.7;
+            font-size: 1rem;
+            margin-bottom: 12px;
+        }
+        
+        .policy-section ul {
+            margin: 16px 0;
+            padding-left: 20px;
+        }
+        
+        .policy-section li {
+            margin-bottom: 8px;
+        }
+        
+        .policy-footer {
+            background: rgba(59, 130, 246, 0.1);
+            border-radius: 12px;
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            margin-top: 40px;
+        }
+        
+        .policy-footer svg {
+            width: 24px;
+            height: 24px;
+            fill: #3B82F6;
+            margin-right: 16px;
+            flex-shrink: 0;
+        }
+        
+        .policy-footer p {
+            color: #3B82F6;
+            font-weight: 500;
+            margin: 0;
+            font-size: 1rem;
+        }
+        
+        .back-button {
+            display: inline-flex;
+            align-items: center;
+            padding: 12px 24px;
+            background: rgba(44, 54, 69, 0.3);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: var(--color-primary-light);
+            text-decoration: none;
+            transition: var(--transition-smooth);
+            margin-bottom: 30px;
+        }
+        
+        .back-button:hover {
+            background: rgba(44, 54, 69, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
+        
+        .back-button svg {
+            width: 20px;
+            height: 20px;
+            fill: currentColor;
+            margin-right: 8px;
+        }
+        
+        @media (max-width: 768px) {
+            .policy-content {
+                padding: 24px;
+            }
+            
+            .policy-header h1 {
+                font-size: 2rem;
+            }
+            
+            .policy-intro {
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            .policy-icon {
+                margin-right: 0;
+                margin-bottom: 16px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .policy-container {
+                padding: 20px 16px;
+            }
+            
+            .policy-content {
+                padding: 20px;
+            }
+            
+            .policy-header h1 {
+                font-size: 1.8rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Animated Gradient Background -->
+    <div class="animated-gradient"></div>
+
+    <div class="policy-container">
+        <a href="index.html" class="back-button">
+            <svg viewBox="0 0 24 24">
+                <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.42-1.41L7.83 13H20v-2z"/>
+            </svg>
+            Back to Home
+        </a>
+        
+        <div class="policy-header" data-aos="fade-up">
+            <h1>Terms of Service</h1>
+            <p class="last-updated">Last Updated: January 2025</p>
+        </div>
+
+        <div class="policy-content" data-aos="fade-up" data-aos-delay="100">
+            <div class="policy-intro">
+                <div class="policy-icon">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M9.5,3A6.5,6.5 0 0,1 16,9.5C16,11.11 15.41,12.59 14.44,13.73L14.71,14H15.5L20.5,19L19,20.5L14,15.5V14.71L13.73,14.44C12.59,15.41 11.11,16 9.5,16A6.5,6.5 0 0,1 3,9.5A6.5,6.5 0 0,1 9.5,3M9.5,5C7,5 5,7 5,9.5C5,12 7,14 9.5,14C12,14 14,12 14,9.5C14,7 12,5 9.5,5Z"/>
+                    </svg>
+                </div>
+                <div class="policy-intro-text">
+                    <h2>Terms of Service</h2>
+                    <p>Thank you for using Memoryan responsibly and helping us build a better service.</p>
+                </div>
+            </div>
+
+            <div class="policy-section">
+                <h3>1. Acceptance of Terms</h3>
+                <p>By accessing or using the Memoryan mobile application, you agree to be bound by these Terms of Service and all applicable laws and regulations. If you do not agree with any of these terms, you are prohibited from using or accessing this app.</p>
+            </div>
+
+            <div class="policy-section">
+                <h3>2. Description of Service</h3>
+                <p>Memoryan is a personal content organization application that allows you to save, organize, and recall digital content including links, notes, images, and other media. The app operates primarily on your local device with optional cloud synchronization features.</p>
+            </div>
+
+            <div class="policy-section">
+                <h3>3. User Accounts</h3>
+                <p>To use certain features of the app, you must create an account. You are responsible for:</p>
+                <ul>
+                    <li>Maintaining the confidentiality of your account information</li>
+                    <li>All activities that occur under your account</li>
+                    <li>Providing accurate and complete information</li>
+                    <li>Promptly updating your account information</li>
+                    <li>Notifying us of any unauthorized use of your account</li>
+                </ul>
+            </div>
+
+            <div class="policy-section">
+                <h3>4. User Content & Responsibility</h3>
+                <p>You retain ownership of all content you create or upload to the app. You are solely responsible for:</p>
+                <ul>
+                    <li>The content you store in the app</li>
+                    <li>Ensuring you have rights to any content you save</li>
+                    <li>Compliance with applicable laws and regulations</li>
+                    <li>Backing up your important data</li>
+                    <li>The consequences of any content you share or make public</li>
+                </ul>
+                <p>We do not monitor, review, or take responsibility for user content.</p>
+            </div>
+
+            <div class="policy-section">
+                <h3>5. Acceptable Use</h3>
+                <p>You agree not to use the app to:</p>
+                <ul>
+                    <li>Store or share illegal, harmful, or offensive content</li>
+                    <li>Violate any intellectual property rights</li>
+                    <li>Attempt to gain unauthorized access to our systems</li>
+                    <li>Use automated means to access the app without permission</li>
+                    <li>Interfere with or disrupt the app or servers</li>
+                    <li>Impersonate others or provide false information</li>
+                    <li>Distribute malware or harmful code</li>
+                </ul>
+            </div>
+
+            <div class="policy-section">
+                <h3>6. Intellectual Property</h3>
+                <p>The app, including all software, designs, graphics, and content created by us, is protected by copyright, trademark, and other intellectual property laws. You may not:</p>
+                <ul>
+                    <li>Copy, modify, or distribute our proprietary content</li>
+                    <li>Reverse engineer or attempt to extract source code</li>
+                    <li>Use our trademarks without permission</li>
+                    <li>Create derivative works based on our app</li>
+                </ul>
+            </div>
+
+            <div class="policy-section">
+                <h3>7. Premium Services & Billing</h3>
+                <p>Premium features may require a subscription. By subscribing, you agree that:</p>
+                <ul>
+                    <li>Billing occurs through your app store account</li>
+                    <li>Subscriptions automatically renew unless canceled</li>
+                    <li>You must cancel at least 24 hours before renewal</li>
+                    <li>Refunds are subject to app store policies</li>
+                    <li>We may change pricing with advance notice</li>
+                    <li>Premium features may be modified or discontinued</li>
+                </ul>
+            </div>
+
+            <div class="policy-section">
+                <h3>8. Data & Privacy</h3>
+                <p>Your privacy is important to us. Our data practices are governed by our Privacy Policy, which is incorporated into these terms. Key points:</p>
+                <ul>
+                    <li>Local data storage by default</li>
+                    <li>Optional cloud synchronization</li>
+                    <li>No sale of personal data</li>
+                    <li>User control over data sharing</li>
+                    <li>Right to data deletion</li>
+                </ul>
+            </div>
+
+            <div class="policy-section">
+                <h3>9. Service Availability</h3>
+                <p>We strive to provide reliable service, but cannot guarantee:</p>
+                <ul>
+                    <li>Uninterrupted or error-free operation</li>
+                    <li>Compatibility with all devices or operating systems</li>
+                    <li>Availability of all features at all times</li>
+                    <li>Prevention of data loss or corruption</li>
+                </ul>
+                <p>We recommend regular backups of important data.</p>
+            </div>
+
+            <div class="policy-section">
+                <h3>10. Disclaimer of Warranties</h3>
+                <p>The app is provided "as is" without warranties of any kind, either express or implied. We disclaim all warranties, including but not limited to:</p>
+                <ul>
+                    <li>Merchantability and fitness for a particular purpose</li>
+                    <li>Non-infringement of third-party rights</li>
+                    <li>Accuracy, reliability, or completeness of content</li>
+                    <li>Security or privacy of data transmission</li>
+                </ul>
+            </div>
+
+            <div class="policy-section">
+                <h3>11. Limitation of Liability</h3>
+                <p>To the maximum extent permitted by law, we shall not be liable for any indirect, incidental, special, consequential, or punitive damages, including but not limited to:</p>
+                <ul>
+                    <li>Loss of data or content</li>
+                    <li>Loss of profits or business opportunities</li>
+                    <li>Service interruptions</li>
+                    <li>Third-party actions or content</li>
+                </ul>
+                <p>Our total liability shall not exceed the amount paid by you for premium services in the past 12 months.</p>
+            </div>
+
+            <div class="policy-section">
+                <h3>12. Indemnification</h3>
+                <p>You agree to indemnify and hold us harmless from any claims, damages, or expenses arising from:</p>
+                <ul>
+                    <li>Your use of the app</li>
+                    <li>Your violation of these terms</li>
+                    <li>Your content or activities</li>
+                    <li>Your violation of any third-party rights</li>
+                </ul>
+            </div>
+
+            <div class="policy-section">
+                <h3>13. Termination</h3>
+                <p>We may terminate or suspend your account and access to the app at our sole discretion, without notice, for conduct that we believe violates these terms or is harmful to others. Upon termination:</p>
+                <ul>
+                    <li>Your right to use the app ceases immediately</li>
+                    <li>You may lose access to your account and data</li>
+                    <li>We may delete your account and associated data</li>
+                    <li>You remain liable for any outstanding obligations</li>
+                </ul>
+            </div>
+
+            <div class="policy-section">
+                <h3>14. Governing Law</h3>
+                <p>These terms shall be governed by and construed in accordance with applicable laws, without regard to conflict of law provisions. Any disputes shall be resolved through binding arbitration or in courts of competent jurisdiction.</p>
+            </div>
+
+            <div class="policy-section">
+                <h3>15. Changes to Terms</h3>
+                <p>We reserve the right to modify these terms at any time. We will provide notification of material changes through the app or via email. Continued use of the app after changes constitutes acceptance of the updated terms.</p>
+            </div>
+
+            <div class="policy-section">
+                <h3>16. Severability</h3>
+                <p>If any provision of these terms is found to be unenforceable, the remaining provisions shall remain in full force and effect. The unenforceable provision shall be replaced with an enforceable provision that most closely reflects our intent.</p>
+            </div>
+
+            <div class="policy-section">
+                <h3>17. Contact Information</h3>
+                <p>If you have any questions about these Terms of Service, please contact us:</p>
+                <p>Email: info@mymemoryan.com</p>
+                <p>Through the app: Use the feedback feature in Settings</p>
+                <p>We will respond to your inquiries promptly and professionally.</p>
+            </div>
+
+            <div class="policy-footer">
+                <svg viewBox="0 0 24 24">
+                    <path d="M19,3H5C3.89,3 3,3.89 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V5C21,3.89 20.1,3 19,3M19,5V19H5V5H19Z"/>
+                </svg>
+                <p>Thank you for using Memoryan responsibly and helping us build a better service.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript Libraries -->
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script>
+        // Initialize AOS
+        AOS.init({
+            duration: 800,
+            easing: 'ease-in-out',
+            once: true
+        });
+    </script>
+</body>
+</html> 

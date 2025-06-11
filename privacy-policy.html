@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="en" id="html-root">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Privacy Policy - Memoryan</title>
+    <meta name="description" content="Memoryan Privacy Policy - Learn how we protect and handle your data with transparency and respect for your privacy.">
+    <meta name="keywords" content="memoryan, privacy policy, data protection, privacy, security">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="images/memoryan-logo.png">
+    
+    <!-- CSS -->
+    <link rel="stylesheet" href="style.css">
+    <!-- Google Fonts: Sans & Lato -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&family=Open+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <!-- AOS Animation Library -->
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    
+    <style>
+        /* Page-specific styles */
+        .policy-container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+        
+        .policy-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        
+        .policy-header h1 {
+            font-size: 2.5rem;
+            color: var(--color-primary);
+            margin-bottom: 10px;
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .policy-header .last-updated {
+            color: var(--color-primary-light);
+            opacity: 0.7;
+            font-size: 1rem;
+        }
+        
+        .policy-content {
+            background: rgba(44, 54, 69, 0.2);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            padding: 40px;
+            margin-bottom: 40px;
+        }
+        
+        .policy-intro {
+            display: flex;
+            align-items: center;
+            margin-bottom: 40px;
+            padding-bottom: 30px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .policy-icon {
+            width: 60px;
+            height: 60px;
+            background: rgba(5, 150, 105, 0.15);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 20px;
+            flex-shrink: 0;
+        }
+        
+        .policy-icon svg {
+            width: 30px;
+            height: 30px;
+            fill: #059669;
+        }
+        
+        .policy-intro-text h2 {
+            color: var(--color-primary-light);
+            font-size: 1.5rem;
+            margin: 0 0 8px 0;
+        }
+        
+        .policy-intro-text p {
+            color: var(--color-primary-light);
+            opacity: 0.8;
+            margin: 0;
+            font-size: 1rem;
+        }
+        
+        .policy-section {
+            margin-bottom: 32px;
+        }
+        
+        .policy-section h3 {
+            color: var(--color-primary-light);
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 16px;
+        }
+        
+        .policy-section p, .policy-section li {
+            color: var(--color-primary-light);
+            opacity: 0.85;
+            line-height: 1.7;
+            font-size: 1rem;
+            margin-bottom: 12px;
+        }
+        
+        .policy-section ul {
+            margin: 16px 0;
+            padding-left: 20px;
+        }
+        
+        .policy-section li {
+            margin-bottom: 8px;
+        }
+        
+        .policy-footer {
+            background: rgba(5, 150, 105, 0.1);
+            border-radius: 12px;
+            border: 1px solid rgba(5, 150, 105, 0.3);
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            margin-top: 40px;
+        }
+        
+        .policy-footer svg {
+            width: 24px;
+            height: 24px;
+            fill: #059669;
+            margin-right: 16px;
+            flex-shrink: 0;
+        }
+        
+        .policy-footer p {
+            color: #059669;
+            font-weight: 500;
+            margin: 0;
+            font-size: 1rem;
+        }
+        
+        .back-button {
+            display: inline-flex;
+            align-items: center;
+            padding: 12px 24px;
+            background: rgba(44, 54, 69, 0.3);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: var(--color-primary-light);
+            text-decoration: none;
+            transition: var(--transition-smooth);
+            margin-bottom: 30px;
+        }
+        
+        .back-button:hover {
+            background: rgba(44, 54, 69, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
+        
+        .back-button svg {
+            width: 20px;
+            height: 20px;
+            fill: currentColor;
+            margin-right: 8px;
+        }
+        
+        @media (max-width: 768px) {
+            .policy-content {
+                padding: 24px;
+            }
+            
+            .policy-header h1 {
+                font-size: 2rem;
+            }
+            
+            .policy-intro {
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            .policy-icon {
+                margin-right: 0;
+                margin-bottom: 16px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .policy-container {
+                padding: 20px 16px;
+            }
+            
+            .policy-content {
+                padding: 20px;
+            }
+            
+            .policy-header h1 {
+                font-size: 1.8rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Animated Gradient Background -->
+    <div class="animated-gradient"></div>
+
+    <div class="policy-container">
+        <a href="index.html" class="back-button">
+            <svg viewBox="0 0 24 24">
+                <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.42-1.41L7.83 13H20v-2z"/>
+            </svg>
+            Back to Home
+        </a>
+        
+        <div class="policy-header" data-aos="fade-up">
+            <h1>Privacy Policy</h1>
+            <p class="last-updated">Last Updated: January 2025</p>
+        </div>
+
+        <div class="policy-content" data-aos="fade-up" data-aos-delay="100">
+            <div class="policy-intro">
+                <div class="policy-icon">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M12,1L3,5V11C3,16.55 6.84,21.74 12,23C17.16,21.74 21,16.55 21,11V5L12,1M12,7C13.4,7 14.8,8.6 14.8,10V11.5C15.4,11.5 16,12.4 16,13V16C16,17.4 15.4,18 14.8,18H9.2C8.6,18 8,17.4 8,16V13C8,12.4 8.6,11.5 9.2,11.5V10C9.2,8.6 10.6,7 12,7M12,8.2C11.2,8.2 10.5,8.7 10.5,10V11.5H13.5V10C13.5,8.7 12.8,8.2 12,8.2Z"/>
+                    </svg>
+                </div>
+                <div class="policy-intro-text">
+                    <h2>Privacy Policy</h2>
+                    <p>Your privacy is our commitment. We will never compromise your trust.</p>
+                </div>
+            </div>
+
+            <div class="policy-section">
+                <h3>1. Introduction</h3>
+                <p>Welcome to Memoryan. We respect your privacy and are committed to protecting your personal data. This Privacy Policy explains how we collect, use, and safeguard your information when you use our mobile application. Your privacy is our priority, and we believe in transparency about our data practices.</p>
+            </div>
+
+            <div class="policy-section">
+                <h3>2. Data Storage Philosophy</h3>
+                <p>Memoryan is designed with privacy in mind. By default, all your content (chambers, blocks, notes, and media) is stored locally on your device. We do not collect, store, or have access to your personal content unless you explicitly enable synchronization features.</p>
+            </div>
+
+            <div class="policy-section">
+                <h3>3. Information We Collect</h3>
+                <p>We collect minimal information necessary to provide our services:</p>
+                <ul>
+                    <li>Account Information: Email address and authentication information when you register.</li>
+                    <li>Device Information: Device type, operating system, and app version for compatibility.</li>
+                    <li>Usage Analytics: Anonymous usage patterns to improve app functionality.</li>
+                    <li>Crash Reports: Anonymous error reports to fix bugs and improve stability.</li>
+                    <li>Notification Preferences: Your notification settings and scheduling preferences for deadline reminders.</li>
+                </ul>
+            </div>
+
+            <div class="policy-section">
+                <h3>4. Synchronization & Cloud Storage</h3>
+                <p>When you enable synchronization:</p>
+                <ul>
+                    <li>Your content is encrypted and stored securely in our cloud servers.</li>
+                    <li>Data is transmitted using industry-standard encryption (TLS/SSL).</li>
+                    <li>You can disable sync at any time, which will delete all cloud data.</li>
+                    <li>Sync is entirely optional and disabled by default.</li>
+                </ul>
+                <p>Without sync enabled, your data never leaves your device.</p>
+            </div>
+
+            <div class="policy-section">
+                <h3>5. How We Use Your Information</h3>
+                <p>We use your information to:</p>
+                <ul>
+                    <li>Provide and improve our services.</li>
+                    <li>Authenticate your account securely.</li>
+                    <li>Sync your data across devices (only if enabled).</li>
+                    <li>Send deadline reminders and review notifications (only with your permission).</li>
+                    <li>Analyze usage patterns to enhance functionality.</li>
+                    <li>Communicate important updates or security notices.</li>
+                    <li>Provide customer support when requested.</li>
+                </ul>
+            </div>
+
+            <div class="policy-section">
+                <h3>6. Data Sharing & Third Parties</h3>
+                <p>We do not sell, trade, or share your personal data with third parties. Period.</p>
+                <p>Limited third-party services we use:</p>
+                <ul>
+                    <li>Supabase: For secure authentication and optional cloud storage.</li>
+                    <li>Crash reporting services: For anonymous error tracking.</li>
+                    <li>Analytics services: For anonymous usage statistics.</li>
+                </ul>
+                <p>These services are bound by strict privacy agreements and cannot access your content.</p>
+            </div>
+
+            <div class="policy-section">
+                <h3>7. Data Security</h3>
+                <p>We implement robust security measures:</p>
+                <ul>
+                    <li>End-to-end encryption for all data transmission.</li>
+                    <li>Secure local storage using platform-specific encryption.</li>
+                    <li>Regular security audits and updates.</li>
+                    <li>No plain-text storage of sensitive information.</li>
+                    <li>Secure authentication with industry standards.</li>
+                </ul>
+            </div>
+
+            <div class="policy-section">
+                <h3>8. Notifications & Permissions</h3>
+                <p>Memoryan uses notifications to help you stay organized:</p>
+                <ul>
+                    <li>Deadline Reminders: Notifications about important deadlines you set for your blocks.</li>
+                    <li>Review Reminders: Optional notifications to help you review content at optimal times.</li>
+                    <li>Learning Schedule: Reminders for your study and learning schedule.</li>
+                </ul>
+                <p>We will only send notifications after you grant permission. You can:</p>
+                <ul>
+                    <li>Enable or disable notifications at any time in device settings.</li>
+                    <li>Customize notification frequency and timing in the app.</li>
+                    <li>Control which types of reminders you receive.</li>
+                    <li>Completely turn off all notifications without affecting other app features.</li>
+                </ul>
+            </div>
+
+            <div class="policy-section">
+                <h3>9. Your Rights & Control</h3>
+                <p>You have complete control over your data:</p>
+                <ul>
+                    <li>Access: View all data we have about you.</li>
+                    <li>Correction: Update or correct your information.</li>
+                    <li>Deletion: Delete your account and all associated data.</li>
+                    <li>Export: Download your data in a portable format.</li>
+                    <li>Opt-out: Disable analytics and crash reporting.</li>
+                    <li>Sync Control: Enable or disable cloud synchronization.</li>
+                    <li>Notification Control: Manage all notification preferences and permissions.</li>
+                </ul>
+            </div>
+
+            <div class="policy-section">
+                <h3>10. Data Retention</h3>
+                <p>Local data: Stored on your device until you delete it.</p>
+                <p>Cloud data: Stored only while sync is enabled.</p>
+                <p>Account data: Deleted within 30 days of account deletion.</p>
+                <p>Notification data: Settings and preferences deleted when you disable notifications.</p>
+                <p>Analytics: Anonymous data retained for up to 2 years.</p>
+                <p>You can request immediate deletion of all data at any time.</p>
+            </div>
+
+            <div class="policy-section">
+                <h3>11. Children's Privacy</h3>
+                <p>Memoryan is not intended for children under 13. We do not knowingly collect personal information from children under 13. If we discover that a child under 13 has provided us with personal information, we will delete it immediately.</p>
+            </div>
+
+            <div class="policy-section">
+                <h3>12. International Users</h3>
+                <p>Memoryan is available globally. If you use our app outside your country of residence, your data may be transferred to and processed in other countries. We ensure the same level of protection regardless of location.</p>
+            </div>
+
+            <div class="policy-section">
+                <h3>13. Changes to This Policy</h3>
+                <p>We may update this policy periodically to reflect changes in our practices or legal requirements. We will notify you of significant changes through the app or via email. Continued use of the app after changes constitutes acceptance of the updated policy.</p>
+            </div>
+
+            <div class="policy-section">
+                <h3>14. Contact Us</h3>
+                <p>If you have any questions about this Privacy Policy or our data practices, please contact us:</p>
+                <p>Email: info@mymemoryan.com</p>
+                <p>Through the app: Use the feedback feature in Settings.</p>
+                <p>We are committed to addressing your privacy concerns promptly and transparently.</p>
+            </div>
+
+            <div class="policy-footer">
+                <svg viewBox="0 0 24 24">
+                    <path d="M12,1L3,5V11C3,16.55 6.84,21.74 12,23C17.16,21.74 21,16.55 21,11V5L12,1M10,17L6,13L7.41,11.59L10,14.17L16.59,7.58L18,9L10,17Z"/>
+                </svg>
+                <p>Your privacy is our commitment. We will never compromise your trust.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript Libraries -->
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script>
+        // Initialize AOS
+        AOS.init({
+            duration: 800,
+            easing: 'ease-in-out',
+            once: true
+        });
+    </script>
+</body>
+</html> 
