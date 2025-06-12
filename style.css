@@ -429,6 +429,15 @@ header {
     opacity: 0;
     transition: opacity 0.5s ease;
     border-radius: var(--border-radius);
+    
+    /* Remove blue flash/highlight on mobile tap */
+    -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    outline: none;
 }
 
 .trailer-video.loaded {
@@ -539,16 +548,27 @@ header {
     opacity: 1;
 }
 
-.video-controls-overlay.playing:not(:hover) {
+/* Hide controls when playing, but show on hover/touch */
+.video-controls-overlay.playing {
     opacity: 0;
+}
+
+.video-controls-overlay.playing:hover,
+.video-controls-overlay.playing.show-controls {
+    opacity: 1;
+}
+
+/* Mobile touch support - show controls briefly when tapped */
+@media (max-width: 768px) {
+    .video-controls-overlay.playing.show-controls {
+        opacity: 1;
+    }
 }
 
 /* Play/Pause Button */
 .play-pause-btn {
-    background: rgba(44, 54, 69, 0.8);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    border: 1px solid rgba(191, 201, 241, 0.2);
+    background: rgba(44, 54, 69, 0);
+    border: 1px solid rgba(191, 201, 241, 0);
     border-radius: 50%;
     width: 80px;
     height: 80px;
@@ -1317,14 +1337,14 @@ footer a:hover {
     .hero-grid-container {
         gap: 30px;
     }
-
+    
     .hero-title-container {
         flex-direction: row;
         gap: 15px;
         justify-content: center;
         align-items: center;
     }
-
+    
     .hero-logo {
         width: 60px;
         height: 60px;
