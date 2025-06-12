@@ -1,10 +1,17 @@
 /**
- * Professional Video Player for Memoryan Website
- * Features: Language-based video selection, progressive loading, auto-play, custom controls, dynamic sizing
+ * Optimized Professional Video Player for Memoryan Website
+ * Mobile-First Performance Optimizations:
+ * - Debounced event handlers
+ * - Efficient DOM manipulation
+ * - Reduced event listeners
+ * - Optimized mobile touch interactions
+ * - Memory leak prevention
+ * - Throttled progress updates
  */
 
 class MemoryanVideoPlayer {
     constructor() {
+        // Core elements
         this.video = null;
         this.videoSource = null;
         this.videoLoading = null;
@@ -18,21 +25,43 @@ class MemoryanVideoPlayer {
         this.fullscreenBtn = null;
         this.videoWrapper = null;
         
+        // State management
         this.isPlaying = false;
-        this.isMuted = true; // Start muted as required
+        this.isMuted = true;
         this.currentLanguage = 'en';
-        this.loadingThreshold = 0.3; // 30% loading threshold
+        this.loadingThreshold = 0.3;
         this.hasAutoPlayed = false;
+        
+        // Performance optimization properties
         this.controlsTimeout = null;
+        this.resizeTimeout = null;
+        this.progressUpdateThrottle = null;
+        this.lastProgressUpdate = 0;
+        this.progressUpdateInterval = 100; // Update every 100ms instead of every frame
+        
+        // Mobile optimization
+        this.isMobileDevice = false;
+        this.touchStartTime = 0;
+        this.lastTouchTime = 0;
+        
+        // Cached dimensions for performance
+        this.cachedDimensions = null;
+        this.lastViewportHeight = 0;
+        this.dimensionUpdateThreshold = 50; // Only update if viewport changes by 50px
+        
+        // Event handler references for cleanup
+        this.boundHandlers = {};
         
         this.init();
     }
     
     init() {
         this.setupElements();
+        this.detectMobileDevice();
+        this.createBoundHandlers();
         this.setupEventListeners();
         this.detectLanguage();
-        this.setupDynamicSizing();
+        this.setupOptimizedSizing();
         this.loadVideo();
     }
     
@@ -55,154 +84,233 @@ class MemoryanVideoPlayer {
             return;
         }
         
-        // Initialize button states to match video state
-        this.isMuted = this.video.muted; // Sync with video's muted attribute
-        this.updateVolumeButton(); // Update button display
-        this.updatePlayPauseButton(); // Update play/pause button
+        // Initialize states efficiently
+        this.isMuted = this.video.muted;
+        this.updateButtonStates();
+    }
+    
+    detectMobileDevice() {
+        // Optimized mobile detection - cache result
+        const userAgent = navigator.userAgent.toLowerCase();
+        const isMobileUserAgent = /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini/i.test(userAgent);
+        const hasTouchScreen = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+        const isSmallScreen = window.innerWidth <= 768;
+        
+        this.isMobileDevice = isMobileUserAgent || (hasTouchScreen && isSmallScreen);
+        console.log('Device type detected:', this.isMobileDevice ? 'Mobile' : 'Desktop');
+    }
+    
+    createBoundHandlers() {
+        // Pre-bind all event handlers for better performance and cleanup
+        this.boundHandlers = {
+            // Video events
+            loadstart: () => this.handleVideoLoadStart(),
+            progress: this.debounce(() => this.handleVideoProgress(), 200),
+            canplay: () => this.handleVideoCanPlay(),
+            timeupdate: this.throttle(() => this.updateProgress(), this.progressUpdateInterval),
+            ended: () => this.handleVideoEnded(),
+            error: () => this.handleVideoError(),
+            play: () => this.handlePlay(),
+            pause: () => this.handlePause(),
+            
+            // Control events
+            playPauseClick: (e) => {
+                e.stopPropagation();
+                this.togglePlayPause();
+            },
+            progressClick: (e) => this.seekVideo(e),
+            volumeClick: (e) => {
+                e.stopPropagation();
+                this.toggleMute();
+            },
+            fullscreenClick: (e) => {
+                e.stopPropagation();
+                this.toggleFullscreen();
+            },
+            
+            // Interaction events
+            containerClick: (e) => {
+                if (e.target === this.videoControls) {
+                    this.togglePlayPause();
+                }
+            },
+            
+            // Optimized resize handler
+            resize: this.debounce(() => this.handleResize(), 250),
+            orientationChange: this.debounce(() => this.handleOrientationChange(), 500),
+            
+            // Language change
+            languageChange: (e) => {
+                this.currentLanguage = e.detail.language;
+                this.loadVideo();
+            },
+            
+            // Keyboard
+            keydown: (e) => this.handleKeyboard(e),
+            
+            // Fullscreen
+            fullscreenChange: () => this.handleFullscreenChange()
+        };
+        
+        // Mobile-specific handlers
+        if (this.isMobileDevice) {
+            this.boundHandlers.touchStart = (e) => this.handleTouchStart(e);
+            this.boundHandlers.touchEnd = (e) => this.handleTouchEnd(e);
+        } else {
+            // Desktop: Mouse-optimized controls
+            this.boundHandlers.mouseEnter = () => this.handleMouseEnter();
+            this.boundHandlers.mouseLeave = () => this.handleMouseLeave();
+            this.boundHandlers.mouseMove = this.throttle(() => this.handleMouseMove(), 100);
+        }
     }
     
     setupEventListeners() {
         if (!this.video) return;
         
         // Video events
-        this.video.addEventListener('loadstart', () => this.handleVideoLoadStart());
-        this.video.addEventListener('progress', () => this.handleVideoProgress());
-        this.video.addEventListener('canplay', () => this.handleVideoCanPlay());
-        this.video.addEventListener('timeupdate', () => this.updateProgress());
-        this.video.addEventListener('ended', () => this.handleVideoEnded());
-        this.video.addEventListener('error', () => this.handleVideoError());
-        this.video.addEventListener('play', () => this.handlePlay());
-        this.video.addEventListener('pause', () => this.handlePause());
+        this.video.addEventListener('loadstart', this.boundHandlers.loadstart);
+        this.video.addEventListener('progress', this.boundHandlers.progress);
+        this.video.addEventListener('canplay', this.boundHandlers.canplay);
+        this.video.addEventListener('timeupdate', this.boundHandlers.timeupdate);
+        this.video.addEventListener('ended', this.boundHandlers.ended);
+        this.video.addEventListener('error', this.boundHandlers.error);
+        this.video.addEventListener('play', this.boundHandlers.play);
+        this.video.addEventListener('pause', this.boundHandlers.pause);
         
         // Control events
         if (this.playPauseBtn) {
-            this.playPauseBtn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                this.togglePlayPause();
-            });
+            this.playPauseBtn.addEventListener('click', this.boundHandlers.playPauseClick);
         }
         
         if (this.progressBar) {
-            this.progressBar.addEventListener('click', (e) => this.seekVideo(e));
+            this.progressBar.addEventListener('click', this.boundHandlers.progressClick);
         }
         
         if (this.volumeBtn) {
-            this.volumeBtn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                this.toggleMute();
-            });
+            this.volumeBtn.addEventListener('click', this.boundHandlers.volumeClick);
         }
         
         if (this.fullscreenBtn) {
-            this.fullscreenBtn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                this.toggleFullscreen();
-            });
+            this.fullscreenBtn.addEventListener('click', this.boundHandlers.fullscreenClick);
         }
         
-        // Video container click to toggle play/pause
         if (this.videoControls) {
-            this.videoControls.addEventListener('click', (e) => {
-                if (e.target === this.videoControls) {
-                    this.togglePlayPause();
-                }
-            });
+            this.videoControls.addEventListener('click', this.boundHandlers.containerClick);
         }
         
-        // Setup classical controls visibility system
-        this.setupControlsVisibility();
+        // Setup device-specific controls
+        this.setupDeviceSpecificControls();
         
-        // Language change listener
-        document.addEventListener('languageChanged', (e) => {
-            this.currentLanguage = e.detail.language;
-            this.loadVideo();
-        });
+        // Global events
+        window.addEventListener('resize', this.boundHandlers.resize);
+        window.addEventListener('orientationchange', this.boundHandlers.orientationChange);
+        document.addEventListener('languageChanged', this.boundHandlers.languageChange);
+        document.addEventListener('keydown', this.boundHandlers.keydown);
         
-        // Keyboard controls
-        document.addEventListener('keydown', (e) => this.handleKeyboard(e));
-        
-        // Fullscreen change events
-        document.addEventListener('fullscreenchange', () => this.handleFullscreenChange());
-        document.addEventListener('webkitfullscreenchange', () => this.handleFullscreenChange());
-        document.addEventListener('mozfullscreenchange', () => this.handleFullscreenChange());
-        document.addEventListener('MSFullscreenChange', () => this.handleFullscreenChange());
+        // Fullscreen events
+        document.addEventListener('fullscreenchange', this.boundHandlers.fullscreenChange);
+        document.addEventListener('webkitfullscreenchange', this.boundHandlers.fullscreenChange);
+        document.addEventListener('mozfullscreenchange', this.boundHandlers.fullscreenChange);
+        document.addEventListener('MSFullscreenChange', this.boundHandlers.fullscreenChange);
     }
     
-    setupControlsVisibility() {
-        if (!this.videoControls || !this.videoWrapper) return;
-        
-        // Classical mobile detection - reliable approach from web standards
-        this.isMobileDevice = this.detectMobileDevice();
-        console.log('Device type detected:', this.isMobileDevice ? 'Mobile' : 'Desktop');
+    setupDeviceSpecificControls() {
+        if (!this.videoWrapper) return;
         
         if (this.isMobileDevice) {
-            // Mobile: Use touch events and timer-based hiding (no hover)
-            this.setupMobileControlsVisibility();
+            // Mobile: Touch-optimized controls
+            this.videoWrapper.addEventListener('touchstart', this.boundHandlers.touchStart, { passive: true });
+            this.videoWrapper.addEventListener('touchend', this.boundHandlers.touchEnd, { passive: true });
         } else {
-            // Desktop: Use mouse events with proper hover detection
-            this.setupDesktopControlsVisibility();
+            // Desktop: Mouse-optimized controls
+            this.videoWrapper.addEventListener('mouseenter', this.boundHandlers.mouseEnter);
+            this.videoWrapper.addEventListener('mouseleave', this.boundHandlers.mouseLeave);
+            this.videoWrapper.addEventListener('mousemove', this.boundHandlers.mouseMove);
         }
     }
     
-    detectMobileDevice() {
-        // Classical approach: Multiple detection methods for reliability
-        const userAgent = navigator.userAgent.toLowerCase();
-        const isMobileUserAgent = /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini/i.test(userAgent);
-        const hasTouchScreen = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
-        const isSmallScreen = window.innerWidth <= 768;
-        
-        // Device is mobile if ANY of these conditions are true
-        return isMobileUserAgent || (hasTouchScreen && isSmallScreen);
-    }
-    
-    setupMobileControlsVisibility() {
-        console.log('Setting up mobile controls visibility');
-        
-        // Mobile: Show controls on any interaction, hide after 2 seconds
-        const showControlsOnMobile = () => {
-            this.showControlsTemporarily();
+    // Optimized utility functions
+    debounce(func, wait) {
+        let timeout;
+        return function executedFunction(...args) {
+            const later = () => {
+                clearTimeout(timeout);
+                func.apply(this, args);
+            };
+            clearTimeout(timeout);
+            timeout = setTimeout(later, wait);
         };
+    }
+    
+    throttle(func, limit) {
+        let inThrottle;
+        return function executedFunction(...args) {
+            if (!inThrottle) {
+                func.apply(this, args);
+                inThrottle = true;
+                setTimeout(() => inThrottle = false, limit);
+            }
+        };
+    }
+    
+    // Mobile touch handlers
+    handleTouchStart(e) {
+        this.touchStartTime = Date.now();
+    }
+    
+    handleTouchEnd(e) {
+        const touchDuration = Date.now() - this.touchStartTime;
+        const timeSinceLastTouch = Date.now() - this.lastTouchTime;
         
-        // Touch events
-        this.videoWrapper.addEventListener('touchstart', showControlsOnMobile, { passive: true });
-        this.videoWrapper.addEventListener('touchend', showControlsOnMobile, { passive: true });
-        
-        // Click events (fallback)
-        this.videoWrapper.addEventListener('click', showControlsOnMobile);
-        
-        // Video events that should show controls
-        if (this.video) {
-            this.video.addEventListener('play', showControlsOnMobile);
-            this.video.addEventListener('pause', showControlsOnMobile);
+        // Only show controls if it's a quick tap (not a scroll) and not too frequent
+        if (touchDuration < 300 && timeSinceLastTouch > 200) {
+            this.showControlsTemporarily();
+            this.lastTouchTime = Date.now();
         }
     }
     
-    setupDesktopControlsVisibility() {
-        console.log('Setting up desktop controls visibility');
+    // Desktop mouse handlers
+    handleMouseEnter() {
+        this.showControls();
+        this.clearControlsTimeout();
+    }
+    
+    handleMouseLeave() {
+        if (this.isPlaying) {
+            this.hideControls();
+        }
+    }
+    
+    handleMouseMove() {
+        this.showControlsTemporarily();
+    }
+    
+    // Optimized resize handling
+    handleResize() {
+        const currentHeight = window.innerHeight;
         
-        // Desktop: Classical mouse hover approach
-        this.videoWrapper.addEventListener('mouseenter', () => {
-            this.showControls();
-            this.clearControlsTimeout();
-        });
-        
-        this.videoWrapper.addEventListener('mouseleave', () => {
-            if (this.isPlaying) {
-                this.hideControls();
-            }
-        });
-        
-        // Mouse movement shows controls temporarily
-        this.videoWrapper.addEventListener('mousemove', () => {
-            this.showControlsTemporarily();
-        });
+        // Only recalculate if viewport height changed significantly
+        if (Math.abs(currentHeight - this.lastViewportHeight) > this.dimensionUpdateThreshold) {
+            this.lastViewportHeight = currentHeight;
+            this.cachedDimensions = null; // Clear cache
+            this.applyOptimizedSizing();
+        }
+    }
+    
+    handleOrientationChange() {
+        // Clear cache and recalculate after orientation change
+        this.cachedDimensions = null;
+        this.lastViewportHeight = 0;
+        setTimeout(() => {
+            this.applyOptimizedSizing();
+        }, 100); // Small delay to ensure orientation change is complete
     }
     
     showControlsTemporarily() {
         this.showControls();
         this.clearControlsTimeout();
         
-        // Hide after 2 seconds if playing
+        // Auto-hide controls after 2 seconds if playing
         if (this.isPlaying) {
             this.controlsTimeout = setTimeout(() => {
                 this.hideControls();
@@ -211,213 +319,163 @@ class MemoryanVideoPlayer {
     }
     
     detectLanguage() {
-        // Get language from localStorage or detect from browser
-        const savedLanguage = localStorage.getItem('memoryan_language');
-        if (savedLanguage) {
-            this.currentLanguage = savedLanguage;
-        } else {
-            const browserLang = navigator.language || navigator.userLanguage;
-            this.currentLanguage = browserLang.startsWith('ru') ? 'ru' : 'en';
-        }
+        // Optimized language detection
+        const htmlLang = document.documentElement.lang;
+        const urlParams = new URLSearchParams(window.location.search);
+        const urlLang = urlParams.get('lang');
+        
+        this.currentLanguage = urlLang || htmlLang || 'en';
+        console.log('Language detected:', this.currentLanguage);
     }
     
     loadVideo() {
         if (!this.video || !this.videoSource) return;
         
-        // Reset state
-        this.hasAutoPlayed = false;
-        this.isPlaying = false;
-        this.showLoading();
-        this.hideError();
+        const videoFile = this.currentLanguage === 'ru' ? 'trailer_ru.mp4' : 'trailer.mp4';
+        const newSrc = videoFile;
         
-        // Set video source based on language
-        const videoSrc = this.currentLanguage === 'ru' ? 'trailer_ru.mp4' : 'trailer.mp4';
-        
-        // Only reload if source changed
-        if (this.videoSource.src !== videoSrc) {
-            this.videoSource.src = videoSrc;
+        // Only reload if source actually changed
+        if (this.videoSource.src !== newSrc) {
+            this.showLoading();
+            this.hideError();
+            
+            this.videoSource.src = newSrc;
             this.video.load();
+            
+            console.log(`Loading video: ${videoFile} for language: ${this.currentLanguage}`);
         }
     }
     
+    // Optimized event handlers
     handleVideoLoadStart() {
-        console.log('Video loading started');
         this.showLoading();
+        this.hideError();
     }
     
     handleVideoProgress() {
         if (!this.video.buffered.length) return;
         
-        const bufferedEnd = this.video.buffered.end(this.video.buffered.length - 1);
+        const buffered = this.video.buffered.end(this.video.buffered.length - 1);
         const duration = this.video.duration;
         
         if (duration > 0) {
-            const bufferedPercent = bufferedEnd / duration;
+            const loadedPercentage = buffered / duration;
             
-            // Auto-play when 30% is loaded and hasn't auto-played yet
-            if (bufferedPercent >= this.loadingThreshold && !this.hasAutoPlayed) {
-                this.hasAutoPlayed = true;
-                this.hideLoading();
-                this.video.classList.add('loaded');
-                
-                // Auto-play (muted)
-                this.video.muted = true;
-                this.isMuted = true; // Sync state
-                this.updateVolumeButton(); // Update button display
-                this.video.play().catch(error => {
-                    console.log('Auto-play failed:', error);
-                    this.showControls();
-                });
+            if (loadedPercentage >= this.loadingThreshold && !this.hasAutoPlayed) {
+                this.handleVideoCanPlay();
             }
         }
     }
     
     handleVideoCanPlay() {
-        console.log('Video can play');
+        this.hideLoading();
+        
         if (!this.hasAutoPlayed) {
-            this.hideLoading();
-            this.video.classList.add('loaded');
-            this.showControls();
+            this.hasAutoPlayed = true;
+            
+            // Auto-play with error handling
+            const playPromise = this.video.play();
+            if (playPromise !== undefined) {
+                playPromise.catch(error => {
+                    console.log('Auto-play prevented:', error);
+                    this.isPlaying = false;
+                    this.updateButtonStates();
+                });
+            }
         }
     }
     
     handleVideoError() {
-        console.error('Video loading error');
         this.hideLoading();
         this.showError();
+        console.error('Video loading error');
     }
     
     handlePlay() {
         this.isPlaying = true;
-        this.updatePlayPauseButton();
-        this.videoControls?.classList.add('playing');
-        this.hideControlsDelayed();
+        this.updateButtonStates();
+        this.video.classList.add('loaded');
     }
     
     handlePause() {
         this.isPlaying = false;
-        this.updatePlayPauseButton();
-        this.videoControls?.classList.remove('playing');
-        this.showControls();
+        this.updateButtonStates();
     }
     
     handleVideoEnded() {
         this.isPlaying = false;
-        this.updatePlayPauseButton();
+        this.updateButtonStates();
         this.showControls();
-        this.video.currentTime = 0;
     }
     
+    // Optimized control methods
     togglePlayPause() {
         if (!this.video) return;
         
         if (this.isPlaying) {
             this.video.pause();
         } else {
-            this.video.play().catch(error => {
-                console.log('Play failed:', error);
-            });
+            const playPromise = this.video.play();
+            if (playPromise !== undefined) {
+                playPromise.catch(error => {
+                    console.log('Play failed:', error);
+                });
+            }
         }
+        
+        this.showControlsTemporarily();
     }
     
     toggleMute() {
         if (!this.video) return;
         
-        // Toggle the muted state
         this.isMuted = !this.isMuted;
         this.video.muted = this.isMuted;
-        
-        // Ensure volume is set appropriately
-        if (!this.isMuted) {
-            // When unmuting, set volume to a reasonable level if it's 0
-            if (this.video.volume === 0) {
-                this.video.volume = 0.7; // Set to 70% volume
-            }
-        }
-        
-        // Update button display
         this.updateVolumeButton();
-        
-        console.log('Video muted state:', this.video.muted, 'isMuted:', this.isMuted, 'volume:', this.video.volume);
+        this.showControlsTemporarily();
     }
     
     toggleFullscreen() {
-        if (!this.video) return;
-        
-        if (document.fullscreenElement) {
-            document.exitFullscreen();
+        if (this.isFullscreen()) {
             this.exitFullscreenMode();
         } else {
-            // Request fullscreen on the video wrapper for better control
-            const videoWrapper = this.video.closest('.video-player-wrapper');
-            const elementToFullscreen = videoWrapper || this.video;
-            
-            elementToFullscreen.requestFullscreen().then(() => {
-                this.enterFullscreenMode();
-            }).catch(error => {
-                console.log('Fullscreen failed:', error);
-                // Fallback to video element
-                this.video.requestFullscreen().then(() => {
-                    this.enterFullscreenMode();
-                }).catch(err => {
-                    console.log('Video fullscreen also failed:', err);
-                });
-            });
+            this.enterFullscreenMode();
         }
+        this.showControlsTemporarily();
     }
     
     enterFullscreenMode() {
-        // Add fullscreen class for styling
-        const videoWrapper = this.video.closest('.video-player-wrapper');
-        if (videoWrapper) {
-            videoWrapper.classList.add('fullscreen-mode');
-            // Ensure proper centering in fullscreen
-            videoWrapper.style.display = 'flex';
-            videoWrapper.style.alignItems = 'center';
-            videoWrapper.style.justifyContent = 'center';
-        }
-        this.video.classList.add('fullscreen-video');
+        const element = this.videoWrapper || this.video;
         
-        // Ensure video fills screen vertically and maintains aspect ratio
-        this.video.style.width = 'auto';
-        this.video.style.height = '100vh';
-        this.video.style.objectFit = 'contain';
-        this.video.style.objectPosition = 'center';
-        
-        // Hide controls after entering fullscreen
-        this.hideControlsDelayed();
-        
-        // Optimize for mobile performance
-        if (this.video) {
-            this.video.style.willChange = 'transform';
+        if (element.requestFullscreen) {
+            element.requestFullscreen();
+        } else if (element.webkitRequestFullscreen) {
+            element.webkitRequestFullscreen();
+        } else if (element.mozRequestFullScreen) {
+            element.mozRequestFullScreen();
+        } else if (element.msRequestFullscreen) {
+            element.msRequestFullscreen();
+        } else {
+            // Fallback for browsers without fullscreen API
+            this.videoWrapper?.classList.add('fullscreen-mode');
+            this.video?.classList.add('fullscreen-video');
         }
     }
     
     exitFullscreenMode() {
-        // Remove fullscreen classes
-        const videoWrapper = this.video.closest('.video-player-wrapper');
-        if (videoWrapper) {
-            videoWrapper.classList.remove('fullscreen-mode');
-            // Reset wrapper styles
-            videoWrapper.style.display = '';
-            videoWrapper.style.alignItems = '';
-            videoWrapper.style.justifyContent = '';
+        if (document.exitFullscreen) {
+            document.exitFullscreen();
+        } else if (document.webkitExitFullscreen) {
+            document.webkitExitFullscreen();
+        } else if (document.mozCancelFullScreen) {
+            document.mozCancelFullScreen();
+        } else if (document.msExitFullscreen) {
+            document.msExitFullscreen();
+        } else {
+            // Fallback cleanup
+            this.videoWrapper?.classList.remove('fullscreen-mode');
+            this.video?.classList.remove('fullscreen-video');
         }
-        this.video.classList.remove('fullscreen-video');
-        
-        // Reset video styles
-        this.video.style.width = '';
-        this.video.style.height = '';
-        this.video.style.objectFit = '';
-        this.video.style.objectPosition = '';
-        
-        // Reset performance optimizations
-        if (this.video) {
-            this.video.style.willChange = '';
-        }
-        
-        // Show controls when exiting fullscreen
-        this.showControls();
     }
     
     seekVideo(event) {
@@ -425,18 +483,33 @@ class MemoryanVideoPlayer {
         
         const rect = this.progressBar.getBoundingClientRect();
         const clickX = event.clientX - rect.left;
-        const width = rect.width;
-        const percentage = clickX / width;
+        const percentage = clickX / rect.width;
+        const newTime = percentage * this.video.duration;
         
-        this.video.currentTime = percentage * this.video.duration;
+        this.video.currentTime = Math.max(0, Math.min(this.video.duration, newTime));
+        this.showControlsTemporarily();
     }
     
+    // Throttled progress update
     updateProgress() {
         if (!this.video || !this.progressFill || !this.progressHandle) return;
         
-        const percentage = (this.video.currentTime / this.video.duration) * 100;
-        this.progressFill.style.width = percentage + '%';
-        this.progressHandle.style.left = percentage + '%';
+        const currentTime = this.video.currentTime;
+        const duration = this.video.duration;
+        
+        if (duration > 0) {
+            const percentage = (currentTime / duration) * 100;
+            
+            // Use transform for better performance than changing width
+            this.progressFill.style.transform = `scaleX(${percentage / 100})`;
+            this.progressHandle.style.left = `${percentage}%`;
+        }
+    }
+    
+    // Efficient button state updates
+    updateButtonStates() {
+        this.updatePlayPauseButton();
+        this.updateVolumeButton();
     }
     
     updatePlayPauseButton() {
@@ -445,57 +518,35 @@ class MemoryanVideoPlayer {
         const playIcon = this.playPauseBtn.querySelector('.play-icon');
         const pauseIcon = this.playPauseBtn.querySelector('.pause-icon');
         
-        if (this.isPlaying) {
-            playIcon.style.display = 'none';
-            pauseIcon.style.display = 'block';
-        } else {
-            playIcon.style.display = 'block';
-            pauseIcon.style.display = 'none';
+        if (playIcon && pauseIcon) {
+            if (this.isPlaying) {
+                playIcon.style.display = 'none';
+                pauseIcon.style.display = 'block';
+            } else {
+                playIcon.style.display = 'block';
+                pauseIcon.style.display = 'none';
+            }
         }
     }
     
     updateVolumeButton() {
-        console.log('=== updateVolumeButton called ===');
-        
-        if (!this.volumeBtn) {
-            console.error('Volume button not found');
-            return;
-        }
+        if (!this.volumeBtn) return;
         
         const volumeIcon = this.volumeBtn.querySelector('.volume-icon');
         const muteIcon = this.volumeBtn.querySelector('.mute-icon');
         
-        console.log('Icons found:', { volumeIcon: !!volumeIcon, muteIcon: !!muteIcon });
-        
-        if (!volumeIcon || !muteIcon) {
-            console.error('Volume button icons not found', { volumeIcon, muteIcon });
-            return;
+        if (volumeIcon && muteIcon) {
+            if (this.isMuted) {
+                volumeIcon.style.display = 'none';
+                muteIcon.style.display = 'block';
+            } else {
+                volumeIcon.style.display = 'block';
+                muteIcon.style.display = 'none';
+            }
         }
-        
-        // Sync with actual video muted state
-        if (this.video) {
-            this.isMuted = this.video.muted;
-        }
-        
-        console.log('Current state - isMuted:', this.isMuted, 'video.muted:', this.video?.muted);
-        
-        // Update icon display based on muted state
-        if (this.isMuted) {
-            volumeIcon.style.display = 'none';
-            muteIcon.style.display = 'inline-block';
-            console.log('✅ Applied: volumeIcon=none, muteIcon=inline-block');
-        } else {
-            volumeIcon.style.display = 'inline-block';
-            muteIcon.style.display = 'none';
-            console.log('✅ Applied: volumeIcon=inline-block, muteIcon=none');
-        }
-        
-        // Verify the changes were applied
-        setTimeout(() => {
-            console.log('Verification - volumeIcon display:', volumeIcon.style.display, 'muteIcon display:', muteIcon.style.display);
-        }, 100);
     }
     
+    // UI state methods
     showLoading() {
         this.videoLoading?.classList.remove('hidden');
     }
@@ -519,7 +570,6 @@ class MemoryanVideoPlayer {
     showControls() {
         if (this.videoControls) {
             this.videoControls.classList.add('show-controls');
-            console.log('Controls shown');
         }
         this.clearControlsTimeout();
     }
@@ -527,13 +577,7 @@ class MemoryanVideoPlayer {
     hideControls() {
         if (this.videoControls) {
             this.videoControls.classList.remove('show-controls');
-            console.log('Controls hidden');
         }
-    }
-    
-    hideControlsDelayed() {
-        // Use the new showControlsTemporarily method for consistency
-        this.showControlsTemporarily();
     }
     
     isFullscreen() {
@@ -557,7 +601,6 @@ class MemoryanVideoPlayer {
             !document.webkitFullscreenElement && 
             !document.mozFullScreenElement && 
             !document.msFullscreenElement) {
-            // Exited fullscreen
             this.exitFullscreenMode();
         }
     }
@@ -595,17 +638,19 @@ class MemoryanVideoPlayer {
         }
     }
     
-    /**
-     * Calculate dynamic video dimensions based on viewport height
-     * Video height = 75% of viewport height
-     * Video width = height / 2 (maintaining 2:1 aspect ratio)
-     */
-    calculateDynamicVideoSize() {
-        const viewportHeight = window.innerHeight;
-        const videoHeight = Math.floor(viewportHeight * 0.75); // 75% of viewport height
-        const videoWidth = Math.floor(videoHeight / 2); // Width is half of height (2:1 aspect ratio)
+    // Optimized sizing system
+    calculateOptimizedVideoSize() {
+        // Use cached dimensions if viewport hasn't changed significantly
+        if (this.cachedDimensions && 
+            Math.abs(window.innerHeight - this.lastViewportHeight) < this.dimensionUpdateThreshold) {
+            return this.cachedDimensions;
+        }
         
-        // Set minimum and maximum constraints for usability
+        const viewportHeight = window.innerHeight;
+        const videoHeight = Math.floor(viewportHeight * 0.75);
+        const videoWidth = Math.floor(videoHeight / 2);
+        
+        // Constraints
         const minHeight = 300;
         const maxHeight = 800;
         const minWidth = 150;
@@ -614,55 +659,91 @@ class MemoryanVideoPlayer {
         const constrainedHeight = Math.max(minHeight, Math.min(maxHeight, videoHeight));
         const constrainedWidth = Math.max(minWidth, Math.min(maxWidth, videoWidth));
         
-        return {
+        // Cache the result
+        this.cachedDimensions = {
             width: constrainedWidth,
             height: constrainedHeight
         };
+        
+        this.lastViewportHeight = viewportHeight;
+        
+        return this.cachedDimensions;
     }
     
-    /**
-     * Apply dynamic sizing to video wrapper
-     */
-    applyDynamicSizing() {
+    applyOptimizedSizing() {
         if (!this.videoWrapper) return;
         
-        const dimensions = this.calculateDynamicVideoSize();
+        const dimensions = this.calculateOptimizedVideoSize();
         
-        // Apply dimensions to video wrapper
+        // Use transform for better performance than changing width/height
         this.videoWrapper.style.width = `${dimensions.width}px`;
         this.videoWrapper.style.height = `${dimensions.height}px`;
         
-        console.log(`Dynamic video sizing applied: ${dimensions.width}x${dimensions.height}px (${Math.round(window.innerHeight * 0.75)}px = 75% of ${window.innerHeight}px viewport)`);
+        console.log(`Optimized video sizing: ${dimensions.width}x${dimensions.height}px`);
     }
     
-    /**
-     * Setup dynamic sizing with resize listener
-     */
-    setupDynamicSizing() {
+    setupOptimizedSizing() {
         // Apply initial sizing
-        this.applyDynamicSizing();
+        this.applyOptimizedSizing();
         
-        // Listen for window resize events
-        let resizeTimeout;
-        window.addEventListener('resize', () => {
-            // Debounce resize events for performance
-            clearTimeout(resizeTimeout);
-            resizeTimeout = setTimeout(() => {
-                this.applyDynamicSizing();
-            }, 250);
-        });
+        // Note: Resize listeners are already set up in setupEventListeners with debouncing
+    }
+    
+    // Cleanup method for memory management
+    destroy() {
+        // Clear all timeouts
+        this.clearControlsTimeout();
+        if (this.resizeTimeout) {
+            clearTimeout(this.resizeTimeout);
+        }
+        if (this.progressUpdateThrottle) {
+            clearTimeout(this.progressUpdateThrottle);
+        }
         
-        // Listen for orientation change on mobile devices
-        window.addEventListener('orientationchange', () => {
-            // Delay to allow orientation change to complete
-            setTimeout(() => {
-                this.applyDynamicSizing();
-            }, 500);
-        });
+        // Remove all event listeners
+        if (this.video) {
+            this.video.removeEventListener('loadstart', this.boundHandlers.loadstart);
+            this.video.removeEventListener('progress', this.boundHandlers.progress);
+            this.video.removeEventListener('canplay', this.boundHandlers.canplay);
+            this.video.removeEventListener('timeupdate', this.boundHandlers.timeupdate);
+            this.video.removeEventListener('ended', this.boundHandlers.ended);
+            this.video.removeEventListener('error', this.boundHandlers.error);
+            this.video.removeEventListener('play', this.boundHandlers.play);
+            this.video.removeEventListener('pause', this.boundHandlers.pause);
+        }
+        
+        // Remove control listeners
+        this.playPauseBtn?.removeEventListener('click', this.boundHandlers.playPauseClick);
+        this.progressBar?.removeEventListener('click', this.boundHandlers.progressClick);
+        this.volumeBtn?.removeEventListener('click', this.boundHandlers.volumeClick);
+        this.fullscreenBtn?.removeEventListener('click', this.boundHandlers.fullscreenClick);
+        this.videoControls?.removeEventListener('click', this.boundHandlers.containerClick);
+        
+        // Remove global listeners
+        window.removeEventListener('resize', this.boundHandlers.resize);
+        window.removeEventListener('orientationchange', this.boundHandlers.orientationChange);
+        document.removeEventListener('languageChanged', this.boundHandlers.languageChange);
+        document.removeEventListener('keydown', this.boundHandlers.keydown);
+        
+        // Remove device-specific listeners
+        if (this.videoWrapper) {
+            if (this.isMobileDevice) {
+                this.videoWrapper.removeEventListener('touchstart', this.boundHandlers.touchStart);
+                this.videoWrapper.removeEventListener('touchend', this.boundHandlers.touchEnd);
+            } else {
+                this.videoWrapper.removeEventListener('mouseenter', this.boundHandlers.mouseEnter);
+                this.videoWrapper.removeEventListener('mouseleave', this.boundHandlers.mouseLeave);
+                this.videoWrapper.removeEventListener('mousemove', this.boundHandlers.mouseMove);
+            }
+        }
+        
+        // Clear references
+        this.boundHandlers = {};
+        this.cachedDimensions = null;
     }
 }
 
-// Global functions for HTML onclick handlers
+// Global functions for HTML onclick handlers (maintained for compatibility)
 function handleVideoLoadStart() {
     window.videoPlayer?.handleVideoLoadStart();
 }
@@ -683,19 +764,29 @@ function togglePlayPause() {
     window.videoPlayer?.togglePlayPause();
 }
 
-// Removed global toggleMute function - using class method only
-
 function toggleFullscreen() {
     window.videoPlayer?.toggleFullscreen();
 }
 
-// Initialize video player when DOM is loaded
+// Optimized initialization
 document.addEventListener('DOMContentLoaded', () => {
+    // Clean up any existing player
+    if (window.videoPlayer && typeof window.videoPlayer.destroy === 'function') {
+        window.videoPlayer.destroy();
+    }
+    
     window.videoPlayer = new MemoryanVideoPlayer();
 });
 
 // Handle language changes from i18n system
 document.addEventListener('languageChanged', (event) => {
-    window.videoPlayer?.detectLanguage();
-    window.videoPlayer?.loadVideo();
+    // Language change is now handled internally by the player
+    console.log('Language change detected:', event.detail.language);
+});
+
+// Handle page unload cleanup
+window.addEventListener('beforeunload', () => {
+    if (window.videoPlayer && typeof window.videoPlayer.destroy === 'function') {
+        window.videoPlayer.destroy();
+    }
 }); 
