@@ -107,11 +107,10 @@ class MemoryanVideoPlayer {
                     this.togglePlayPause();
                 }
             });
-            
-            // Show/hide controls on hover
-            this.videoControls.addEventListener('mouseenter', () => this.showControls());
-            this.videoControls.addEventListener('mouseleave', () => this.hideControls());
         }
+        
+        // Setup classical controls visibility system
+        this.setupControlsVisibility();
         
         // Language change listener
         document.addEventListener('languageChanged', (e) => {
@@ -127,6 +126,88 @@ class MemoryanVideoPlayer {
         document.addEventListener('webkitfullscreenchange', () => this.handleFullscreenChange());
         document.addEventListener('mozfullscreenchange', () => this.handleFullscreenChange());
         document.addEventListener('MSFullscreenChange', () => this.handleFullscreenChange());
+    }
+    
+    setupControlsVisibility() {
+        if (!this.videoControls || !this.videoWrapper) return;
+        
+        // Classical mobile detection - reliable approach from web standards
+        this.isMobileDevice = this.detectMobileDevice();
+        console.log('Device type detected:', this.isMobileDevice ? 'Mobile' : 'Desktop');
+        
+        if (this.isMobileDevice) {
+            // Mobile: Use touch events and timer-based hiding (no hover)
+            this.setupMobileControlsVisibility();
+        } else {
+            // Desktop: Use mouse events with proper hover detection
+            this.setupDesktopControlsVisibility();
+        }
+    }
+    
+    detectMobileDevice() {
+        // Classical approach: Multiple detection methods for reliability
+        const userAgent = navigator.userAgent.toLowerCase();
+        const isMobileUserAgent = /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini/i.test(userAgent);
+        const hasTouchScreen = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+        const isSmallScreen = window.innerWidth <= 768;
+        
+        // Device is mobile if ANY of these conditions are true
+        return isMobileUserAgent || (hasTouchScreen && isSmallScreen);
+    }
+    
+    setupMobileControlsVisibility() {
+        console.log('Setting up mobile controls visibility');
+        
+        // Mobile: Show controls on any interaction, hide after 2 seconds
+        const showControlsOnMobile = () => {
+            this.showControlsTemporarily();
+        };
+        
+        // Touch events
+        this.videoWrapper.addEventListener('touchstart', showControlsOnMobile, { passive: true });
+        this.videoWrapper.addEventListener('touchend', showControlsOnMobile, { passive: true });
+        
+        // Click events (fallback)
+        this.videoWrapper.addEventListener('click', showControlsOnMobile);
+        
+        // Video events that should show controls
+        if (this.video) {
+            this.video.addEventListener('play', showControlsOnMobile);
+            this.video.addEventListener('pause', showControlsOnMobile);
+        }
+    }
+    
+    setupDesktopControlsVisibility() {
+        console.log('Setting up desktop controls visibility');
+        
+        // Desktop: Classical mouse hover approach
+        this.videoWrapper.addEventListener('mouseenter', () => {
+            this.showControls();
+            this.clearControlsTimeout();
+        });
+        
+        this.videoWrapper.addEventListener('mouseleave', () => {
+            if (this.isPlaying) {
+                this.hideControls();
+            }
+        });
+        
+        // Mouse movement shows controls temporarily
+        this.videoWrapper.addEventListener('mousemove', () => {
+            this.showControlsTemporarily();
+        });
+    }
+    
+    showControlsTemporarily() {
+        this.showControls();
+        this.clearControlsTimeout();
+        
+        // Hide after 2 seconds if playing
+        if (this.isPlaying) {
+            this.controlsTimeout = setTimeout(() => {
+                this.hideControls();
+            }, 2000);
+        }
     }
     
     detectLanguage() {
@@ -436,23 +517,23 @@ class MemoryanVideoPlayer {
     }
     
     showControls() {
-        this.videoControls?.classList.add('show-controls');
+        if (this.videoControls) {
+            this.videoControls.classList.add('show-controls');
+            console.log('Controls shown');
+        }
         this.clearControlsTimeout();
     }
     
     hideControls() {
-        if (this.isPlaying) {
-            this.videoControls?.classList.remove('show-controls');
+        if (this.videoControls) {
+            this.videoControls.classList.remove('show-controls');
+            console.log('Controls hidden');
         }
     }
     
     hideControlsDelayed() {
-        this.clearControlsTimeout();
-        // Shorter timeout in fullscreen for better mobile experience
-        const timeout = this.isFullscreen() ? 2000 : 3000;
-        this.controlsTimeout = setTimeout(() => {
-            this.hideControls();
-        }, timeout);
+        // Use the new showControlsTemporarily method for consistency
+        this.showControlsTemporarily();
     }
     
     isFullscreen() {
