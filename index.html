@@ -35,35 +35,107 @@
         </nav>
     </header>
 
-    <!-- Hero Section with Floating App Mockup -->
+    <!-- Hero Section with Modern Responsive Layout -->
     <section id="hero">
-        <div class="hero-content" data-aos="fade-up" data-aos-delay="100" data-aos-duration="800">
-            <div class="hero-title-container">
-                <img src="images/memoryan-logo.png" alt="Memoryan App Logo" class="hero-logo">
-                <h1 data-i18n="hero.title">This is Memoryan</h1>
-            </div>
-            <h2 data-i18n="hero.subtitle">An app that redefines how people save and apply valuable content from anywhere.</h2>
-            <p data-i18n="hero.description">It's not just about saving — it's about cherishing, organizing, and effortlessly rediscovering what truly matters to you.</p>
-        </div>
-        
-        <!-- Special Offer and Trailer in flex container for mobile -->
-        <div class="mobile-flex-container">
-            <!-- Special Launch Offer -->
-            <div class="hero-announcement" data-aos="zoom-in" data-aos-delay="300">
-                <div class="glass-special-card">
-                    <h2 data-i18n="hero.specialOffer">Special Launch Offer!</h2>
-                    <div class="announcement-text">
-                        <div class="glow-text" data-i18n="hero.freePremium">🎉 FREE PREMIUM Until the 1st of June! 🎉</div>
-                        <p data-i18n="hero.betaTesting">Beta Testing starts 25th May. Be among the first to experience the full power of Memoryan.</p>
+        <!-- Hero Grid Container -->
+        <div class="hero-grid-container">
+            <!-- Left Column: Content -->
+            <div class="hero-content-column">
+                <!-- Main Hero Content -->
+                <div class="hero-content" data-aos="fade-up" data-aos-delay="100" data-aos-duration="800">
+                    <div class="hero-title-container">
+                        <img src="images/memoryan-logo.png" alt="Memoryan App Logo" class="hero-logo">
+                        <h1 data-i18n="hero.title">This is Memoryan</h1>
                     </div>
-                    <div class="announcement-decoration"></div>
+                    <h2 data-i18n="hero.subtitle">An app that redefines how people save and apply valuable content from anywhere.</h2>
+                    <p data-i18n="hero.description">It's not just about saving — it's about cherishing, organizing, and effortlessly rediscovering what truly matters to you.</p>
+                </div>
+                
+                <!-- Special Launch Offer -->
+                <div class="hero-announcement" data-aos="zoom-in" data-aos-delay="300">
+                    <div class="glass-special-card">
+                        <h2 data-i18n="hero.specialOffer">Special Launch Offer!</h2>
+                        <div class="announcement-text">
+                            <div class="glow-text" data-i18n="hero.freePremium">🎉 FREE PREMIUM Until the 1st of June! 🎉</div>
+                            <p data-i18n="hero.betaTesting">Beta Testing starts 2nd of June. Be among the first to experience the full power of Memoryan.</p>
+                        </div>
+                        <div class="announcement-decoration"></div>
+                    </div>
                 </div>
             </div>
             
-            <!-- Video Trailer Placeholder -->
-            <div class="trailer-container" data-aos="fade-up" data-aos-delay="400">
-                <div class="trailer-placeholder">
-                    <div class="trailer-text" data-i18n="hero.trailerSoon">Trailer is soon</div>
+            <!-- Right Column: Video (Desktop) / Below Content (Mobile) -->
+            <div class="hero-video-column">
+                <!-- Professional Video Trailer -->
+                <div class="trailer-container" data-aos="fade-up" data-aos-delay="400">
+                    <div class="video-player-wrapper">
+                        <!-- Loading Spinner -->
+                        <div class="video-loading" id="videoLoading">
+                            <div class="loading-spinner"></div>
+                            <div class="loading-text" data-i18n="hero.loadingTrailer">Loading trailer...</div>
+                        </div>
+                        
+                        <!-- Video Element -->
+                        <video 
+                            id="trailerVideo" 
+                            class="trailer-video" 
+                            preload="metadata"
+                            muted
+                            playsinline
+                            poster=""
+                            onloadstart="handleVideoLoadStart()"
+                            oncanplay="handleVideoCanPlay()"
+                            onprogress="handleVideoProgress()"
+                            onerror="handleVideoError()"
+                        >
+                            <source id="videoSource" src="trailer.mp4" type="video/mp4">
+                            <p data-i18n="hero.videoNotSupported">Your browser does not support the video tag.</p>
+                        </video>
+                        
+                        <!-- Video Controls Overlay -->
+                        <div class="video-controls-overlay" id="videoControls">
+                            <button class="play-pause-btn" id="playPauseBtn" onclick="togglePlayPause()">
+                                <svg class="play-icon" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M8 5v14l11-7z"/>
+                                </svg>
+                                <svg class="pause-icon" viewBox="0 0 24 24" fill="currentColor" style="display: none;">
+                                    <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>
+                                </svg>
+                            </button>
+                            
+                            <!-- Progress Bar -->
+                            <div class="video-progress-container">
+                                <div class="video-progress-bar" id="progressBar">
+                                    <div class="video-progress-fill" id="progressFill"></div>
+                                    <div class="video-progress-handle" id="progressHandle"></div>
+                                </div>
+                            </div>
+                            
+                            <!-- Volume and Fullscreen Controls -->
+                            <div class="video-secondary-controls">
+                                <button class="volume-btn" id="volumeBtn">
+                                    <svg class="volume-icon" viewBox="0 0 24 24" fill="currentColor">
+                                        <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/>
+                                    </svg>
+                                    <svg class="mute-icon" viewBox="0 0 24 24" fill="currentColor" style="display: none;">
+                                        <path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z"/>
+                                    </svg>
+                                </button>
+                                
+                                <button class="fullscreen-btn" id="fullscreenBtn" onclick="toggleFullscreen()">
+                                    <svg class="fullscreen-icon" viewBox="0 0 24 24" fill="currentColor">
+                                        <path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/>
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- Error Message -->
+                        <div class="video-error" id="videoError" style="display: none;">
+                            <div class="error-icon">⚠️</div>
+                            <div class="error-text" data-i18n="hero.videoError">Unable to load video. Please try again later.</div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -373,8 +445,8 @@
     <footer class="glass-panel">
         <p data-i18n="common.footer.copyright">&copy; 2024 Memoryan. All rights reserved.</p>
         <div class="footer-links">
-            <a href="#" title="Privacy Policy" class="magnetic-element" data-i18n="common.footer.privacyPolicy">Privacy Policy</a> | 
-            <a href="#" title="Terms of Service" class="magnetic-element" data-i18n="common.footer.termsOfService">Terms of Service</a>
+                            <a href="privacy-policy" title="Privacy Policy" class="magnetic-element" data-i18n="common.footer.privacyPolicy">Privacy Policy</a> |
+                <a href="terms-of-service" title="Terms of Service" class="magnetic-element" data-i18n="common.footer.termsOfService">Terms of Service</a>
         </div>
         <div class="social-links">
             <span class="coming-soon-text" data-i18n="common.comingSoon">Social media coming soon!</span>
@@ -393,6 +465,7 @@
     <script src="https://cdn.jsdelivr.net/npm/swiper@9/swiper-bundle.min.js"></script>
     <script src="js/i18n.js"></script>
     <script src="js/rate-limiter.js"></script>
+    <script src="js/video-player.js"></script>
     
     <!-- Correct loading order for analytics -->
     <script src="js/config.js"></script>
