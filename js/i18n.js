@@ -42,9 +42,12 @@
                 "subtitle": "An app that redefines how people save and apply valuable content from anywhere.",
                 "description": "It's not just about saving links and notes — it's about effortlessly organizing and rediscovering them like never before.",
                 "specialOffer": "Special Launch Offer!",
-                "freePremium": "🎉 FREE PREMIUM Until the 15th of June! 🎉",
-                "betaTesting": "Beta Testing starts 3rd of June. Be among the first to experience the full power of Memoryan.",
-                "trailerSoon": "Trailer is soon"
+                "freePremium": "🎉 FREE PREMIUM Until the 28th of June! 🎉",
+                "betaTesting": "Beta Testing starts 14th of June. Be among the first to experience the full power of Memoryan.",
+                "trailerSoon": "Trailer is soon",
+                "loadingTrailer": "Loading trailer...",
+                "videoNotSupported": "Your browser does not support the video tag.",
+                "videoError": "Unable to load video. Please try again later."
             },
             "features": {
                 "title": "Key Features of Memoryan",
@@ -205,15 +208,18 @@
                 "subtitle": "Революция в том, как вы сохраняете и применяете потоки информации!",
                 "description": "Это не просто сохранение ссылок и заметок — это искусство ценить, систематизировать и открывать что то новое.",
                 "specialOffer": "Стартовое предложение!",
-                "freePremium": "🎉 Бесплатный Премиум до 15 июня! 🎉",
-                "betaTesting": "Бета-тестирование с 3 июня — станьте первыми героями Memoryan!",
-                "trailerSoon": "Трейлер - скоро"
+                "freePremium": "🎉 Бесплатный Премиум до 28 июня! 🎉",
+                "betaTesting": "Бета-тестирование с 14 июня — станьте первыми героями Memoryan!",
+                "trailerSoon": "Трейлер скоро",
+                "loadingTrailer": "Загрузка трейлера...",
+                "videoNotSupported": "Ваш браузер не поддерживает видео тег.",
+                "videoError": "Не удалось загрузить видео. Попробуйте позже."
             },
             "features": {
                 "title": "Ключевые возможности Memoryan",
                 "chambersCreation": {
                   "title": "Создание Папок",
-                  "description": "Группируйте контент в стильные настраиваемые папки для быстрой навигации."
+                  "description": "Группируйте контент в стильные настраиваемые Камеры для быстрой навигации."
                 },
                 "richCustomization": {
                   "title": "Глубокая персонализация",
@@ -225,7 +231,7 @@
                 },
                 "smartTagSystem": {
                   "title": "Удобная система тегов",
-                  "description": "Продуманная система тегов обеспечит вам максимальную эффективность в применении и организации контента."
+                  "description": "Продуманная система тегов обеспечит вам максимальную эффективность в применении и организацииконтента."
                 },
                 "contentBlocks": {
                   "title": "Страница блоков",
@@ -495,6 +501,11 @@
         
         // Save preference
         localStorage.setItem(LANGUAGE_STORAGE_KEY, lang);
+        
+        // Dispatch language change event for video player
+        document.dispatchEvent(new CustomEvent('languageChanged', {
+            detail: { language: lang }
+        }));
         currentLanguage = lang;
         
         // Update the page with new translations
