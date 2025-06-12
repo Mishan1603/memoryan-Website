@@ -199,6 +199,140 @@
             }
         }
         
+        /* Account Deletion Hint Arrow */
+        .deletion-hint-arrow {
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.15), rgba(147, 51, 234, 0.15));
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 30px;
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+        
+        .hint-content {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        
+        .hint-icon {
+            width: 32px;
+            height: 32px;
+            fill: #3B82F6;
+            flex-shrink: 0;
+        }
+        
+        .hint-text {
+            flex: 1;
+        }
+        
+        .hint-text strong {
+            color: #3B82F6;
+            font-size: 1.1rem;
+            display: block;
+            margin-bottom: 4px;
+        }
+        
+        .hint-text p {
+            color: var(--color-primary-light);
+            opacity: 0.8;
+            margin: 0;
+            font-size: 0.95rem;
+        }
+        
+        .hint-arrow {
+            width: 24px;
+            height: 24px;
+            fill: #3B82F6;
+            flex-shrink: 0;
+            animation: bounce 2s infinite;
+        }
+        
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% {
+                transform: translateY(0);
+            }
+            40% {
+                transform: translateY(-8px);
+            }
+            60% {
+                transform: translateY(-4px);
+            }
+        }
+        
+        /* Account Deletion Section Styles */
+        .policy-section h4 {
+            color: var(--color-primary-light);
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin: 24px 0 12px 0;
+        }
+        
+        .policy-section ol {
+            margin: 16px 0;
+            padding-left: 20px;
+        }
+        
+        .policy-section ol li {
+            color: var(--color-primary-light);
+            opacity: 0.85;
+            line-height: 1.7;
+            font-size: 1rem;
+            margin-bottom: 8px;
+        }
+        
+        .deletion-notice {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 24px;
+            display: flex;
+            align-items: flex-start;
+            gap: 16px;
+        }
+        
+        .deletion-notice svg {
+            width: 24px;
+            height: 24px;
+            fill: #EF4444;
+            flex-shrink: 0;
+            margin-top: 2px;
+        }
+        
+        .deletion-notice strong {
+            color: #EF4444;
+            font-size: 1.05rem;
+            display: block;
+            margin-bottom: 8px;
+        }
+        
+        .deletion-notice p {
+            color: var(--color-primary-light);
+            opacity: 0.9;
+            margin: 0;
+            font-size: 0.95rem;
+            line-height: 1.6;
+        }
+
+        @media (max-width: 768px) {
+            .hint-content {
+                flex-direction: column;
+                text-align: center;
+                gap: 12px;
+            }
+            
+            .deletion-notice {
+                flex-direction: column;
+                gap: 12px;
+            }
+            
+            .deletion-notice svg {
+                align-self: center;
+            }
+        }
+
         @media (max-width: 480px) {
             .policy-container {
                 padding: 20px 16px;
@@ -211,6 +345,18 @@
             .policy-header h1 {
                 font-size: 1.8rem;
             }
+            
+            .deletion-hint-arrow {
+                padding: 16px;
+            }
+            
+            .hint-text strong {
+                font-size: 1rem;
+            }
+            
+            .hint-text p {
+                font-size: 0.9rem;
+            }
         }
     </style>
 </head>
@@ -219,16 +365,32 @@
     <div class="animated-gradient"></div>
 
     <div class="policy-container">
-        <a href="index.html" class="back-button">
+        <a href="./" class="back-button">
             <svg viewBox="0 0 24 24">
                 <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.42-1.41L7.83 13H20v-2z"/>
             </svg>
             Back to Home
         </a>
         
+        <!-- Account Deletion Hint Arrow -->
+        <div class="deletion-hint-arrow" data-aos="fade-down">
+            <div class="hint-content">
+                <svg class="hint-icon" viewBox="0 0 24 24">
+                    <path d="M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M12,17C11.45,17 11,16.55 11,16C11,15.45 11.45,15 12,15C12.55,15 13,15.45 13,16C13,16.55 12.55,17 12,17M12,7A2.5,2.5 0 0,1 14.5,9.5C14.5,10.38 14,11.13 13.34,11.65C12.9,12 12.5,12.5 12.5,13H11.5C11.5,12 12,11.5 12.5,11C13,10.5 13.5,10 13.5,9.5A1.5,1.5 0 0,0 12,8A1.5,1.5 0 0,0 10.5,9.5H9.5A2.5,2.5 0 0,1 12,7Z"/>
+                </svg>
+                <div class="hint-text">
+                    <strong>Looking for Account Deletion Information?</strong>
+                    <p>Scroll down to Section 17 for complete account deletion instructions and Google Play requirements.</p>
+                </div>
+                <svg class="hint-arrow" viewBox="0 0 24 24">
+                    <path d="M7.41,8.58L12,13.17L16.59,8.58L18,10L12,16L6,10L7.41,8.58Z"/>
+                </svg>
+            </div>
+        </div>
+
         <div class="policy-header" data-aos="fade-up">
             <h1>Terms of Service</h1>
-            <p class="last-updated">Last Updated: January 2025</p>
+            <p class="last-updated">Last Updated: June 2025</p>
         </div>
 
         <div class="policy-content" data-aos="fade-up" data-aos-delay="100">
@@ -402,8 +564,68 @@
             </div>
 
             <div class="policy-section">
-                <h3>17. Contact Information</h3>
-                <p>If you have any questions about these Terms of Service, please contact us:</p>
+                <h3>17. Account Deletion & Data Retention</h3>
+                <p>You have the right to delete your account at any time. Here's what you need to know about the account deletion process:</p>
+                
+                <h4>How to Delete Your Account:</h4>
+                <ol>
+                    <li><strong>Open the Memoryan app</strong> on your mobile device</li>
+                    <li><strong>Navigate to Profile</strong> → Tap the profile icon in the bottom navigation</li>
+                    <li><strong>Go to Account</strong> → Tap the account button in the top of the profile page </li>
+                    <li><strong>Scroll to Bottom</strong> → Look for the "Delete Account" button at the bottom</li>
+                    <li><strong>Follow the Deletion Process</strong> → Complete the required steps</li>
+                </ol>
+                
+                <h4>Account Deletion Process:</h4>
+                <ul>
+                    <li><strong>Reason Selection:</strong> You'll be asked to select a reason for deletion (optional feedback)</li>
+                    <li><strong>Experience Feedback:</strong> Optional feedback about your experience with the app</li>
+                    <li><strong>Password Confirmation:</strong> Enter your current password to confirm the deletion</li>
+                    <li><strong>Acknowledgment:</strong> Confirm that you understand the deletion is permanent</li>
+                    <li><strong>Final Confirmation:</strong> Tap "Delete My Account" to initiate the process</li>
+                </ul>
+                
+                <h4>Grace Period & Data Retention:</h4>
+                <ul>
+                    <li><strong>30-Day Grace Period:</strong> Your account and data will be retained for 30 days after deletion request</li>
+                    <li><strong>Account Recovery:</strong> During the 30-day period, you can contact us to recover your account by email: info@mymemoryan.com</li>
+                    <li><strong>Permanent Deletion:</strong> After 30 days, your account and all associated data will be permanently deleted</li>
+                    <li><strong>No Recovery:</strong> Once the 30-day period expires, account recovery is not possible</li>
+                    <li><strong>Immediate Logout:</strong> You will be immediately logged out when deletion is initiated</li>
+                </ul>
+                
+                <h4>What Gets Deleted:</h4>
+                <ul>
+                    <li>Your user account and profile information</li>
+                    <li>All chambers (folders) and their contents</li>
+                    <li>All blocks (saved content, notes, links)</li>
+                    <li>All personal settings and preferences</li>
+                    <li>All sync data stored in the cloud</li>
+                    <li>All associated metadata and usage analytics</li>
+                </ul>
+                
+                <h4>Important Notes:</h4>
+                <ul>
+                    <li><strong>Irreversible:</strong> Account deletion cannot be undone after the 30-day grace period</li>
+                    <li><strong>Local Data:</strong> Data stored locally on your device should be manually cleared</li>
+                    <li><strong>Backup:</strong> We recommend exporting important data before deletion</li>
+                    <li><strong>Subscriptions:</strong> Cancel any active subscriptions separately through your app store</li>
+                </ul>
+                
+                <div class="deletion-notice">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M12,17C11.45,17 11,16.55 11,16C11,15.45 11.45,15 12,15C12.55,15 13,15.45 13,16C13,16.55 12.55,17 12,17M12,7A2.5,2.5 0 0,1 14.5,9.5C14.5,10.38 14,11.13 13.34,11.65C12.9,12 12.5,12.5 12.5,13H11.5C11.5,12 12,11.5 12.5,11C13,10.5 13.5,10 13.5,9.5A1.5,1.5 0 0,0 12,8A1.5,1.5 0 0,0 10.5,9.5H9.5A2.5,2.5 0 0,1 12,7Z"/>
+                    </svg>
+                    <div>
+                        <strong>Google Play Store Compliance:</strong>
+                        <p>This account deletion process complies with Google Play Store requirements for user data deletion and privacy rights. Users have full control over their data and can request permanent deletion at any time.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="policy-section">
+                <h3>18. Contact Information</h3>
+                <p>If you have any questions about these Terms of Service or need assistance with account deletion, please contact us:</p>
                 <p>Email: info@mymemoryan.com</p>
                 <p>Through the app: Use the feedback feature in Settings</p>
                 <p>We will respond to your inquiries promptly and professionally.</p>
