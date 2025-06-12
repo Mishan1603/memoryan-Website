@@ -216,7 +216,7 @@ header {
         justify-content: flex-end;
         align-items: flex-start;
         padding-top: 20px;
-    }
+}
 }
 
 /* Hero Content Styling */
@@ -319,7 +319,7 @@ header {
     .hero-announcement .glass-special-card {
         text-align: left;
         padding: 35px;
-    }
+}
 }
 
 .glass-special-card h2 {
@@ -430,14 +430,14 @@ header {
     transition: opacity 0.5s ease;
     border-radius: var(--border-radius);
     
-    /* Remove blue flash/highlight on mobile tap */
+    /* Remove blue focus outline that causes flash */
+    outline: none !important;
     -webkit-tap-highlight-color: transparent;
     -webkit-touch-callout: none;
     -webkit-user-select: none;
     -moz-user-select: none;
     -ms-user-select: none;
     user-select: none;
-    outline: none;
 }
 
 .trailer-video.loaded {
@@ -548,27 +548,16 @@ header {
     opacity: 1;
 }
 
-/* Hide controls when playing, but show on hover/touch */
-.video-controls-overlay.playing {
+.video-controls-overlay.playing:not(:hover) {
     opacity: 0;
-}
-
-.video-controls-overlay.playing:hover,
-.video-controls-overlay.playing.show-controls {
-    opacity: 1;
-}
-
-/* Mobile touch support - show controls briefly when tapped */
-@media (max-width: 768px) {
-    .video-controls-overlay.playing.show-controls {
-        opacity: 1;
-    }
 }
 
 /* Play/Pause Button */
 .play-pause-btn {
-    background: rgba(44, 54, 69, 0);
-    border: 1px solid rgba(191, 201, 241, 0);
+    background: rgba(44, 54, 69, 0.8);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(191, 201, 241, 0.2);
     border-radius: 50%;
     width: 80px;
     height: 80px;
@@ -707,7 +696,7 @@ header {
     max-width: 300px;
 }
 
-/* Fullscreen Mode Styles */
+/* Fullscreen Mode Styles - Optimized for Performance */
 .video-player-wrapper.fullscreen-mode {
     width: 100vw !important;
     height: 100vh !important;
@@ -719,6 +708,10 @@ header {
     left: 0 !important;
     z-index: 9999 !important;
     background: #000 !important;
+    /* Disable heavy effects for performance */
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    box-shadow: none !important;
 }
 
 .video-player-wrapper.fullscreen-mode .trailer-video {
@@ -731,6 +724,10 @@ header {
     top: 50% !important;
     left: 50% !important;
     transform: translate(-50%, -50%) !important;
+    /* Optimize for mobile performance */
+    will-change: transform;
+    transform-style: preserve-3d;
+    -webkit-transform-style: preserve-3d;
 }
 
 /* Fullscreen video when fullscreen API is used directly on video */
@@ -746,6 +743,12 @@ header {
     left: 50% !important;
     transform: translate(-50%, -50%) !important;
     z-index: 9999 !important;
+    /* Mobile performance optimizations */
+    will-change: transform;
+    transform-style: preserve-3d;
+    -webkit-transform-style: preserve-3d;
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
 }
 
 /* Ensure controls are visible in fullscreen */
@@ -769,11 +772,26 @@ header {
 .video-player-wrapper.fullscreen-mode .play-pause-btn {
     width: 100px !important;
     height: 100px !important;
+    /* Make controls less intrusive in fullscreen */
+    background: rgba(44, 54, 69, 0.6) !important;
+    backdrop-filter: blur(8px) !important;
+    -webkit-backdrop-filter: blur(8px) !important;
 }
 
 .video-player-wrapper.fullscreen-mode .play-pause-btn svg {
     width: 40px !important;
     height: 40px !important;
+}
+
+/* Fullscreen controls auto-hide behavior */
+.video-player-wrapper.fullscreen-mode .video-controls-overlay.playing:not(:hover) {
+    opacity: 0 !important;
+    transition: opacity 0.5s ease !important;
+}
+
+.video-player-wrapper.fullscreen-mode .video-controls-overlay:hover {
+    opacity: 1 !important;
+    transition: opacity 0.3s ease !important;
 }
 
 /* Floating App Mockup */
@@ -1349,7 +1367,7 @@ footer a:hover {
         width: 60px;
         height: 60px;
     }
-
+    
     .hero-announcement .glass-special-card {
         padding: 25px;
     }
@@ -1371,12 +1389,12 @@ footer a:hover {
         justify-content: center;
         align-items: center;
     }
-
+    
     .hero-logo {
         width: 50px;
         height: 50px;
     }
-
+    
     .hero-announcement .glass-special-card {
         padding: 20px;
     }
