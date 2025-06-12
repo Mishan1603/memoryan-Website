@@ -100,17 +100,25 @@ class MemoryanVideoPlayer {
             });
         }
         
-        // Video container click to toggle play/pause
+        // Video container click/tap to show controls and toggle play/pause
         if (this.videoControls) {
             this.videoControls.addEventListener('click', (e) => {
                 if (e.target === this.videoControls) {
+                    // Show controls when user clicks/taps
+                    this.showControls();
+                    this.hideControlsDelayed();
+                    // Also toggle play/pause
                     this.togglePlayPause();
                 }
             });
             
-            // Show/hide controls on hover
-            this.videoControls.addEventListener('mouseenter', () => this.showControls());
-            this.videoControls.addEventListener('mouseleave', () => this.hideControls());
+            // Touch events for mobile - show controls when tapped
+            this.videoControls.addEventListener('touchstart', (e) => {
+                if (e.target === this.videoControls) {
+                    this.showControls();
+                    this.hideControlsDelayed();
+                }
+            }, { passive: true });
         }
         
         // Language change listener
@@ -185,7 +193,7 @@ class MemoryanVideoPlayer {
                 this.updateVolumeButton(); // Update button display
                 this.video.play().catch(error => {
                     console.log('Auto-play failed:', error);
-                    this.showControls();
+                    // Don't automatically show controls if auto-play fails
                 });
             }
         }
@@ -196,7 +204,7 @@ class MemoryanVideoPlayer {
         if (!this.hasAutoPlayed) {
             this.hideLoading();
             this.video.classList.add('loaded');
-            this.showControls();
+            // Don't automatically show controls when video loads
         }
     }
     
@@ -206,24 +214,24 @@ class MemoryanVideoPlayer {
         this.showError();
     }
     
-    handlePlay() {
+        handlePlay() {
         this.isPlaying = true;
         this.updatePlayPauseButton();
         this.videoControls?.classList.add('playing');
-        this.hideControlsDelayed();
+        // Don't automatically show controls when playing starts
     }
-    
+
     handlePause() {
         this.isPlaying = false;
         this.updatePlayPauseButton();
         this.videoControls?.classList.remove('playing');
-        this.showControls();
+        // Don't automatically show controls when paused
     }
     
     handleVideoEnded() {
         this.isPlaying = false;
         this.updatePlayPauseButton();
-        this.showControls();
+        // Don't automatically show controls when video ends
         this.video.currentTime = 0;
     }
     
@@ -265,62 +273,38 @@ class MemoryanVideoPlayer {
         
         if (document.fullscreenElement) {
             document.exitFullscreen();
-            this.exitFullscreenMode();
         } else {
-            // Request fullscreen on the video wrapper for better control
+            // Use video wrapper for better control, fallback to video element
             const videoWrapper = this.video.closest('.video-player-wrapper');
             const elementToFullscreen = videoWrapper || this.video;
             
-            elementToFullscreen.requestFullscreen().then(() => {
-                this.enterFullscreenMode();
-            }).catch(error => {
+            // Simplified fullscreen request - let CSS handle the styling
+            elementToFullscreen.requestFullscreen().catch(error => {
                 console.log('Fullscreen failed:', error);
-                // Fallback to video element
-                this.video.requestFullscreen().then(() => {
-                    this.enterFullscreenMode();
-                }).catch(err => {
+                // Fallback to video element only
+                this.video.requestFullscreen().catch(err => {
                     console.log('Video fullscreen also failed:', err);
                 });
             });
         }
     }
     
-    enterFullscreenMode() {
-        // Add fullscreen class for styling
+        enterFullscreenMode() {
+        // Minimal DOM manipulation - let CSS handle styling
         const videoWrapper = this.video.closest('.video-player-wrapper');
         if (videoWrapper) {
             videoWrapper.classList.add('fullscreen-mode');
-            // Ensure proper centering in fullscreen
-            videoWrapper.style.display = 'flex';
-            videoWrapper.style.alignItems = 'center';
-            videoWrapper.style.justifyContent = 'center';
         }
         this.video.classList.add('fullscreen-video');
-        
-        // Ensure video fills screen vertically and maintains aspect ratio
-        this.video.style.width = 'auto';
-        this.video.style.height = '100vh';
-        this.video.style.objectFit = 'contain';
-        this.video.style.objectPosition = 'center';
     }
-    
+
     exitFullscreenMode() {
-        // Remove fullscreen classes
+        // Minimal DOM manipulation - let CSS handle styling
         const videoWrapper = this.video.closest('.video-player-wrapper');
         if (videoWrapper) {
             videoWrapper.classList.remove('fullscreen-mode');
-            // Reset wrapper styles
-            videoWrapper.style.display = '';
-            videoWrapper.style.alignItems = '';
-            videoWrapper.style.justifyContent = '';
         }
         this.video.classList.remove('fullscreen-video');
-        
-        // Reset video styles
-        this.video.style.width = '';
-        this.video.style.height = '';
-        this.video.style.objectFit = '';
-        this.video.style.objectPosition = '';
     }
     
     seekVideo(event) {
@@ -425,16 +409,19 @@ class MemoryanVideoPlayer {
     }
     
     hideControls() {
-        if (this.isPlaying) {
-            this.videoControls?.classList.remove('show-controls');
-        }
+        // Always hide controls when requested
+        this.videoControls?.classList.remove('show-controls');
     }
     
     hideControlsDelayed() {
         this.clearControlsTimeout();
+        // Shorter timeout on mobile for better UX
+        const isMobile = window.innerWidth <= 768;
+        const timeout = isMobile ? 2000 : 3000; // 2s on mobile, 3s on desktop
+        
         this.controlsTimeout = setTimeout(() => {
             this.hideControls();
-        }, 3000);
+        }, timeout);
     }
     
     clearControlsTimeout() {
@@ -449,8 +436,11 @@ class MemoryanVideoPlayer {
             !document.webkitFullscreenElement && 
             !document.mozFullScreenElement && 
             !document.msFullscreenElement) {
-            // Exited fullscreen
+            // Exited fullscreen - clean up classes
             this.exitFullscreenMode();
+        } else {
+            // Entered fullscreen - apply classes
+            this.enterFullscreenMode();
         }
     }
     
