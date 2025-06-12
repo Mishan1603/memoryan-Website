@@ -543,13 +543,25 @@ header {
     border-radius: var(--border-radius);
 }
 
-.video-controls-overlay:hover,
+/* Show controls when explicitly shown */
 .video-controls-overlay.show-controls {
     opacity: 1;
 }
 
-.video-controls-overlay.playing:not(:hover) {
+/* Hide controls when playing (will be overridden by show-controls class) */
+.video-controls-overlay.playing {
     opacity: 0;
+}
+
+/* Desktop-only hover effects - disabled on touch devices */
+@media (hover: hover) and (pointer: fine) {
+    .video-controls-overlay:hover {
+        opacity: 1;
+    }
+    
+    .video-controls-overlay.playing:not(:hover) {
+        opacity: 0;
+    }
 }
 
 /* Play/Pause Button */
@@ -570,10 +582,13 @@ header {
     margin-bottom: 20px;
 }
 
-.play-pause-btn:hover {
-    background: rgba(44, 54, 69, 0.9);
-    border-color: rgba(191, 201, 241, 0.4);
-    transform: scale(1.1);
+/* Desktop-only button hover effects */
+@media (hover: hover) and (pointer: fine) {
+    .play-pause-btn:hover {
+        background: rgba(44, 54, 69, 0.9);
+        border-color: rgba(191, 201, 241, 0.4);
+        transform: scale(1.1);
+    }
 }
 
 .play-pause-btn svg {
@@ -624,8 +639,11 @@ header {
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
 }
 
-.video-progress-bar:hover .video-progress-handle {
-    opacity: 1;
+/* Desktop-only progress bar hover effects */
+@media (hover: hover) and (pointer: fine) {
+    .video-progress-bar:hover .video-progress-handle {
+        opacity: 1;
+    }
 }
 
 /* Secondary Controls */
@@ -654,11 +672,14 @@ header {
     color: var(--color-primary-light);
 }
 
-.volume-btn:hover,
-.fullscreen-btn:hover {
-    background: rgba(44, 54, 69, 0.9);
-    border-color: rgba(191, 201, 241, 0.4);
-    transform: scale(1.05);
+/* Desktop-only volume and fullscreen button hover effects */
+@media (hover: hover) and (pointer: fine) {
+    .volume-btn:hover,
+    .fullscreen-btn:hover {
+        background: rgba(44, 54, 69, 0.9);
+        border-color: rgba(191, 201, 241, 0.4);
+        transform: scale(1.05);
+    }
 }
 
 .volume-btn svg,
@@ -784,14 +805,22 @@ header {
 }
 
 /* Fullscreen controls auto-hide behavior */
-.video-player-wrapper.fullscreen-mode .video-controls-overlay.playing:not(:hover) {
+.video-player-wrapper.fullscreen-mode .video-controls-overlay.playing {
     opacity: 0 !important;
     transition: opacity 0.5s ease !important;
 }
 
-.video-player-wrapper.fullscreen-mode .video-controls-overlay:hover {
+.video-player-wrapper.fullscreen-mode .video-controls-overlay.show-controls {
     opacity: 1 !important;
     transition: opacity 0.3s ease !important;
+}
+
+/* Desktop-only fullscreen hover effects */
+@media (hover: hover) and (pointer: fine) {
+    .video-player-wrapper.fullscreen-mode .video-controls-overlay:hover {
+        opacity: 1 !important;
+        transition: opacity 0.3s ease !important;
+    }
 }
 
 /* Floating App Mockup */
