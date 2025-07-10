@@ -29,7 +29,6 @@
                 "googlePlay": "Google Play",
                 "features": "Features",
                 "screenshots": "Screenshots",
-                "comingSoon": "Social media coming soon!",
                 "contact": "Contact:",
                 "footer": {
                     "copyright": "© 2025 Memoryan. All rights reserved.",
@@ -42,8 +41,8 @@
                 "subtitle": "An app that redefines how people save and apply valuable content from anywhere.",
                 "description": "It's not just about saving links and notes — it's about effortlessly organizing and rediscovering them like never before.",
                 "specialOffer": "Special Launch Offer!",
-                "freePremium": "🎉 FREE PREMIUM Until the 28th of June! 🎉",
-                "betaTesting": "Beta Testing starts 14th of June. Be among the first to experience the full power of Memoryan.",
+                "freePremium": "🎉 FREE PREMIUM Until the 20th of July! 🎉",
+                "betaTesting": "Beta Testing starts 5th of July. Be among the first to experience the full power of Memoryan.",
                 "trailerSoon": "Trailer is soon",
                 "loadingTrailer": "Loading trailer...",
                 "videoNotSupported": "Your browser does not support the video tag.",
@@ -157,6 +156,15 @@
                     "description": "Continuous enhancements, useful features, and fixes."
                 }
             },
+            "joinTests": {
+                "title": "Join our Closed Tests on Google Play!",
+                "subtitle": "Join our tests, provide us a feedback, and get some pleasant gifts afterwords",
+                "benefits": {
+                    "premium": "60 Days Premium subscription",
+                    "credits": "your name will be Mentioned in credentials on Easter Egg Page"
+                },
+                "joinButton": "Join"
+            },
             "privacyPolicy": {
                 "title": "Privacy Policy",
                 "lastUpdated": "Last Updated:",
@@ -195,7 +203,6 @@
                 "download": "Скачать",
                 "appStore": "App Store",
                 "googlePlay": "Google Play",
-                "comingSoon": "Социальные медиа скоро появятся!",
                 "contact": "Контакт:",
                 "footer": {
                     "copyright": "© 2025 Memoryan. Все права защищены.",
@@ -208,8 +215,8 @@
                 "subtitle": "Революция в том, как вы сохраняете и применяете потоки информации!",
                 "description": "Это не просто сохранение ссылок и заметок — это искусство ценить, систематизировать и открывать что то новое.",
                 "specialOffer": "Стартовое предложение!",
-                "freePremium": "🎉 Бесплатный Премиум до 28 июня! 🎉",
-                "betaTesting": "Бета-тестирование с 14 июня — станьте первыми героями Memoryan!",
+                "freePremium": "🎉 Бесплатный Премиум до 20 июля! 🎉",
+                "betaTesting": "Бета-тестирование с 5 июля — станьте первыми героями Memoryan!",
                 "trailerSoon": "Трейлер скоро",
                 "loadingTrailer": "Загрузка трейлера...",
                 "videoNotSupported": "Ваш браузер не поддерживает видео тег.",
@@ -322,6 +329,15 @@
                     "title": "И многое другое",
                     "description": "Постоянные улучшения, полезные функции и исправления."
                 }
+            },
+            "joinTests": {
+                "title": "Присоединяйтесь к закрытому тестированию в Google Play!",
+                "subtitle": "Участвуйте в тестах, делитесь отзывами и получайте приятные подарки",
+                "benefits": {
+                    "premium": "60 дней Премиум подписки",
+                    "credits": "Ваше имя будет указано в титрах на странице Easter Egg"
+                },
+                "joinButton": "Присоединиться"
             },
             "privacyPolicy": {
                 "title": "Политика конфиденциальности",
