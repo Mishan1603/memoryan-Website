@@ -2167,6 +2167,15 @@ footer a:hover {
     box-shadow: 0 8px 32px rgba(191,201,241,0.18);
 }
 
+/* Safari Mobile specific fixes */
+@supports (-webkit-touch-callout: none) {
+    .swiper-slide img {
+        -webkit-transform: translateZ(0);
+        -webkit-backface-visibility: hidden;
+        backface-visibility: hidden;
+    }
+}
+
 
 
 /* Upcoming Features Section */
