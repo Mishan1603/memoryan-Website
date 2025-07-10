@@ -1713,10 +1713,16 @@ footer a:hover {
 /* Adjust carousel slides to show more of prev/next */
 .swiper-slide {
     transition: transform 0.5s ease, opacity 0.5s ease;
-    opacity: 0.6;
-    transform: scale(0.85);
+    opacity: 1; /* Changed from 0.6 to 1 for mobile image loading */
+    transform: scale(1); /* Changed from 0.85 to 1 for mobile image loading */
     width: 45%; /* Reduced from 50% to show more of next/prev slides */
     will-change: transform;
+}
+
+/* Apply visual effects only after images are loaded and ready */
+.swiper-slide.images-loaded {
+    opacity: 0.6;
+    transform: scale(0.85);
 }
 
 /* Custom breakpoints to ensure proper visibility */
@@ -1749,13 +1755,13 @@ footer a:hover {
 }
 
 .swiper-slide-active {
-    opacity: 1;
-    transform: scale(1);
+    opacity: 1 !important;
+    transform: scale(1) !important;
     z-index: 2;
 }
 
-.swiper-slide-prev, 
-.swiper-slide-next {
+.swiper-slide-prev.images-loaded, 
+.swiper-slide-next.images-loaded {
     opacity: 0.8;
     transform: scale(0.9);
 }
