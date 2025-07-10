@@ -616,6 +616,16 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
         
+        // Expose Swiper instance globally for smart carousel optimizer
+        window.screenshotSwiper = screenshotSwiper;
+        
+        // Notify smart carousel optimizer that Swiper is ready
+        if (window.smartCarouselOptimizer && typeof window.smartCarouselOptimizer.setupSwiperHooks === 'function') {
+            setTimeout(() => {
+                window.smartCarouselOptimizer.setupSwiperHooks();
+            }, 100);
+        }
+        
         return screenshotSwiper;
     }
     
