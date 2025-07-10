@@ -2161,58 +2161,7 @@ footer a:hover {
     box-shadow: 0 8px 32px rgba(191,201,241,0.18);
 }
 
-/* Performance Optimization Styles */
-.loading-placeholder {
-    filter: blur(2px);
-    transform: scale(1.02);
-    opacity: 0.7;
-    transition: all 0.3s ease;
-}
 
-.image-loaded {
-    filter: none;
-    transform: scale(1);
-    opacity: 1;
-}
-
-/* Progressive loading animation */
-.loading-placeholder::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
-    animation: shimmer 2s infinite;
-}
-
-@keyframes shimmer {
-    0% { left: -100%; }
-    100% { left: 100%; }
-}
-
-/* Optimized image container */
-.screenshot-image {
-    position: relative;
-    overflow: hidden;
-}
-
-/* Video optimization indicators */
-.video-optimized {
-    position: relative;
-}
-
-.video-optimized::before {
-    content: '📹';
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    font-size: 12px;
-    opacity: 0.6;
-    z-index: 10;
-    pointer-events: none;
-}
 
 /* Upcoming Features Section */
 #upcoming-features {
