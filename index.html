@@ -500,14 +500,17 @@
         </div>
     </footer>
 
-    <!-- JavaScript Libraries -->
-    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/swiper@9/swiper-bundle.min.js"></script>
-    <script src="js/i18n.js"></script>
-    <script src="js/rate-limiter.js"></script>
-    <script src="js/simple-video-optimizer.js"></script>
-    <script src="js/smart-carousel-optimizer.js"></script>
-    <script src="js/video-player.js"></script>
+    <!-- Critical Safari Mobile Fix - Must load first -->
+    <script src="js/safari-mobile-fix.js"></script>
+    
+    <!-- JavaScript Libraries - Optimized loading for Safari mobile -->
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/swiper@9/swiper-bundle.min.js" defer></script>
+    <script src="js/i18n.js" defer></script>
+    <script src="js/rate-limiter.js" defer></script>
+    <script src="js/simple-video-optimizer.js" defer></script>
+    <script src="js/smart-carousel-optimizer.js" defer></script>
+    <script src="js/video-player.js" defer></script>
     
     <!-- Correct loading order for analytics -->
     <script src="js/config.js"></script>
