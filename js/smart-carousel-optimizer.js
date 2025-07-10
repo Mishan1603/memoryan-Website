@@ -81,13 +81,19 @@ class SmartCarouselOptimizer {
                         uniqueIndex: uniqueSlides.length
                     });
                     
-                    // Store in our map for quick access
-                    this.carouselImages.set(uniqueSlides.length - 1, {
-                        img,
-                        src,
-                        slide,
-                        loaded: img.complete && img.naturalHeight > 0
-                    });
+                                         // Store in our map for quick access
+                     const isLoaded = img.complete && img.naturalHeight > 0;
+                     this.carouselImages.set(uniqueSlides.length - 1, {
+                         img,
+                         src,
+                         slide,
+                         loaded: isLoaded
+                     });
+                     
+                     // If image is already loaded, add the class immediately
+                     if (isLoaded) {
+                         slide.classList.add('images-loaded');
+                     }
                 }
             }
         });
@@ -123,6 +129,12 @@ class SmartCarouselOptimizer {
             img.addEventListener('load', () => {
                 this.loadedImages.add(index);
                 console.log(`✅ Carousel image ${index} loaded successfully`);
+                
+                // Add images-loaded class to enable visual effects
+                const slide = data.slide;
+                if (slide) {
+                    slide.classList.add('images-loaded');
+                }
             });
             
             // Add error handling
@@ -418,6 +430,18 @@ class SmartCarouselOptimizer {
         // Force load the image
         if (!img.src) {
             img.src = src;
+            
+            // Check if image loads immediately (cached)
+            setTimeout(() => {
+                if (img.complete && img.naturalHeight > 0) {
+                    this.loadedImages.add(index);
+                    const slide = imageData.slide;
+                    if (slide) {
+                        slide.classList.add('images-loaded');
+                    }
+                    console.log(`⚡ Image ${index} loaded immediately from cache`);
+                }
+            }, 10);
         }
         
         // For high priority images, we can also preload via Image constructor
