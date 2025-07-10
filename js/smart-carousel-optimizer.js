@@ -40,6 +40,12 @@ class SmartCarouselOptimizer {
     }
     
     setupOptimizer() {
+        // Check if Safari Mobile Fix is handling this
+        if (window.safariMobileFix && window.safariMobileFix.isSafariMobile) {
+            console.log('🍎 Safari Mobile Fix detected - deferring to Safari-specific handling');
+            return;
+        }
+        
         // Step 1: Find and catalog all carousel images
         this.catalogCarouselImages();
         
