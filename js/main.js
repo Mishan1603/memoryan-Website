@@ -547,7 +547,7 @@ document.addEventListener('DOMContentLoaded', function() {
         };
     }
     
-    // Initialize Swiper with translations support
+    // Initialize Swiper with translations support and performance optimization
     function initializeSwiper() {
         // Initialize Swiper.js for the screenshot carousel
         const screenshotSwiper = new Swiper('.screenshot-swiper', {
@@ -567,6 +567,14 @@ document.addEventListener('DOMContentLoaded', function() {
             navigation: {
                 nextEl: '.swiper-button-next',
                 prevEl: '.swiper-button-prev',
+            },
+            // Enhanced performance settings
+            updateOnWindowResize: true,
+            watchOverflow: true,
+            preloadImages: false, // Let our optimizer handle this
+            lazy: {
+                loadPrevNext: true,
+                loadPrevNextAmount: 1,
             },
             breakpoints: {
                 320: {
@@ -602,16 +610,53 @@ document.addEventListener('DOMContentLoaded', function() {
                 init: function() {
                     console.log("Swiper initialized");
                     
+                    // Optimize images in slides
+                    this.slides.forEach(slide => {
+                        const images = slide.querySelectorAll('img');
+                        images.forEach(img => {
+                            if (window.memoryanOptimizer) {
+                                window.memoryanOptimizer.optimizeNewImage(img);
+                            }
+                        });
+                    });
+                    
                     // Give a little time for Swiper to fully render
                     setTimeout(fixSwiperTranslations, 100);
                 },
                 loopCreate: function() {
                     // This event fires when Swiper creates loop duplicates
+                    // Optimize new duplicate images
+                    this.slides.forEach(slide => {
+                        const images = slide.querySelectorAll('img:not(.loading-placeholder):not(.image-loaded)');
+                        images.forEach(img => {
+                            if (window.memoryanOptimizer) {
+                                window.memoryanOptimizer.optimizeNewImage(img);
+                            }
+                        });
+                    });
+                    
                     setTimeout(fixSwiperTranslations, 100);
                 },
                 slideChangeTransitionEnd: function() {
                     // When slides are changed, ensure translations are correct
                     setTimeout(fixSwiperTranslations, 50);
+                },
+                slideChange: function() {
+                    // Preload next few images when slide changes
+                    const currentIndex = this.realIndex;
+                    const nextSlides = [
+                        this.slides[currentIndex + 1],
+                        this.slides[currentIndex + 2]
+                    ].filter(Boolean);
+                    
+                    nextSlides.forEach(slide => {
+                        const images = slide.querySelectorAll('img:not(.loading-placeholder):not(.image-loaded)');
+                        images.forEach(img => {
+                            if (window.memoryanOptimizer) {
+                                window.memoryanOptimizer.optimizeNewImage(img);
+                            }
+                        });
+                    });
                 }
             }
         });
