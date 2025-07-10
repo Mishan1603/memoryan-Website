@@ -97,7 +97,13 @@ class MemoryanVideoPlayer {
         const isSmallScreen = window.innerWidth <= 768;
         
         this.isMobileDevice = isMobileUserAgent || (hasTouchScreen && isSmallScreen);
+        
+        // Detect Safari for fullscreen handling
+        this.isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+        this.isIOSSafari = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+        
         console.log('Device type detected:', this.isMobileDevice ? 'Mobile' : 'Desktop');
+        console.log('Safari detected:', this.isSafari, 'iOS Safari:', this.isIOSSafari);
     }
     
     createBoundHandlers() {
@@ -148,8 +154,11 @@ class MemoryanVideoPlayer {
             // Keyboard
             keydown: (e) => this.handleKeyboard(e),
             
-            // Fullscreen
-            fullscreenChange: () => this.handleFullscreenChange()
+                    // Fullscreen
+        fullscreenChange: () => this.handleFullscreenChange(),
+        webkitFullscreenChange: () => this.handleFullscreenChange(),
+        webkitBeginFullscreen: () => this.handleVideoEnterFullscreen(),
+        webkitEndFullscreen: () => this.handleVideoExitFullscreen()
         };
         
         // Mobile-specific handlers
@@ -209,9 +218,15 @@ class MemoryanVideoPlayer {
         
         // Fullscreen events
         document.addEventListener('fullscreenchange', this.boundHandlers.fullscreenChange);
-        document.addEventListener('webkitfullscreenchange', this.boundHandlers.fullscreenChange);
+        document.addEventListener('webkitfullscreenchange', this.boundHandlers.webkitFullscreenChange);
         document.addEventListener('mozfullscreenchange', this.boundHandlers.fullscreenChange);
         document.addEventListener('MSFullscreenChange', this.boundHandlers.fullscreenChange);
+        
+        // Safari-specific video fullscreen events
+        if (this.video && (this.isSafari || this.isIOSSafari)) {
+            this.video.addEventListener('webkitbeginfullscreen', this.boundHandlers.webkitBeginFullscreen);
+            this.video.addEventListener('webkitendfullscreen', this.boundHandlers.webkitEndFullscreen);
+        }
     }
     
     setupDeviceSpecificControls() {
@@ -445,36 +460,130 @@ class MemoryanVideoPlayer {
     }
     
     enterFullscreenMode() {
+        console.log('Entering fullscreen mode, Safari:', this.isSafari, 'iOS Safari:', this.isIOSSafari);
+        
+        // Safari-specific handling for video fullscreen
+        if (this.isSafari || this.isIOSSafari) {
+            this.enterSafariFullscreen();
+            return;
+        }
+        
+        // Standard fullscreen API handling for other browsers
         const element = this.videoWrapper || this.video;
         
-        if (element.requestFullscreen) {
-            element.requestFullscreen();
-        } else if (element.webkitRequestFullscreen) {
-            element.webkitRequestFullscreen();
-        } else if (element.mozRequestFullScreen) {
-            element.mozRequestFullScreen();
-        } else if (element.msRequestFullscreen) {
-            element.msRequestFullscreen();
-        } else {
-            // Fallback for browsers without fullscreen API
-            this.videoWrapper?.classList.add('fullscreen-mode');
-            this.video?.classList.add('fullscreen-video');
+        try {
+            if (element.requestFullscreen) {
+                element.requestFullscreen().catch(err => {
+                    console.warn('Fullscreen request failed:', err);
+                    this.fallbackFullscreen();
+                });
+            } else if (element.webkitRequestFullscreen) {
+                element.webkitRequestFullscreen();
+            } else if (element.mozRequestFullScreen) {
+                element.mozRequestFullScreen();
+            } else if (element.msRequestFullscreen) {
+                element.msRequestFullscreen();
+            } else {
+                this.fallbackFullscreen();
+            }
+        } catch (error) {
+            console.warn('Fullscreen API error:', error);
+            this.fallbackFullscreen();
+        }
+    }
+    
+    enterSafariFullscreen() {
+        console.log('Using Safari-specific fullscreen');
+        
+        // For iOS Safari, use the video element's webkitEnterFullscreen
+        if (this.isIOSSafari && this.video && this.video.webkitEnterFullscreen) {
+            try {
+                this.video.webkitEnterFullscreen();
+                return;
+            } catch (error) {
+                console.warn('iOS Safari fullscreen failed:', error);
+            }
+        }
+        
+        // For desktop Safari, try video-specific fullscreen first
+        if (this.video && this.video.webkitRequestFullscreen) {
+            try {
+                this.video.webkitRequestFullscreen();
+                return;
+            } catch (error) {
+                console.warn('Safari video fullscreen failed:', error);
+            }
+        }
+        
+        // Try container fullscreen for Safari
+        if (this.videoWrapper && this.videoWrapper.webkitRequestFullscreen) {
+            try {
+                this.videoWrapper.webkitRequestFullscreen();
+                return;
+            } catch (error) {
+                console.warn('Safari container fullscreen failed:', error);
+            }
+        }
+        
+        // Fallback to CSS fullscreen for Safari
+        this.fallbackFullscreen();
+    }
+    
+    fallbackFullscreen() {
+        console.log('Using fallback fullscreen mode');
+        this.videoWrapper?.classList.add('fullscreen-mode');
+        this.video?.classList.add('fullscreen-video');
+        
+        // For Safari, we need to handle the video sizing manually
+        if (this.isSafari && this.video) {
+            this.video.style.width = '100vw';
+            this.video.style.height = '100vh';
+            this.video.style.objectFit = 'contain';
         }
     }
     
     exitFullscreenMode() {
-        if (document.exitFullscreen) {
-            document.exitFullscreen();
-        } else if (document.webkitExitFullscreen) {
-            document.webkitExitFullscreen();
-        } else if (document.mozCancelFullScreen) {
-            document.mozCancelFullScreen();
-        } else if (document.msExitFullscreen) {
-            document.msExitFullscreen();
-        } else {
-            // Fallback cleanup
-            this.videoWrapper?.classList.remove('fullscreen-mode');
-            this.video?.classList.remove('fullscreen-video');
+        console.log('Exiting fullscreen mode');
+        
+        // Handle iOS Safari specific exit
+        if (this.isIOSSafari && this.video && this.video.webkitExitFullscreen) {
+            try {
+                this.video.webkitExitFullscreen();
+            } catch (error) {
+                console.warn('iOS Safari fullscreen exit failed:', error);
+            }
+        }
+        
+        // Standard fullscreen API exit
+        try {
+            if (document.exitFullscreen) {
+                document.exitFullscreen();
+            } else if (document.webkitExitFullscreen) {
+                document.webkitExitFullscreen();
+            } else if (document.webkitCancelFullScreen) {
+                document.webkitCancelFullScreen();
+            } else if (document.mozCancelFullScreen) {
+                document.mozCancelFullScreen();
+            } else if (document.msExitFullscreen) {
+                document.msExitFullscreen();
+            }
+        } catch (error) {
+            console.warn('Fullscreen exit API error:', error);
+        }
+        
+        // Always clean up fallback classes and styles
+        this.cleanupFullscreenFallback();
+    }
+    
+    cleanupFullscreenFallback() {
+        this.videoWrapper?.classList.remove('fullscreen-mode');
+        this.video?.classList.remove('fullscreen-video');
+        
+        // Reset Safari-specific styles
+        if (this.video) {
+            this.video.style.width = '';
+            this.video.style.height = '';
+            this.video.style.objectFit = '';
         }
     }
     
@@ -581,12 +690,22 @@ class MemoryanVideoPlayer {
     }
     
     isFullscreen() {
-        return !!(document.fullscreenElement || 
-                 document.webkitFullscreenElement || 
-                 document.mozFullScreenElement || 
-                 document.msFullscreenElement ||
-                 this.video?.classList.contains('fullscreen-video') ||
-                 this.videoWrapper?.classList.contains('fullscreen-mode'));
+        // Check standard fullscreen APIs
+        const standardFullscreen = !!(document.fullscreenElement || 
+                                    document.webkitFullscreenElement || 
+                                    document.mozFullScreenElement || 
+                                    document.msFullscreenElement);
+        
+        // Check iOS Safari specific fullscreen
+        const iosFullscreen = this.isIOSSafari && this.video && 
+                             (this.video.webkitDisplayingFullscreen || 
+                              this.video.webkitPresentationMode === 'fullscreen');
+        
+        // Check fallback fullscreen classes
+        const fallbackFullscreen = this.video?.classList.contains('fullscreen-video') ||
+                                  this.videoWrapper?.classList.contains('fullscreen-mode');
+        
+        return standardFullscreen || iosFullscreen || fallbackFullscreen;
     }
     
     clearControlsTimeout() {
@@ -601,8 +720,19 @@ class MemoryanVideoPlayer {
             !document.webkitFullscreenElement && 
             !document.mozFullScreenElement && 
             !document.msFullscreenElement) {
-            this.exitFullscreenMode();
+            this.cleanupFullscreenFallback();
         }
+    }
+    
+    handleVideoEnterFullscreen() {
+        console.log('Safari video entered fullscreen');
+        this.showControlsTemporarily();
+    }
+    
+    handleVideoExitFullscreen() {
+        console.log('Safari video exited fullscreen');
+        this.cleanupFullscreenFallback();
+        this.showControlsTemporarily();
     }
     
     handleKeyboard(event) {
@@ -710,6 +840,12 @@ class MemoryanVideoPlayer {
             this.video.removeEventListener('error', this.boundHandlers.error);
             this.video.removeEventListener('play', this.boundHandlers.play);
             this.video.removeEventListener('pause', this.boundHandlers.pause);
+            
+            // Remove Safari-specific listeners
+            if (this.isSafari || this.isIOSSafari) {
+                this.video.removeEventListener('webkitbeginfullscreen', this.boundHandlers.webkitBeginFullscreen);
+                this.video.removeEventListener('webkitendfullscreen', this.boundHandlers.webkitEndFullscreen);
+            }
         }
         
         // Remove control listeners
