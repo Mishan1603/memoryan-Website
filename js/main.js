@@ -180,7 +180,32 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
-    // Completely isolated flip card implementation with extensive exception handling
+    // Device detection utilities
+    const isMobileDevice = () => {
+        // Check if device is mobile based on multiple criteria
+        const aspectRatio = window.innerWidth / window.innerHeight;
+        const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+        const hasSmallScreen = window.innerWidth <= 768;
+        const userAgent = navigator.userAgent.toLowerCase();
+        
+        // Consider as mobile if it's touch-enabled and has portrait aspect ratio or small screen
+        return isTouchDevice && (aspectRatio < 1.3 || hasSmallScreen);
+    };
+    
+    const isAndroidDevice = () => {
+        return /android/i.test(navigator.userAgent);
+    };
+    
+    const isTabletDevice = () => {
+        // Detect tablets (larger screen touch devices)
+        const aspectRatio = window.innerWidth / window.innerHeight;
+        const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+        const hasLargeScreen = window.innerWidth > 768 && window.innerWidth < 1200;
+        
+        return isTouchDevice && hasLargeScreen;
+    };
+    
+    // Completely isolated flip card implementation with mobile-aware behavior
     const setupFlipCards = () => {
         const flipCardItems = document.querySelectorAll('.qr-code-item');
         
@@ -216,13 +241,33 @@ document.addEventListener('DOMContentLoaded', function() {
                 // Set perspective on container for 3D effect
                 item.style.perspective = '1000px';
                 
-                // Define click handler inline - no references to outside scope
+                // Determine if this is an Android or iOS card
+                const downloadButton = newCard.querySelector('.download-button');
+                const isAndroidCard = downloadButton && downloadButton.getAttribute('data-platform') === 'android';
+                const isIOSCard = downloadButton && downloadButton.getAttribute('data-platform') === 'ios';
+                
+                // Define click handler with mobile-aware behavior
                 const handleCardClick = function(event) {
                     // Stop event propagation to other handlers
                     event.stopPropagation();
                     event.preventDefault();
                     
-                    // Toggle flip state
+                    // Check if user is on mobile device
+                    if (isMobileDevice() && !isTabletDevice()) {
+                        console.log('Mobile device detected');
+                        
+                        // For Android cards on mobile, redirect to Play Store
+                        if (isAndroidCard && isAndroidDevice()) {
+                            console.log('Redirecting Android mobile user to Play Store');
+                            window.open('https://play.google.com/store/apps/details?id=com.memoryan.app', '_blank');
+                            return;
+                        }
+                        
+                        // For iOS cards on mobile, still show QR code (fall through to flip)
+                        // For tablets and desktop, always show QR code (fall through to flip)
+                    }
+                    
+                    // Default behavior: flip the card to show QR code
                     if (inner.style.transform === 'rotateY(180deg)') {
                         inner.style.transform = '';
                     } else {
@@ -230,7 +275,27 @@ document.addEventListener('DOMContentLoaded', function() {
                     }
                 };
                 
-                // Clear any existing handlers and add only the click handler
+                // Also enhance the download button behavior
+                if (downloadButton) {
+                    downloadButton.addEventListener('click', function(event) {
+                        event.stopPropagation();
+                        event.preventDefault();
+                        
+                        // Check if user is on mobile device
+                        if (isMobileDevice() && !isTabletDevice()) {
+                            if (isAndroidCard && isAndroidDevice()) {
+                                console.log('Download button: Redirecting Android mobile user to Play Store');
+                                window.open('https://play.google.com/store/apps/details?id=com.memoryan.app', '_blank');
+                                return;
+                            }
+                        }
+                        
+                        // Default behavior: flip the card
+                        handleCardClick(event);
+                    });
+                }
+                
+                // Clear any existing handlers and add the click handler
                 newCard.onclick = handleCardClick;
                 
                 // EVENT BLOCKING: Prevent ANY mouse movement events from causing transforms
@@ -630,7 +695,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         <p>We may update this policy periodically. We will notify you of any significant changes through the app or via email.</p>
                         
                         <h3>9. Contact Us</h3>
-                        <p>If you have any questions about this Privacy Policy, please contact us at privacy@memoryan.com.</p>
+                        <p>If you have any questions about this Privacy Policy, please contact us at info@memoryan.com.</p>
                     </div>
                 </div>
             </div>
