@@ -45,6 +45,7 @@
             display: flex;
             align-items: center;
             gap: 15px;
+            flex-wrap: wrap;
         }
         
         .cookie-toggle {
@@ -273,6 +274,17 @@
                 padding: 20px;
             }
             
+            .cookie-category h3 {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+            
+            .cookie-toggle {
+                margin-left: 0;
+                margin-top: 10px;
+            }
+            
             .cookie-controls {
                 flex-direction: column;
                 align-items: center;
@@ -286,6 +298,48 @@
             .policy-header h1 {
                 font-size: 2rem;
             }
+            
+            .language-switcher {
+                top: 15px;
+                right: 15px;
+                padding: 4px;
+            }
+            
+            .language-switcher button {
+                font-size: 0.8rem;
+                padding: 6px 10px;
+                min-width: 70px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .cookie-category h3 {
+                font-size: 1.3rem;
+            }
+            
+            .cookie-toggle {
+                align-self: flex-start;
+            }
+            
+            .cookie-category {
+                padding: 15px;
+            }
+            
+            .cookie-policy-container {
+                padding: 15px 10px;
+            }
+            
+            .language-switcher {
+                top: 10px;
+                right: 10px;
+                padding: 3px;
+            }
+            
+            .language-switcher button {
+                font-size: 0.75rem;
+                padding: 5px 8px;
+                min-width: 60px;
+            }
         }
     </style>
 </head>
@@ -295,14 +349,14 @@
 
     <!-- Language Switcher -->
     <div class="language-switcher">
-        <button onclick="changeLanguage('en')" class="active">EN</button>
-        <button onclick="changeLanguage('ru')">RU</button>
+        <button onclick="changeLanguage('en')" class="active">English</button>
+        <button onclick="changeLanguage('ru')">Русский</button>
     </div>
 
     <!-- Main Container -->
     <div class="cookie-policy-container">
         <!-- Back to Site Link -->
-        <a href="index.html" class="back-to-site">
+        <a href="https://mymemoryan.com" class="back-to-site">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M19 12H5M12 19l-7-7 7-7"/>
             </svg>
@@ -731,8 +785,11 @@
             // Update active button
             document.querySelectorAll('.language-switcher button').forEach(btn => {
                 btn.classList.remove('active');
+                const buttonLang = btn.getAttribute('onclick').includes("'en'") ? 'en' : 'ru';
+                if (buttonLang === lang.toLowerCase()) {
+                    btn.classList.add('active');
+                }
             });
-            event.target.classList.add('active');
             
             // Show notification with translated message
             const notificationMessage = window.i18n && window.i18n.t ? 
@@ -755,7 +812,8 @@
                 
             document.querySelectorAll('.language-switcher button').forEach(btn => {
                 btn.classList.remove('active');
-                if (btn.textContent.toLowerCase() === currentLang) {
+                const buttonLang = btn.getAttribute('onclick').includes("'en'") ? 'en' : 'ru';
+                if (buttonLang === currentLang) {
                     btn.classList.add('active');
                 }
             });
