@@ -17,16 +17,50 @@ document.addEventListener('DOMContentLoaded', function() {
             }, 500);
             
             // Set up event listeners for buttons
-            const acceptButton = document.getElementById('accept-cookies');
+            const acceptAllButton = document.getElementById('accept-all-cookies');
+            const rejectOptionalButton = document.getElementById('reject-optional-cookies');
             const moreButton = document.getElementById('more-cookies');
             
-            if (acceptButton) {
-                acceptButton.addEventListener('click', function() {
-                    // Save the acceptance in localStorage
+            if (acceptAllButton) {
+                acceptAllButton.addEventListener('click', function() {
+                    // Save full acceptance in localStorage
                     localStorage.setItem('cookiesAccepted', 'true');
+                    localStorage.setItem('memoryan_cookie_preferences', JSON.stringify({
+                        essential: true,
+                        analytics: true,
+                        thirdparty: true
+                    }));
+                    
                     // Hide the banner
                     cookieConsent.classList.remove('show');
-                    // Allow a moment for animation to complete before hiding completely
+                    setTimeout(() => {
+                        cookieConsent.style.display = 'none';
+                    }, 500);
+                    
+                    // Initialize analytics if available and preferences allow
+                    if (window.Memoryan && window.Memoryan.Analytics && window.MemoryanConfig && window.MemoryanConfig.supabase) {
+                        const { url, anonKey } = window.MemoryanConfig.supabase;
+                        window.Memoryan.Analytics.init(url, anonKey).then(success => {
+                            if (success) {
+                                window.Memoryan.Analytics.trackPageVisit();
+                            }
+                        });
+                    }
+                });
+            }
+            
+            if (rejectOptionalButton) {
+                rejectOptionalButton.addEventListener('click', function() {
+                    // Save minimal acceptance in localStorage
+                    localStorage.setItem('cookiesAccepted', 'true');
+                    localStorage.setItem('memoryan_cookie_preferences', JSON.stringify({
+                        essential: true,
+                        analytics: false,
+                        thirdparty: false
+                    }));
+                    
+                    // Hide the banner
+                    cookieConsent.classList.remove('show');
                     setTimeout(() => {
                         cookieConsent.style.display = 'none';
                     }, 500);
@@ -36,7 +70,6 @@ document.addEventListener('DOMContentLoaded', function() {
             if (moreButton) {
                 moreButton.addEventListener('click', function() {
                     // Redirect to cookie policy page
-                    // You may want to update this URL to your actual cookie policy page
                     window.location.href = 'cookie-policy.html';
                 });
             }
