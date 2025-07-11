@@ -194,6 +194,112 @@
                     "title": "2. User Accounts",
                     "content": "You must create an account to use certain features of the app. You are responsible for maintaining the confidentiality of your account information and for all activities that occur under your account."
                 }
+            },
+            "cookiePolicy": {
+                "title": "Cookie Policy",
+                "lastUpdated": "Last Updated: June 2025",
+                "backToSite": "Back to Memoryan",
+                "whatAreCookies": {
+                    "title": "What Are Cookies?",
+                    "description": "Cookies are small text files that are stored on your device when you visit our website. They help us provide you with a better browsing experience by remembering your preferences and analyzing how our site is used. This policy explains what cookies we use, why we use them, and how you can manage your cookie preferences."
+                },
+                "essential": {
+                    "title": "Essential Cookies",
+                    "status": "Always Active",
+                    "description": "These cookies are necessary for the website to function properly and cannot be disabled. They are usually set in response to actions you take, such as setting your privacy preferences or language selection.",
+                    "cookiesAccepted": {
+                        "name": "cookiesAccepted",
+                        "description": "Remembers your cookie consent preferences to avoid showing the cookie banner repeatedly.",
+                        "storage": "localStorage",
+                        "duration": "Permanent",
+                        "purpose": "Cookie Consent"
+                    },
+                    "language": {
+                        "name": "memoryan_language",
+                        "description": "Stores your preferred language setting for the website.",
+                        "storage": "localStorage",
+                        "duration": "Permanent",
+                        "purpose": "Language Preference"
+                    }
+                },
+                "analytics": {
+                    "title": "Analytics Cookies",
+                    "status": "Optional",
+                    "description": "These cookies help us understand how visitors interact with our website by collecting and reporting anonymous information. This helps us improve our website and provide better content.",
+                    "session": {
+                        "name": "Website Analytics Session",
+                        "description": "Tracks your session on our website to measure page views, time spent, and user interactions. Data is stored securely in Supabase.",
+                        "storage": "Supabase Database",
+                        "duration": "2 years",
+                        "purpose": "Website Analytics"
+                    },
+                    "rateLimiter": {
+                        "name": "rate_limiter_analytics",
+                        "description": "Prevents excessive requests to our analytics system by limiting the number of events tracked per time period.",
+                        "storage": "localStorage",
+                        "duration": "1 hour",
+                        "purpose": "Rate Limiting"
+                    },
+                    "dashboardState": {
+                        "name": "memoryan_analytics_state",
+                        "description": "Stores analytics dashboard preferences for authorized users (admin only).",
+                        "storage": "localStorage",
+                        "duration": "30 days",
+                        "purpose": "Dashboard Preferences"
+                    }
+                },
+                "thirdParty": {
+                    "title": "Third-Party Services",
+                    "status": "Optional",
+                    "description": "We use third-party services to enhance our website's functionality. These services may set their own cookies.",
+                    "googleFonts": {
+                        "name": "Google Fonts",
+                        "description": "Loads custom fonts from Google Fonts to improve the visual appearance of our website.",
+                        "provider": "Google",
+                        "purpose": "Font Loading"
+                    },
+                    "supabase": {
+                        "name": "Supabase",
+                        "description": "Provides authentication and database services for our website analytics.",
+                        "provider": "Supabase",
+                        "purpose": "Authentication & Database"
+                    },
+                    "cdn": {
+                        "name": "CDN Resources",
+                        "description": "External libraries (AOS, Swiper.js) loaded from CDNs to enhance website functionality.",
+                        "provider": "Various CDNs",
+                        "purpose": "Website Functionality"
+                    }
+                },
+                "rights": {
+                    "title": "Your Rights & Choices",
+                    "description": "You have the right to:",
+                    "items": [
+                        "Accept or reject cookies: Use the controls on this page to manage your preferences.",
+                        "Clear stored data: Delete all cookies and local storage data we've stored.",
+                        "Browser settings: Configure your browser to block or delete cookies.",
+                        "Opt-out: Disable analytics tracking at any time."
+                    ],
+                    "note": "Note: Disabling essential cookies may affect the functionality of our website."
+                },
+                "contact": {
+                    "title": "Contact Us",
+                    "description": "If you have any questions about this Cookie Policy or our privacy practices, please contact us:",
+                    "generalContact": "General Contact"
+                },
+                "controls": {
+                    "acceptAll": "Accept All Cookies",
+                    "rejectAll": "Reject Optional Cookies",
+                    "savePreferences": "Save Preferences",
+                    "clearData": "Clear All Data"
+                },
+                "notifications": {
+                    "preferencesSaved": "Cookie preferences saved successfully!",
+                    "errorSaving": "Error saving preferences. Please try again.",
+                    "dataCleared": "All data cleared successfully! The page will reload.",
+                    "errorClearing": "Error clearing data. Please try again.",
+                    "languageChanged": "Language changed to"
+                }
             }
         },
         ru: {
@@ -367,6 +473,112 @@
                 "userAccounts": {
                     "title": "2. Учетные записи пользователей",
                     "content": "Вы должны создать учетную запись для использования определенных функций приложения. Вы несете ответственность за сохранение конфиденциальности информации вашей учетной записи и за все действия, которые происходят в рамках вашей учетной записи."
+                }
+            },
+            "cookiePolicy": {
+                "title": "Политика Cookie",
+                "lastUpdated": "Последнее обновление: Июнь 2025",
+                "backToSite": "Вернуться к Memoryan",
+                "whatAreCookies": {
+                    "title": "Что такое Cookie?",
+                    "description": "Cookie — это небольшие текстовые файлы, которые сохраняются на вашем устройстве при посещении нашего веб-сайта. Они помогают нам предоставлять вам лучший опыт просмотра, запоминая ваши предпочтения и анализируя, как используется наш сайт. Эта политика объясняет, какие cookie мы используем, зачем мы их используем и как вы можете управлять своими настройками cookie."
+                },
+                "essential": {
+                    "title": "Обязательные Cookie",
+                    "status": "Всегда активны",
+                    "description": "Эти cookie необходимы для правильной работы веб-сайта и не могут быть отключены. Обычно они устанавливаются в ответ на ваши действия, такие как установка настроек конфиденциальности или выбор языка.",
+                    "cookiesAccepted": {
+                        "name": "cookiesAccepted",
+                        "description": "Запоминает ваши предпочтения согласия на cookie, чтобы не показывать баннер cookie повторно.",
+                        "storage": "localStorage",
+                        "duration": "Постоянно",
+                        "purpose": "Согласие на Cookie"
+                    },
+                    "language": {
+                        "name": "memoryan_language",
+                        "description": "Сохраняет ваши предпочтения языка для веб-сайта.",
+                        "storage": "localStorage",
+                        "duration": "Постоянно",
+                        "purpose": "Языковые предпочтения"
+                    }
+                },
+                "analytics": {
+                    "title": "Аналитические Cookie",
+                    "status": "Опциональные",
+                    "description": "Эти cookie помогают нам понять, как посетители взаимодействуют с нашим веб-сайтом, собирая и сообщая анонимную информацию. Это помогает нам улучшать наш веб-сайт и предоставлять лучший контент.",
+                    "session": {
+                        "name": "Сессия веб-аналитики",
+                        "description": "Отслеживает вашу сессию на нашем веб-сайте для измерения просмотров страниц, времени, проведенного на сайте, и взаимодействий пользователей. Данные хранятся безопасно в Supabase.",
+                        "storage": "База данных Supabase",
+                        "duration": "2 года",
+                        "purpose": "Веб-аналитика"
+                    },
+                    "rateLimiter": {
+                        "name": "rate_limiter_analytics",
+                        "description": "Предотвращает чрезмерные запросы к нашей системе аналитики, ограничивая количество отслеживаемых событий за период времени.",
+                        "storage": "localStorage",
+                        "duration": "1 час",
+                        "purpose": "Ограничение скорости"
+                    },
+                    "dashboardState": {
+                        "name": "memoryan_analytics_state",
+                        "description": "Сохраняет предпочтения панели аналитики для авторизованных пользователей (только администратор).",
+                        "storage": "localStorage",
+                        "duration": "30 дней",
+                        "purpose": "Настройки панели"
+                    }
+                },
+                "thirdParty": {
+                    "title": "Сторонние сервисы",
+                    "status": "Опциональные",
+                    "description": "Мы используем сторонние сервисы для улучшения функциональности нашего веб-сайта. Эти сервисы могут устанавливать свои собственные cookie.",
+                    "googleFonts": {
+                        "name": "Google Fonts",
+                        "description": "Загружает пользовательские шрифты из Google Fonts для улучшения внешнего вида нашего веб-сайта.",
+                        "provider": "Google",
+                        "purpose": "Загрузка шрифтов"
+                    },
+                    "supabase": {
+                        "name": "Supabase",
+                        "description": "Предоставляет услуги аутентификации и базы данных для аналитики нашего веб-сайта.",
+                        "provider": "Supabase",
+                        "purpose": "Аутентификация и база данных"
+                    },
+                    "cdn": {
+                        "name": "CDN ресурсы",
+                        "description": "Внешние библиотеки (AOS, Swiper.js), загружаемые из CDN для улучшения функциональности веб-сайта.",
+                        "provider": "Различные CDN",
+                        "purpose": "Функциональность веб-сайта"
+                    }
+                },
+                "rights": {
+                    "title": "Ваши права и выбор",
+                    "description": "Вы имеете право:",
+                    "items": [
+                        "Принимать или отклонять cookie: Используйте элементы управления на этой странице для управления своими предпочтениями.",
+                        "Очищать сохраненные данные: Удалять все cookie и данные локального хранилища, которые мы сохранили.",
+                        "Настройки браузера: Настроить браузер для блокировки или удаления cookie.",
+                        "Отказ: Отключить отслеживание аналитики в любое время."
+                    ],
+                    "note": "Примечание: Отключение обязательных cookie может повлиять на функциональность нашего веб-сайта."
+                },
+                "contact": {
+                    "title": "Свяжитесь с нами",
+                    "description": "Если у вас есть вопросы об этой Политике Cookie или наших практиках конфиденциальности, пожалуйста, свяжитесь с нами:",
+                    "generalContact": "Общий контакт"
+                },
+                "controls": {
+                    "acceptAll": "Принять все Cookie",
+                    "rejectAll": "Отклонить дополнительные Cookie",
+                    "savePreferences": "Сохранить предпочтения",
+                    "clearData": "Очистить все данные"
+                },
+                "notifications": {
+                    "preferencesSaved": "Настройки cookie успешно сохранены!",
+                    "errorSaving": "Ошибка сохранения настроек. Попробуйте еще раз.",
+                    "dataCleared": "Все данные успешно очищены! Страница будет перезагружена.",
+                    "errorClearing": "Ошибка очистки данных. Попробуйте еще раз.",
+                    "languageChanged": "Язык изменен на"
                 }
             }
         }
