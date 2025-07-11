@@ -125,6 +125,40 @@ window.Analytics = class Analytics {
     }
 
     /**
+     * Check if analytics cookies are allowed by user preferences
+     * @returns {boolean} True if analytics is allowed
+     * @private
+     */
+    _isAnalyticsAllowed() {
+        try {
+            // Check if user has accepted cookies
+            const hasAcceptedCookies = localStorage.getItem('cookiesAccepted');
+            if (!hasAcceptedCookies) {
+                this._log('User has not accepted cookies yet');
+                return false;
+            }
+
+            // Check specific cookie preferences
+            const preferences = localStorage.getItem('memoryan_cookie_preferences');
+            if (preferences) {
+                const cookiePrefs = JSON.parse(preferences);
+                const analyticsAllowed = cookiePrefs.analytics === true;
+                this._log(`Analytics cookies allowed: ${analyticsAllowed}`);
+                return analyticsAllowed;
+            }
+
+            // If no specific preferences but cookies accepted, assume analytics is allowed
+            // This handles legacy behavior where accepting meant accepting all
+            this._log('No specific preferences found, but cookies accepted - allowing analytics');
+            return true;
+        } catch (error) {
+            this._error('Error checking analytics permissions', error);
+            // Default to not allowed if there's an error
+            return false;
+        }
+    }
+
+    /**
      * Initialize the analytics with Supabase credentials
      * @param {string} supabaseUrl - Supabase project URL
      * @param {string} supabaseKey - Supabase anonymous key
@@ -134,6 +168,12 @@ window.Analytics = class Analytics {
         if (this.isInitialized) {
             this._log('Analytics already initialized');
             return true;
+        }
+
+        // Check if analytics cookies are allowed before proceeding
+        if (!this._isAnalyticsAllowed()) {
+            this._log('Analytics cookies not allowed by user preferences - skipping initialization');
+            return false;
         }
 
         // If initialization is in progress, wait for it
@@ -471,6 +511,12 @@ window.Analytics = class Analytics {
      * @param {Object} eventData - Additional data about the event
      */
     trackEvent(eventType, eventData = {}) {
+        // Check if analytics is allowed before tracking
+        if (!this._isAnalyticsAllowed()) {
+            this._log(`Event tracking skipped - analytics cookies not allowed: ${eventType}`);
+            return;
+        }
+
         if (!this.isInitialized) {
             console.warn('Cannot track events before analytics is initialized');
             this.eventQueue.push({eventType, eventData});
@@ -507,6 +553,12 @@ window.Analytics = class Analytics {
      */
     trackPageVisit() {
         try {
+            // Check if analytics is allowed before tracking
+            if (!this._isAnalyticsAllowed()) {
+                this._log('Page visit tracking skipped - analytics cookies not allowed');
+                return;
+            }
+
             this._log('Tracking page visit');
             
             // Reset page timing on new visit
@@ -692,6 +744,67 @@ window.Analytics = class Analytics {
         } catch (error) {
             this._error('Error tracking session end', error);
         }
+    }
+
+    /**
+     * Handle cookie preference changes
+     * This method should be called when user updates their cookie preferences
+     * @param {Object} preferences - Updated cookie preferences
+     */
+    handleCookiePreferenceChange(preferences) {
+        this._log('Cookie preferences changed:', preferences);
+        
+        if (preferences.analytics === true) {
+            // Analytics enabled - initialize if not already done
+            if (!this.isInitialized && window.MemoryanConfig && window.MemoryanConfig.supabase) {
+                this._log('Analytics enabled - initializing...');
+                const { url, anonKey } = window.MemoryanConfig.supabase;
+                this.init(url, anonKey).then(success => {
+                    if (success) {
+                        this._log('Analytics initialized successfully after preference change');
+                        this.trackPageVisit();
+                    }
+                });
+            } else if (this.isInitialized) {
+                this._log('Analytics already initialized - tracking page visit');
+                this.trackPageVisit();
+            }
+        } else {
+            // Analytics disabled - stop tracking and clear data
+            this._log('Analytics disabled - stopping tracking and clearing data');
+            this._stopTracking();
+        }
+    }
+
+    /**
+     * Stop all analytics tracking and clear related data
+     * @private
+     */
+    _stopTracking() {
+        // Clear session heartbeat
+        if (this.sessionHeartbeatInterval) {
+            clearInterval(this.sessionHeartbeatInterval);
+            this.sessionHeartbeatInterval = null;
+        }
+
+        // Clear event queue
+        this.eventQueue = [];
+        this.events = [];
+
+        // Clear analytics-related localStorage items
+        try {
+            const analyticsKeys = ['rate_limiter_analytics', 'memoryan_analytics_state'];
+            analyticsKeys.forEach(key => {
+                localStorage.removeItem(key);
+            });
+            this._log('Cleared analytics localStorage data');
+        } catch (error) {
+            this._error('Error clearing analytics data', error);
+        }
+
+        // Mark as inactive but keep initialized status for potential re-enabling
+        this.sessionActive = false;
+        this._log('Analytics tracking stopped');
     }
     
     /**
