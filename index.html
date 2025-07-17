@@ -88,7 +88,8 @@
                             onprogress="handleVideoProgress()"
                             onerror="handleVideoError()"
                         >
-                            <source id="videoSource" src="trailer.mp4" type="video/mp4">
+                            <source id="videoSource" src="trailer.webm" type="video/webm">
+                            <source id="videoSourceFallback" src="trailer.mp4" type="video/mp4">
                             <p data-i18n="hero.videoNotSupported">Your browser does not support the video tag.</p>
                         </video>
                         
@@ -605,12 +606,13 @@
 <section id="cookie-consent" class="cookie-consent glass-panel" role="region" aria-labelledby="cookie-heading">
     <div class="cookie-content">
         <div class="cookie-text">
-            <h3 id="cookie-heading">We Use Cookies</h3>
-            <p>We use cookies to enhance your browsing experience, analyze site traffic, and gather website performance and usage information. By clicking "Accept", you consent to the use of cookies.</p>
+            <h3 id="cookie-heading">🍪 We Use Cookies</h3>
+            <p>We use cookies to enhance your browsing experience, analyze site traffic, and gather website performance information. You can manage your cookie preferences or learn more about our cookie policy.</p>
         </div>
         <div class="cookie-buttons">
-            <button id="accept-cookies" class="store-button" aria-label="Accept cookies">Accept</button>
-            <button id="more-cookies" class="neomorphic-button" aria-label="Learn more about our cookie policy">Cookie Policy</button>
+            <button id="accept-all-cookies" class="store-button" aria-label="Accept all cookies">Accept All</button>
+            <button id="reject-optional-cookies" class="neomorphic-button" aria-label="Reject optional cookies">Reject Optional</button>
+            <button id="more-cookies" class="neomorphic-button" aria-label="Learn more about our cookie policy">Manage Cookies</button>
         </div>
     </div>
 </section>
