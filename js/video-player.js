@@ -68,6 +68,7 @@ class MemoryanVideoPlayer {
     setupElements() {
         this.video = document.getElementById('trailerVideo');
         this.videoSource = document.getElementById('videoSource');
+        this.videoSourceFallback = document.getElementById('videoSourceFallback');
         this.videoLoading = document.getElementById('videoLoading');
         this.videoControls = document.getElementById('videoControls');
         this.videoError = document.getElementById('videoError');
@@ -154,7 +155,7 @@ class MemoryanVideoPlayer {
             // Keyboard
             keydown: (e) => this.handleKeyboard(e),
             
-                    // Fullscreen
+            // Fullscreen
         fullscreenChange: () => this.handleFullscreenChange(),
         webkitFullscreenChange: () => this.handleFullscreenChange(),
         webkitBeginFullscreen: () => this.handleVideoEnterFullscreen(),
@@ -346,18 +347,26 @@ class MemoryanVideoPlayer {
     loadVideo() {
         if (!this.video || !this.videoSource) return;
         
-        const videoFile = this.currentLanguage === 'ru' ? 'trailer_ru.mp4' : 'trailer.mp4';
-        const newSrc = videoFile;
+        // Try WEBM first (smaller file size, better compression)
+        const webmFile = this.currentLanguage === 'ru' ? 'trailer_ru.webm' : 'trailer.webm';
+        const mp4File = this.currentLanguage === 'ru' ? 'trailer_ru.mp4' : 'trailer.mp4';
         
         // Only reload if source actually changed
-        if (this.videoSource.src !== newSrc) {
+        if (this.videoSource.src !== webmFile) {
             this.showLoading();
             this.hideError();
             
-            this.videoSource.src = newSrc;
+            // Set WEBM as primary source
+            this.videoSource.src = webmFile;
+            
+            // Set MP4 as fallback source for older browsers
+            if (this.videoSourceFallback) {
+                this.videoSourceFallback.src = mp4File;
+            }
+            
             this.video.load();
             
-            console.log(`Loading video: ${videoFile} for language: ${this.currentLanguage}`);
+            console.log(`Loading video: ${webmFile} (WEBM) with fallback: ${mp4File} (MP4) for language: ${this.currentLanguage}`);
         }
     }
     
@@ -472,18 +481,18 @@ class MemoryanVideoPlayer {
         const element = this.videoWrapper || this.video;
         
         try {
-            if (element.requestFullscreen) {
+        if (element.requestFullscreen) {
                 element.requestFullscreen().catch(err => {
                     console.warn('Fullscreen request failed:', err);
                     this.fallbackFullscreen();
                 });
-            } else if (element.webkitRequestFullscreen) {
-                element.webkitRequestFullscreen();
-            } else if (element.mozRequestFullScreen) {
-                element.mozRequestFullScreen();
-            } else if (element.msRequestFullscreen) {
-                element.msRequestFullscreen();
-            } else {
+        } else if (element.webkitRequestFullscreen) {
+            element.webkitRequestFullscreen();
+        } else if (element.mozRequestFullScreen) {
+            element.mozRequestFullScreen();
+        } else if (element.msRequestFullscreen) {
+            element.msRequestFullscreen();
+        } else {
                 this.fallbackFullscreen();
             }
         } catch (error) {
@@ -531,8 +540,8 @@ class MemoryanVideoPlayer {
     
     fallbackFullscreen() {
         console.log('Using fallback fullscreen mode');
-        this.videoWrapper?.classList.add('fullscreen-mode');
-        this.video?.classList.add('fullscreen-video');
+            this.videoWrapper?.classList.add('fullscreen-mode');
+            this.video?.classList.add('fullscreen-video');
         
         // For Safari, we need to handle the video sizing manually
         if (this.isSafari && this.video) {
@@ -556,16 +565,16 @@ class MemoryanVideoPlayer {
         
         // Standard fullscreen API exit
         try {
-            if (document.exitFullscreen) {
-                document.exitFullscreen();
-            } else if (document.webkitExitFullscreen) {
-                document.webkitExitFullscreen();
+        if (document.exitFullscreen) {
+            document.exitFullscreen();
+        } else if (document.webkitExitFullscreen) {
+            document.webkitExitFullscreen();
             } else if (document.webkitCancelFullScreen) {
                 document.webkitCancelFullScreen();
-            } else if (document.mozCancelFullScreen) {
-                document.mozCancelFullScreen();
-            } else if (document.msExitFullscreen) {
-                document.msExitFullscreen();
+        } else if (document.mozCancelFullScreen) {
+            document.mozCancelFullScreen();
+        } else if (document.msExitFullscreen) {
+            document.msExitFullscreen();
             }
         } catch (error) {
             console.warn('Fullscreen exit API error:', error);
@@ -576,8 +585,8 @@ class MemoryanVideoPlayer {
     }
     
     cleanupFullscreenFallback() {
-        this.videoWrapper?.classList.remove('fullscreen-mode');
-        this.video?.classList.remove('fullscreen-video');
+            this.videoWrapper?.classList.remove('fullscreen-mode');
+            this.video?.classList.remove('fullscreen-video');
         
         // Reset Safari-specific styles
         if (this.video) {
@@ -692,8 +701,8 @@ class MemoryanVideoPlayer {
     isFullscreen() {
         // Check standard fullscreen APIs
         const standardFullscreen = !!(document.fullscreenElement || 
-                                    document.webkitFullscreenElement || 
-                                    document.mozFullScreenElement || 
+                 document.webkitFullscreenElement || 
+                 document.mozFullScreenElement || 
                                     document.msFullscreenElement);
         
         // Check iOS Safari specific fullscreen
