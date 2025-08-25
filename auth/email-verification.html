@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Email Verification - Memoryan</title>
+    <meta name="description" content="Verify your Memoryan account email address">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="../images/memoryan-logo.png">
+    
+    <!-- CSS -->
+    <link rel="stylesheet" href="../style.css">
+    <link rel="stylesheet" href="auth-styles.css">
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&family=Open+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Animated Gradient Background -->
+    <div class="animated-gradient"></div>
+
+    <!-- Auth Header -->
+    <header class="auth-header glass-panel">
+        <a href="https://mymemoryan.com" class="auth-logo-link" title="Home">
+            <img src="../images/memoryan-logo.png" alt="Memoryan Logo" class="auth-logo">
+            <span class="auth-title">Memoryan</span>
+        </a>
+        <div class="language-selector">
+            <button id="language-button" class="language-button">
+                <span id="current-language">EN</span>
+            </button>
+            <div id="language-dropdown" class="language-dropdown">
+                <a href="#" data-lang="en" class="language-option">English</a>
+                <a href="#" data-lang="ru" class="language-option">Русский</a>
+                <a href="#" data-lang="uk" class="language-option">Українська</a>
+                <a href="#" data-lang="de" class="language-option">Deutsch</a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="auth-main-container">
+        <div class="auth-form-container">
+            <!-- No back hub; home is in header -->
+
+            <!-- Email Verification Form -->
+            <div class="auth-form">
+                <div id="email-verification-content">
+                    <!-- Step 1: Request OTP -->
+                    <div id="request-otp-section">
+                        <h1 data-i18n="emailVerification.title">Verify Your Email</h1>
+                        <p class="auth-description" data-i18n="emailVerification.description">
+                            Enter your email to receive a 6-digit code to verify your account.
+                        </p>
+                        <form id="request-otp-form">
+                            <div class="auth-form-group">
+                                <label for="verification-email" class="auth-form-label" data-i18n="common.emailAddress">Email Address</label>
+                                <input type="email" id="verification-email" name="email" class="auth-form-input" 
+                                    data-i18n-placeholder="common.enterEmailPlaceholder" placeholder="Enter your email address" 
+                                    required autocomplete="email">
+                            </div>
+                            <button type="submit" class="auth-form-button" id="send-otp-btn" data-i18n="emailVerification.receiveOTP">
+                                Receive Verification Code
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- Step 2: Enter OTP -->
+                    <div id="enter-otp-section" style="display: none;">
+                        <h1 data-i18n="emailVerification.enterCodeTitle">Enter Verification Code</h1>
+                        <p class="auth-description">
+                            <span data-i18n="emailVerification.codeSentTo">We sent a 6-digit code to</span> 
+                            <strong id="otp-email"></strong>. 
+                            <span data-i18n="emailVerification.enterBelow">Please enter it below.</span>
+                        </p>
+                        <form id="verify-otp-form">
+                            <div class="auth-form-group">
+                                <label for="otp-input" class="auth-form-label" data-i18n="emailVerification.sixDigitCode">6-Digit Code</label>
+                                <input type="text" id="otp-input" name="otp" class="auth-form-input" 
+                                    data-i18n-placeholder="emailVerification.enterOTP" placeholder="—  —  —  —  —  —" 
+                                    required maxlength="6" pattern="\d{6}" inputmode="numeric" autocomplete="one-time-code">
+                            </div>
+                            <button type="submit" class="auth-form-button" id="verify-otp-btn" data-i18n="emailVerification.verifyCode">
+                                Verify Code
+                            </button>
+                        </form>
+                        <p class="auth-secondary-link">
+                            <a href="#" id="resend-otp-link" data-i18n="emailVerification.resendCode">Resend Code</a>
+                        </p>
+                    </div>
+
+                    <!-- Step 3: Success Confirmation -->
+                    <div id="verification-success-section" style="display: none;">
+                        <div class="auth-success-container">
+                            <div class="success-icon">✓</div>
+                            <h2 data-i18n="emailVerification.verified">Email Verified!</h2>
+                            <p class="auth-description" data-i18n="emailVerification.successMessage">
+                                Your email has been verified successfully. You can now access all Memoryan features.
+                            </p>
+                            <a href="https://mymemoryan.com" class="auth-form-button" data-i18n="common.returnToHome">Return to Home</a>
+                        </div>
+                    </div>
+
+                    <!-- Error State Display -->
+                    <div id="error-display" style="display: none;"></div>
+                </div>
+            </div>
+
+            <!-- Security Information -->
+            <div class="auth-security-notice">
+                <div class="security-icon">
+                    <svg viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12,1L3,5V11C3,16.55 6.84,21.74 12,23C17.16,21.74 21,16.55 21,11V5L12,1M12,7C13.4,7 14.8,8.6 14.8,10V11H16V16H8V11H9.2V10C9.2,8.6 10.6,7 12,7M12,8.2C11.2,8.2 10.4,8.7 10.4,10V11H13.6V10C13.6,8.7 12.8,8.2 12,8.2Z"/>
+                    </svg>
+                </div>
+                <div class="security-content">
+                    <h3 data-i18n="emailVerification.secureVerification">Secure Email Verification</h3>
+                    <p data-i18n="emailVerification.securityInfo">
+                        Verification codes are time-limited and single-use for maximum security. 
+                        Verifying your email helps protect your account and enables all Memoryan features.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="auth-footer glass-panel">
+        <div class="auth-footer-content">
+            <p>&copy; 2024 Memoryan. All rights reserved.</p>
+            <div class="auth-footer-links">
+                <a href="../privacy-policy.html" data-i18n="common.privacyPolicy">Privacy Policy</a>
+                <a href="../terms-of-service.html" data-i18n="common.termsOfService">Terms of Service</a>
+                <a href="../index.html" data-i18n="common.backToWebsite">Back to Website</a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Loading Indicator -->
+    <div id="auth-loading" class="auth-loading-overlay" style="display: none;">
+        <div class="auth-loading-spinner"></div>
+        <p id="loading-text" data-i18n="common.processing">Processing request...</p>
+    </div>
+
+    <!-- Scripts -->
+    <script src="../js/config.js"></script>
+    <script src="../js/supabase-loader.js"></script>
+    <script src="../js/i18n.js"></script>
+    <script src="js/auth-core.js"></script>
+    <script src="js/email-verification.js"></script>
+</body>
+</html> 
