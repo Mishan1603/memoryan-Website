@@ -2,6 +2,31 @@
    Provides styling for login, registration, password reset and email verification pages
 */
 
+/* Remove Safari/iOS blue tap highlight and blue focus pulse; no sharp-edged highlight */
+.auth-header a,
+.auth-header button,
+.auth-main-container a,
+.auth-main-container button,
+.auth-main-container input,
+.auth-footer a,
+.language-selector .language-button,
+.language-selector .language-option {
+    -webkit-tap-highlight-color: transparent;
+    tap-highlight-color: transparent;
+}
+.auth-form-button:focus,
+.auth-form-button:active,
+.language-button:focus,
+.language-button:active,
+.language-option:focus,
+.auth-back-link:focus,
+.auth-secondary-link a:focus,
+.return-link:focus,
+.auth-footer-links a:focus,
+.auth-logo-link:focus {
+    outline: none;
+}
+
 /* General Auth Page Styles */
 .auth-header {
     display: flex;
@@ -132,10 +157,9 @@ html[lang='uk'] .auth-form-label[data-i18n$=".sixDigitCode"] {
     transition: border-color 0.3s ease, box-shadow 0.3s ease;
     outline: none;
 }
-
 .auth-form-input:focus {
-    border-color: rgba(100, 149, 237, 0.8);
-    box-shadow: 0 0 0 3px rgba(100, 149, 237, 0.2);
+    border-color: rgba(255, 255, 255, 0.35);
+    box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.1);
 }
 
 .auth-form-button {
