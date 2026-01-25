@@ -596,9 +596,10 @@ class MemoryanAuth {
     displayError(message, containerId = 'error-display') {
         const errorContainer = document.getElementById(containerId);
         if (errorContainer) {
+            const text = this.sanitizeInput(message) || 'An unexpected error occurred. Please try again.';
             errorContainer.innerHTML = `
                 <div class="auth-message error">
-                    ${this.sanitizeInput(message)}
+                    ${text}
                 </div>
             `;
             errorContainer.style.display = 'block';
