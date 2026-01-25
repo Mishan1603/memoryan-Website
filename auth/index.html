@@ -135,15 +135,39 @@
                 });
             }
 
-            // Language selector: change language then reload
+            // Language selector: in-place update + move dropdown to body when open (Safari z-index fix)
             const languageButton = document.getElementById('language-button');
             const languageDropdown = document.getElementById('language-dropdown');
             const languageOptions = document.querySelectorAll('.language-option');
+            const languageSelector = document.querySelector('.language-selector');
+
+            function positionAuthPortalDropdown(open) {
+                if (!languageDropdown || !languageButton || !languageSelector) return;
+                if (open) {
+                    var rect = languageButton.getBoundingClientRect();
+                    document.body.appendChild(languageDropdown);
+                    languageDropdown.style.position = 'fixed';
+                    languageDropdown.style.top = (rect.bottom + 10) + 'px';
+                    languageDropdown.style.right = (window.innerWidth - rect.right) + 'px';
+                    languageDropdown.style.left = 'auto';
+                    languageDropdown.style.zIndex = '99998';
+                } else {
+                    if (languageDropdown.parentNode !== languageSelector) {
+                        languageSelector.appendChild(languageDropdown);
+                    }
+                    languageDropdown.style.position = '';
+                    languageDropdown.style.top = '';
+                    languageDropdown.style.right = '';
+                    languageDropdown.style.left = '';
+                    languageDropdown.style.zIndex = '';
+                }
+            }
 
             if (languageButton && languageDropdown) {
                 languageButton.addEventListener('click', (e) => {
                     e.stopPropagation();
                     languageDropdown.classList.toggle('active');
+                    positionAuthPortalDropdown(languageDropdown.classList.contains('active'));
                 });
                 languageOptions.forEach(option => {
                     option.addEventListener('click', (event) => {
@@ -151,12 +175,15 @@
                         const lang = option.getAttribute('data-lang');
                         if (window.i18n && lang) {
                             window.i18n.changeLanguage(lang);
+                            languageDropdown.classList.remove('active');
+                            positionAuthPortalDropdown(false);
                         }
                     });
                 });
                 document.addEventListener('click', (event) => {
                     if (!languageButton.contains(event.target) && !languageDropdown.contains(event.target)) {
                         languageDropdown.classList.remove('active');
+                        positionAuthPortalDropdown(false);
                     }
                 });
             }
