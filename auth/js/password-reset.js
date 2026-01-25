@@ -18,12 +18,11 @@ class PasswordReset {
     async init() {
         await this.waitForAuth();
         
-        // Initialize language support
+        // Initialize language support (saved or browser language)
         if (window.i18n) {
             window.i18n.init({
                 selector: '[data-i18n]',
-                placeholderSelector: '[data-i18n-placeholder]',
-                defaultLanguage: 'en'
+                placeholderSelector: '[data-i18n-placeholder]'
             });
         }
         
@@ -62,24 +61,13 @@ class PasswordReset {
                 languageDropdown.classList.toggle('active');
             });
             
-            // Handle language selection
+            // Handle language selection (saves and reloads page)
             languageOptions.forEach(option => {
                 option.addEventListener('click', (event) => {
                     event.preventDefault();
                     const lang = option.getAttribute('data-lang');
-                    
                     if (window.i18n && lang) {
                         window.i18n.changeLanguage(lang);
-                        document.getElementById('current-language').textContent = lang.toUpperCase();
-                        languageDropdown.classList.remove('active');
-
-                        // Adjust OTP input class for RU/UK to slightly smaller font
-                        const otp = document.getElementById('otp-input');
-                        if (otp) {
-                            otp.classList.remove('lang-ru', 'lang-uk');
-                            if (lang === 'ru') otp.classList.add('lang-ru');
-                            if (lang === 'uk') otp.classList.add('lang-uk');
-                        }
                     }
                 });
             });
