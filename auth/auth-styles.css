@@ -10,7 +10,8 @@
     padding: 20px 30px;
     margin-bottom: 0;
     position: relative;
-    z-index: 500;
+    z-index: 9990;
+    isolation: isolate;
 }
 
 .auth-logo-link {
@@ -44,6 +45,8 @@
     display: flex;
     justify-content: center;
     min-height: calc(100vh - 160px);
+    position: relative;
+    z-index: 1;
 }
 
 .auth-form-container {
@@ -489,10 +492,25 @@ html[lang='uk'] .auth-form-label[data-i18n$=".sixDigitCode"] {
     -webkit-backdrop-filter: blur(10px);
 }
 
+/* When open: use fixed positioning so dropdown is never behind main content (mobile stacking) */
 .language-dropdown.active {
+    position: fixed;
+    top: 56px;
+    right: 20px;
+    left: auto;
     opacity: 1;
     transform: translateY(0);
     pointer-events: all;
+    z-index: 99998;
+}
+
+/* Fallback for desktop where absolute looks better (optional: use same fixed for consistency) */
+@media (min-width: 769px) {
+    .language-dropdown.active {
+        position: fixed;
+        top: 64px;
+        right: 30px;
+    }
 }
 
 .language-option {
