@@ -696,6 +696,35 @@ class MemoryanAuth {
             };
         }
     }
+
+    /**
+     * Move language dropdown to body when open (fixes Safari z-index behind content).
+     * Call with true when opening, false when closing.
+     */
+    positionLanguageDropdown(open) {
+        const dropdown = document.getElementById('language-dropdown');
+        const button = document.getElementById('language-button');
+        const selector = document.querySelector('.language-selector');
+        if (!dropdown || !button || !selector) return;
+        if (open) {
+            const rect = button.getBoundingClientRect();
+            document.body.appendChild(dropdown);
+            dropdown.style.position = 'fixed';
+            dropdown.style.top = (rect.bottom + 10) + 'px';
+            dropdown.style.right = (window.innerWidth - rect.right) + 'px';
+            dropdown.style.left = 'auto';
+            dropdown.style.zIndex = '99998';
+        } else {
+            if (dropdown.parentNode !== selector) {
+                selector.appendChild(dropdown);
+            }
+            dropdown.style.position = '';
+            dropdown.style.top = '';
+            dropdown.style.right = '';
+            dropdown.style.left = '';
+            dropdown.style.zIndex = '';
+        }
+    }
 }
 
 // Create global instance
