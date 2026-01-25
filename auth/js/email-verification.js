@@ -16,12 +16,11 @@ class EmailVerification {
     async init() {
         await this.waitForAuth();
         
-        // Initialize language support
+        // Initialize language support (saved or browser language)
         if (window.i18n) {
             window.i18n.init({
                 selector: '[data-i18n]',
-                placeholderSelector: '[data-i18n-placeholder]',
-                defaultLanguage: 'en'
+                placeholderSelector: '[data-i18n-placeholder]'
             });
         }
         
@@ -57,24 +56,13 @@ class EmailVerification {
                 languageDropdown.classList.toggle('active');
             });
             
-            // Handle language selection
+            // Handle language selection (saves and reloads page)
             languageOptions.forEach(option => {
                 option.addEventListener('click', (event) => {
                     event.preventDefault();
                     const lang = option.getAttribute('data-lang');
-                    
                     if (window.i18n && lang) {
                         window.i18n.changeLanguage(lang);
-                        document.getElementById('current-language').textContent = lang.toUpperCase();
-                        languageDropdown.classList.remove('active');
-
-                        // Adjust OTP input class for font-size overrides for RU/UK
-                        const otp = document.getElementById('otp-input');
-                        if (otp) {
-                            otp.classList.remove('lang-ru', 'lang-uk');
-                            if (lang === 'ru') otp.classList.add('lang-ru');
-                            if (lang === 'uk') otp.classList.add('lang-uk');
-                        }
                     }
                 });
             });
@@ -150,37 +138,38 @@ class EmailVerification {
 
       // Call edge function; our core returns body even on errors
             const result = await window.MemoryanAuth.callEdgeFunction('send-email-verification-otp', { email: this.currentEmail });
+            const apiMessage = (result && (result.message || result.error)) ? String(result.message || result.error).trim() : '';
+            const raw = apiMessage.toLowerCase();
 
             if (result && result.success) {
-                window.MemoryanAuth.showLoading(window.i18n ? window.i18n.t('emailVerification.sending') : 'Sending verification code...');
                 document.getElementById('otp-email').textContent = this.currentEmail;
                 this.showSection('enter-otp-section');
                 window.MemoryanAuth.displaySuccess(result.message || (window.i18n ? window.i18n.t('emailVerification.codeSent') : 'Verification code sent successfully!'));
             } else {
-                const raw = (result && result.message ? String(result.message) : '').toLowerCase();
                 if (raw.includes('already verified')) {
                     this.showSection('verification-success-section');
-                    window.MemoryanAuth.displaySuccess(window.i18n ? window.i18n.t('errors.alreadyVerified') : 'This account is already verified.');
+                    window.MemoryanAuth.displaySuccess(window.i18n ? window.i18n.t('errors.alreadyVerified') : 'Your email is already verified. You can sign in to your account.');
                     return;
                 }
-                if (raw.includes('no account') || raw.includes('not found')) {
-          this.lastFailed.email = this.currentEmail;
+                if (raw.includes('no account') || raw.includes('not found') || raw.includes("sign up first")) {
+                    this.lastFailed.email = this.currentEmail;
                     window.MemoryanAuth.displayError(window.i18n ? window.i18n.t('errors.emailNotFound') : "This email isn't linked to any existing account. Please check and try again.");
                     return;
                 }
-                if (raw.includes('too many') || raw.includes('rate')) {
+                if (raw.includes('too many') || raw.includes('rate') || raw.includes('wait')) {
                     window.MemoryanAuth.displayError(window.i18n ? window.i18n.t('errors.tooManyAttempts') : 'Too many attempts. Please try again after 24 hours.');
                     return;
                 }
-                window.MemoryanAuth.displayError(result?.message || (window.i18n ? window.i18n.t('errors.unexpected') : 'An unexpected error occurred. Please try again.'));
+                const fallback = window.i18n ? window.i18n.t('errors.unexpected') : 'An unexpected error occurred. Please try again.';
+                window.MemoryanAuth.displayError(apiMessage || fallback);
             }
         } catch (error) {
-            const msg = String(error?.message || '');
-            if (msg.toLowerCase().includes('already verified')) {
+            const msg = String(error && (error.message || error) || '').toLowerCase();
+            if (msg.includes('already verified')) {
                 this.showSection('verification-success-section');
-                window.MemoryanAuth.displaySuccess(window.i18n ? window.i18n.t('errors.alreadyVerified') : 'This account is already verified.');
-            } else if (msg.toLowerCase().includes('no account') || msg.toLowerCase().includes('not found')) {
-        this.lastFailed.email = this.currentEmail;
+                window.MemoryanAuth.displaySuccess(window.i18n ? window.i18n.t('errors.alreadyVerified') : 'Your email is already verified. You can sign in to your account.');
+            } else if (msg.includes('no account') || msg.includes('not found')) {
+                this.lastFailed.email = this.currentEmail;
                 window.MemoryanAuth.displayError(window.i18n ? window.i18n.t('errors.emailNotFound') : "This email isn't linked to any existing account. Please check and try again.");
             } else {
                 window.MemoryanAuth.displayError(window.i18n ? window.i18n.t('errors.unexpected') : 'An unexpected error occurred. Please try again.');
