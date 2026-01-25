@@ -61,13 +61,14 @@ class PasswordReset {
                 languageDropdown.classList.toggle('active');
             });
             
-            // Handle language selection (saves and reloads page)
+            // Handle language selection (updates in place, same as main website)
             languageOptions.forEach(option => {
                 option.addEventListener('click', (event) => {
                     event.preventDefault();
                     const lang = option.getAttribute('data-lang');
                     if (window.i18n && lang) {
                         window.i18n.changeLanguage(lang);
+                        languageDropdown.classList.remove('active');
                     }
                 });
             });
