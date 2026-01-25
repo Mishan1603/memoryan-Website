@@ -56,12 +56,13 @@ class PasswordReset {
         const languageOptions = document.querySelectorAll('.language-option');
         
         if (languageButton && languageDropdown) {
-            // Toggle dropdown
             languageButton.addEventListener('click', () => {
                 languageDropdown.classList.toggle('active');
+                if (window.MemoryanAuth && window.MemoryanAuth.positionLanguageDropdown) {
+                    window.MemoryanAuth.positionLanguageDropdown(languageDropdown.classList.contains('active'));
+                }
             });
             
-            // Handle language selection (updates in place, same as main website)
             languageOptions.forEach(option => {
                 option.addEventListener('click', (event) => {
                     event.preventDefault();
@@ -69,14 +70,19 @@ class PasswordReset {
                     if (window.i18n && lang) {
                         window.i18n.changeLanguage(lang);
                         languageDropdown.classList.remove('active');
+                        if (window.MemoryanAuth && window.MemoryanAuth.positionLanguageDropdown) {
+                            window.MemoryanAuth.positionLanguageDropdown(false);
+                        }
                     }
                 });
             });
             
-            // Close dropdown when clicking outside
             document.addEventListener('click', (event) => {
                 if (!languageButton.contains(event.target) && !languageDropdown.contains(event.target)) {
                     languageDropdown.classList.remove('active');
+                    if (window.MemoryanAuth && window.MemoryanAuth.positionLanguageDropdown) {
+                        window.MemoryanAuth.positionLanguageDropdown(false);
+                    }
                 }
             });
         }
