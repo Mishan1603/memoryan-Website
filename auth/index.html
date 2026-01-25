@@ -1,0 +1,204 @@
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Authentication Portal - Memoryan</title>
+        <meta name="description" content="Memoryan authentication services">
+        
+        <!-- Favicon -->
+        <link rel="icon" type="image/png" href="../images/memoryan-logo.png">
+        
+        <!-- CSS -->
+        <link rel="stylesheet" href="../style.css">
+        <link rel="stylesheet" href="auth-styles.css">
+        
+        <!-- Google Fonts -->
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&family=Open+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
+    </head>
+    <body>
+        <!-- Animated Gradient Background -->
+        <div class="animated-gradient"></div>
+
+        <!-- Auth Header -->
+        <header class="auth-header glass-panel">
+            <a href="../index.html" class="auth-logo-link">
+                <img src="../images/memoryan-logo.png" alt="Memoryan Logo" class="auth-logo">
+                <span class="auth-title">Memoryan Auth</span>
+            </a>
+            <div class="language-selector">
+                <button id="language-button" class="language-button">
+                    <span id="current-language">EN</span>
+                </button>
+                <div id="language-dropdown" class="language-dropdown">
+                    <a href="#" data-lang="en" class="language-option">English</a>
+                    <a href="#" data-lang="ru" class="language-option">Русский</a>
+                    <a href="#" data-lang="uk" class="language-option">Українська</a>
+                    <a href="#" data-lang="de" class="language-option">Deutsch</a>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="auth-main-container">
+            <div class="auth-welcome-section glass-panel">
+                <h1 data-i18n="authPortal.title">Memoryan Authentication</h1>
+                <p class="auth-description" data-i18n="authPortal.description">
+                    Choose an action below.
+                </p>
+
+                <!-- Auth Options -->
+                <div class="auth-options-grid">
+                    <!-- Email Verification Option -->
+                    <div class="auth-option-card">
+                        <div class="auth-option-icon">
+                            <svg class="auth-icon" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 14H4V8l8 5 8-5v10zm-8-7L4 6h16l-8 5z"/>
+                            </svg>
+                        </div>
+                        <h2 data-i18n="authPortal.emailVerification">Email Verification</h2>
+                        <p data-i18n="authPortal.emailVerificationDesc">
+                            Verify your email address to access all Memoryan features and secure your account.
+                        </p>
+                        <a href="email-verification.html" class="auth-form-button" data-i18n="authPortal.verifyEmail">
+                            Verify Email
+                        </a>
+                    </div>
+
+                    <!-- Password Reset Option -->
+                    <div class="auth-option-card">
+                        <div class="auth-option-icon">
+                            <svg class="auth-icon" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M12.65 10C11.83 7.67 9.61 6 7 6c-3.31 0-6 2.69-6 6s2.69 6 6 6c2.61 0 4.83-1.67 5.65-4H17v4h4v-4h2v-4H12.65zM7 14c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2z"/>
+                            </svg>
+                        </div>
+                        <h2 data-i18n="authPortal.passwordReset">Password Reset</h2>
+                        <p data-i18n="authPortal.passwordResetDesc">
+                            Forgot your password? Reset it securely to regain access to your account.
+                        </p>
+                        <a href="password-reset.html" class="auth-form-button" data-i18n="authPortal.resetPassword">
+                            Reset Password
+                        </a>
+                    </div>
+                </div>
+                
+                <!-- Return to App Link -->
+                <div class="return-to-app">
+                    <a href="https://mymemoryan.com" class="return-link" data-i18n="authPortal.returnToApp">
+                        Return to Memoryan App
+                    </a>
+                </div>
+            </div>
+
+            <!-- Security Information -->
+            <div class="auth-security-notice">
+                <div class="security-icon">
+                    <svg viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12,1L3,5V11C3,16.55 6.84,21.74 12,23C17.16,21.74 21,16.55 21,11V5L12,1M12,7C13.4,7 14.8,8.6 14.8,10V11H16V16H8V11H9.2V10C9.2,8.6 10.6,7 12,7M12,8.2C11.2,8.2 10.4,8.7 10.4,10V11H13.6V10C13.6,8.7 12.8,8.2 12,8.2Z"/>
+                    </svg>
+                </div>
+                <div class="security-content">
+                    <h3 data-i18n="authPortal.secureAuth">Secure Authentication</h3>
+                    <p data-i18n="authPortal.securityInfo">
+                        All authentication processes use secure, encrypted connections and time-limited verification codes.
+                        Your security is our priority.
+                    </p>
+                </div>
+            </div>
+        </main>
+
+        <!-- Footer -->
+        <footer class="auth-footer glass-panel">
+            <div class="auth-footer-content">
+                <p>&copy; 2024 Memoryan. All rights reserved.</p>
+                <div class="auth-footer-links">
+                    <a href="../privacy-policy.html" data-i18n="common.privacyPolicy">Privacy Policy</a>
+                    <a href="../terms-of-service.html" data-i18n="common.termsOfService">Terms of Service</a>
+                    <a href="../index.html" data-i18n="common.backToWebsite">Back to Website</a>
+                </div>
+            </div>
+        </footer>
+
+        <!-- Scripts -->
+        <script src="../js/config.js"></script>
+        <script src="../js/supabase-loader.js"></script>
+        <script src="../js/i18n.js"></script>
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                // Initialize i18n (uses saved or browser language)
+                if (window.i18n) {
+                    window.i18n.init({
+                        selector: '[data-i18n]',
+                        placeholderSelector: '[data-i18n-placeholder]'
+                    });
+                }
+
+                // Language selector: backdrop + portal so dropdown is never behind content (Safari-safe)
+                const languageButton = document.getElementById('language-button');
+                const languageDropdown = document.getElementById('language-dropdown');
+                const languageOptions = document.querySelectorAll('.language-option');
+                const languageSelector = document.querySelector('.language-selector');
+                var BACKDROP_ID = 'auth-lang-dropdown-backdrop';
+                var Z_TOP = '2147483647';
+                var Z_BACKDROP = '2147483646';
+
+                function positionAuthPortalDropdown(open) {
+                    if (!languageDropdown || !languageButton || !languageSelector) return;
+                    if (open) {
+                        languageDropdown.classList.add('active');
+                        var rect = languageButton.getBoundingClientRect();
+                        var backdrop = document.getElementById(BACKDROP_ID);
+                        if (!backdrop) {
+                            backdrop = document.createElement('div');
+                            backdrop.id = BACKDROP_ID;
+                            backdrop.setAttribute('aria-hidden', 'true');
+                            backdrop.style.cssText = 'position:fixed;inset:0;z-index:' + Z_BACKDROP + ';background:transparent;';
+                            backdrop.addEventListener('click', function() { positionAuthPortalDropdown(false); });
+                        }
+                        document.body.appendChild(backdrop);
+                        document.body.appendChild(languageDropdown);
+                        languageDropdown.style.cssText = 'position:fixed;top:' + (rect.bottom + 10) + 'px;right:' + (window.innerWidth - rect.right) + 'px;left:auto;z-index:' + Z_TOP + ';';
+                        requestAnimationFrame(function() {
+                            var r = languageButton.getBoundingClientRect();
+                            languageDropdown.style.top = (r.bottom + 10) + 'px';
+                            languageDropdown.style.right = (window.innerWidth - r.right) + 'px';
+                        });
+                    } else {
+                        languageDropdown.classList.remove('active');
+                        var b = document.getElementById(BACKDROP_ID);
+                        if (b && b.parentNode) b.remove();
+                        if (languageDropdown.parentNode !== languageSelector) languageSelector.appendChild(languageDropdown);
+                        languageDropdown.style.cssText = '';
+                    }
+                }
+
+                if (languageButton && languageDropdown) {
+                    languageButton.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        languageDropdown.classList.toggle('active');
+                        positionAuthPortalDropdown(languageDropdown.classList.contains('active'));
+                    });
+                    languageOptions.forEach(option => {
+                        option.addEventListener('click', (event) => {
+                            event.preventDefault();
+                            const lang = option.getAttribute('data-lang');
+                            if (window.i18n && lang) {
+                                window.i18n.changeLanguage(lang);
+                                languageDropdown.classList.remove('active');
+                                positionAuthPortalDropdown(false);
+                            }
+                        });
+                    });
+                    document.addEventListener('click', (event) => {
+                        if (!languageButton.contains(event.target) && !languageDropdown.contains(event.target)) {
+                            languageDropdown.classList.remove('active');
+                            positionAuthPortalDropdown(false);
+                        }
+                    });
+                }
+            });
+        </script>
+    </body>
+    </html> 
