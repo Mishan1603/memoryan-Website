@@ -1,22 +1,43 @@
 document.addEventListener('DOMContentLoaded', function() {
-    // Initialize i18n (uses saved or browser language; main site: en/ru)
+    // Initialize i18n (uses saved or browser language; main site: en, ru, uk, de)
     if (window.i18n && typeof window.i18n.init === 'function') {
         window.i18n.init({ selector: '[data-i18n]', placeholderSelector: '[data-i18n-placeholder]' });
-        var langBtns = document.querySelectorAll('.lang-switcher .lang-btn');
-        langBtns.forEach(function(btn) {
-            btn.addEventListener('click', function() {
-                var lang = this.getAttribute('data-lang');
-                if (lang && window.i18n.changeLanguage) {
-                    window.i18n.changeLanguage(lang);
-                    langBtns.forEach(function(b) { b.classList.remove('active'); });
-                    this.classList.add('active');
+        setupLanguageSelector();
+    }
+
+    function setupLanguageSelector() {
+        var languageButton = document.getElementById('language-button');
+        var languageDropdown = document.getElementById('language-dropdown');
+        var languageOptions = document.querySelectorAll('.language-option');
+        var currentBadge = document.getElementById('current-language');
+
+        if (languageButton && languageDropdown) {
+            languageButton.addEventListener('click', function(e) {
+                e.stopPropagation();
+                languageDropdown.classList.toggle('active');
+            });
+            languageOptions.forEach(function(option) {
+                option.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    var lang = option.getAttribute('data-lang');
+                    if (window.i18n && lang) {
+                        window.i18n.changeLanguage(lang);
+                        languageDropdown.classList.remove('active');
+                        if (currentBadge) currentBadge.textContent = lang.toUpperCase();
+                    }
+                });
+            });
+            document.addEventListener('click', function(e) {
+                if (!languageButton.contains(e.target) && !languageDropdown.contains(e.target)) {
+                    languageDropdown.classList.remove('active');
                 }
             });
-        });
-        var cur = window.i18n.getCurrentLanguage ? window.i18n.getCurrentLanguage() : 'en';
-        langBtns.forEach(function(b) { b.classList.toggle('active', b.getAttribute('data-lang') === cur); });
+        }
+        if (currentBadge && window.i18n && window.i18n.getCurrentLanguage) {
+            currentBadge.textContent = window.i18n.getCurrentLanguage().toUpperCase();
+        }
     }
-    
+
     // Check if user has already accepted cookies
     const hasAcceptedCookies = localStorage.getItem('cookiesAccepted');
     
