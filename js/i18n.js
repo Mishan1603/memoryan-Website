@@ -2,7 +2,7 @@
 // - Looks for elements with data-i18n and data-i18n-placeholder
 // - Updates document <html lang> attribute
 // - Exposes window.i18n.init({ selector, placeholderSelector, defaultLanguage }) and window.i18n.changeLanguage(lang)
-
+ 
 (function() {
   const STORAGE_KEY = 'memoryan_lang';
 
@@ -673,5 +673,6 @@
     t(key) { return translateKey(key); }
   };
 })();
+
 
 
