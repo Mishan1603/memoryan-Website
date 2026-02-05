@@ -59,7 +59,7 @@
         termsOfService: 'Terms of Service',
         backToWebsite: 'Back to Website',
         footer: {
-          copyright: '© 2024 Memoryan. All rights reserved.',
+          copyright: '© 2026 Memoryan. All rights reserved.',
           privacyPolicy: 'Privacy Policy',
           termsOfService: 'Terms of Service'
         }
@@ -67,35 +67,36 @@
       hero: {
         title: 'This is Memoryan',
         subtitle: 'An app that redefines how people save and apply valuable content from anywhere.',
-        description: "It's not just about saving — it's about cherishing, organizing, and effortlessly rediscovering what truly matters to you.",
+        description: "It's not just about saving links and notes — it's about effortlessly organizing and rediscovering them like never before.",
         specialOffer: 'Special Launch Offer!',
-        freePremium: '🎉 FREE PREMIUM Until the 1st of June! 🎉',
-        betaTesting: 'Beta Testing starts 2nd of June. Be among the first to experience the full power of Memoryan.',
+        freePremium: '🎉 FREE PREMIUM Until the 1st of March! 🎉',
+        betaTesting: 'Beta Testing starts 20th February. Be among the first to experience the full power of Memoryan.',
         loadingTrailer: 'Loading trailer...',
         videoNotSupported: 'Your browser does not support the video tag.',
         videoError: 'Unable to load video. Please try again later.'
       },
       features: {
         title: 'Key Features of Memoryan',
-        chambersCreation: { title: 'Chambers Creation', description: 'Organize your content into visually stunning customizable Chambers.' },
-        richCustomization: { title: 'Rich Customization', description: 'Personalize the look and feel of your Chambers and Blocks with gradients and themes.' },
-        aiTitleGeneration: { title: 'AI Title Generation', description: 'Let AI craft the perfect titles for your saved content automatically.' },
+        chambersCreation: { title: 'Collections Creation', description: 'Organize your content into visually stunning customizable Collections.' },
+        aiTitleGeneration: { title: 'AI Title Generation', description: 'Creation of Titles for saved content has never been easier.' },
         smartTagSystem: { title: 'Smart Tag System', description: 'Categorize with our unique "Save-Enjoy-Apply" tagging approach for better recall.' },
-        contentBlocks: { title: 'Beautiful Content Blocks', description: 'Visually appealing displays for your links, notes, and other saved content.' }
+        contentBlocks: { title: 'Beautiful content blocks', description: 'A place where your saved content embraces a unified form for your links, notes.' },
+        backupSystem: { title: 'Backup System', description: 'Keep your valuable content safe with automated backups.' },
+        sharingPlatform: { title: 'New Sharing Platform', description: 'Share your link with whole Platform.' }
       },
       screenshots: {
         title: 'Experience Memoryan',
         keyboardHint: 'Use keyboard arrows (←→) to navigate',
         items: {
-          0: { title: 'MemoryHub', description: 'Your personalized home for all control over your chambers.' },
-          1: { title: 'Chambers design', description: 'Gradients, Titles and Emojis for full reflection of what you want to save there.' },
+          0: { title: 'MemoryHub', description: 'Your personalized home for all control over your collections.' },
+          1: { title: 'Collections design', description: 'Gradients, Titles and Emojis for full reflection of what you want to save there.' },
           2: { title: 'Save Content Effortlessly', description: 'Quickly save links, notes and more with our intuitive interface.' },
           3: { title: 'Blocks page', description: 'Visually appealing displays for your links, notes, and other saved content.' },
           4: { title: 'Rich Note Editor', description: 'Write detailed and passionate notes without compromises.' },
           5: { title: 'Powerful Tagging System', description: 'Organize content with our unique Save-Enjoy-Apply approach.' },
-          6: { title: 'Rich Color Palette', description: 'Choose from beautiful gradient options for your chambers.' },
+          6: { title: 'Rich Color Palette', description: 'Choose from beautiful gradient options for your collections.' },
           7: { title: 'Deadline Management', description: 'The world is full of useful content. Enough pushing away. Set deadlines and get to it right away.' },
-          8: { title: 'Convenient Sorting', description: 'Organize your content in your folders today, and thank yourself tomorrow.' },
+          8: { title: 'Convenient Sorting', description: 'Organize your content in your collections today, and thank yourself tomorrow.' },
           9: { title: 'Advanced Options', description: 'Full control over your content with our intuitive options menu.' }
         }
       },
@@ -103,10 +104,8 @@
         title: 'Upcoming Features',
         description: "We're constantly improving Memoryan. Here's what's coming next:",
         sync: { title: 'Synchronization across devices', description: 'Access your content seamlessly from all your devices.' },
-        backup: { title: 'Backup feature', description: 'Keep your valuable content safe with automated backups.' },
         moreBlocks: { title: 'More types of blocks', description: 'Support for Documents (PDF, Word, Excel) and Media (Photo, Video).' },
-        languages: { title: 'More supported languages', description: 'Spanish, German, French and more coming soon.' },
-        friends: { title: 'Friends Screen', description: 'Effortlessly share valuable content with people who matter to you, with no compromises.' },
+        languages: { title: 'More supported languages', description: 'Spanish, Chinese, French and more coming soon.' },
         more: { title: 'And much more', description: 'Continuous enhancements, useful features, and fixes.' }
       },
       joinTests: {
@@ -119,6 +118,18 @@
         title: 'Get Memoryan Now!',
         ios: { title: 'Download for iOS', description: 'Tap to see QR code or click below' },
         android: { title: 'Download for Android', description: 'Tap to see QR code or click below' }
+      },
+      privacyPolicy: {
+        title: 'Privacy Policy',
+        lastUpdated: 'Last Updated:',
+        introduction: { title: '1. Introduction', content: 'Welcome to Memoryan. We respect your privacy and are committed to protecting your personal data. This Privacy Policy explains how we collect, use, and safeguard your information when you use our mobile application.' },
+        informationCollected: { title: '2. Information We Collect', content: 'We collect the following types of information:', items: ['Account Information: Email address and authentication information when you register.', 'User Content: The content you save within the app, including links, notes, and other media.', 'Usage Data: Information about how you use the app, features accessed, and time spent.', 'Device Information: Device type, operating system, and unique device identifiers.'] }
+      },
+      termsOfService: {
+        title: 'Terms of Service',
+        lastUpdated: 'Last Updated:',
+        acceptanceOfTerms: { title: '1. Acceptance of Terms', content: 'By accessing or using the Memoryan mobile application, you agree to be bound by these Terms of Service and all applicable laws and regulations.' },
+        userAccounts: { title: '2. User Accounts', content: 'You must create an account to use certain features of the app. You are responsible for maintaining the confidentiality of your account information and for all activities that occur under your account.' }
       },
       emailVerification: {
         title: 'Verify Your Email',
@@ -200,57 +211,56 @@
         processing: 'Обработка запроса...',
         returnToHome: 'Вернуться на главную',
         privacyPolicy: 'Политика конфиденциальности',
-        termsOfService: 'Условия обслуживания',
+        termsOfService: 'Условия использования',
         backToWebsite: 'Назад на сайт',
         footer: {
-          copyright: '© 2024 Memoryan. Все права защищены.',
+          copyright: '© 2026 Memoryan. Все права защищены.',
           privacyPolicy: 'Политика конфиденциальности',
-          termsOfService: 'Условия обслуживания'
+          termsOfService: 'Условия использования'
         }
       },
       hero: {
         title: 'Это Memoryan',
-        subtitle: 'Приложение, которое меняет то, как люди сохраняют и используют ценный контент из любого места.',
-        description: 'Речь не только о сохранении — но о том, чтобы хранить, организовывать и с лёгкостью возвращаться к тому, что для вас важно.',
-        specialOffer: 'Специальное предложение запуска!',
-        freePremium: '🎉 БЕСПЛАТНЫЙ ПРЕМИУМ до 1 июня! 🎉',
-        betaTesting: 'Бета-тестирование начнётся 2 июня. Будьте среди первых, кто оценит возможности Memoryan.',
+        subtitle: 'Революция в том, как вы сохраняете и применяете потоки информации!',
+        description: 'Это не просто сохранение ссылок и заметок — это искусство ценить, систематизировать и открывать что то новое.',
+        specialOffer: 'Стартовое предложение!',
+        freePremium: '🎉 Бесплатный Премиум до 1 марта! 🎉',
+        betaTesting: 'Бета-тестирование с 20 февраля — станьте первыми героями Memoryan!',
         loadingTrailer: 'Загрузка трейлера...',
         videoNotSupported: 'Ваш браузер не поддерживает воспроизведение видео.',
         videoError: 'Не удалось загрузить видео. Попробуйте позже.'
       },
       features: {
         title: 'Ключевые возможности Memoryan',
-        chambersCreation: { title: 'Создание камер', description: 'Организуйте контент в настраиваемые визуальные камеры.' },
-        richCustomization: { title: 'Гибкая настройка', description: 'Градиенты и темы для камер и блоков.' },
-        aiTitleGeneration: { title: 'AI-заголовки', description: 'ИИ создаёт подходящие заголовки для сохранённого контента.' },
-        smartTagSystem: { title: 'Умные теги', description: 'Система «Сохранить-Насладиться-Применить» для лучшего запоминания.' },
-        contentBlocks: { title: 'Красивые блоки контента', description: 'Удобное отображение ссылок, заметок и другого контента.' }
+        chambersCreation: { title: 'Создание коллекций', description: 'Группируйте контент в стильные настраиваемые коллекции для быстрой навигации.' },
+        aiTitleGeneration: { title: 'ИИ-заголовки в один клик', description: 'Создание названий сохранённого контента ещё никогда не было таким простым и удобным.' },
+        smartTagSystem: { title: 'Удобная система тегов', description: 'Продуманная система тегов обеспечит вам максимальную эффективность в применении и организации контента.' },
+        contentBlocks: { title: 'Красивые блоки контента', description: 'Место где ваши ссылки и заметки обретают чёткое и лаконичное оформление в едином стиле.' },
+        backupSystem: { title: 'Система резервного копирования', description: 'Сохраняйте ценный контент с помощью автоматических резервных копий.' },
+        sharingPlatform: { title: 'Новая платформа обмена', description: 'Делитесь ссылками со всей платформой.' }
       },
       screenshots: {
-        title: 'Оцените Memoryan',
-        keyboardHint: 'Навигация стрелками (←→)',
+        title: 'Взгляд изнутри Memoryan',
+        keyboardHint: 'Используйте стрелки ← → для перелистывания',
         items: {
-          0: { title: 'MemoryHub', description: 'Ваш домашний экран для управления камерами.' },
-          1: { title: 'Дизайн камер', description: 'Градиенты, заголовки и эмодзи под ваши задачи.' },
-          2: { title: 'Сохраняйте контент легко', description: 'Ссылки, заметки и не только через простой интерфейс.' },
-          3: { title: 'Страница блоков', description: 'Наглядное отображение ссылок, заметок и контента.' },
-          4: { title: 'Редактор заметок', description: 'Заметки без компромиссов.' },
-          5: { title: 'Система тегов', description: 'Организация по принципу Сохранить-Насладиться-Применить.' },
-          6: { title: 'Палитра градиентов', description: 'Выбор градиентов для камер.' },
-          7: { title: 'Дедлайны', description: 'Дeadlines помогают не откладывать контент в долгий ящик.' },
-          8: { title: 'Удобная сортировка', description: 'Разложите контент по папкам сегодня — скажете себе спасибо завтра.' },
-          9: { title: 'Дополнительные опции', description: 'Полный контроль над контентом через меню.' }
+          0: { title: 'Главная страница', description: 'Ваш персональный центр управления всеми коллекциями.' },
+          1: { title: 'Дизайн коллекций', description: 'Градиенты, Заголовки и Емодзи всё для полного отражения того что вам желается хранить.' },
+          2: { title: 'Мгновенные сохранения', description: 'Сохраняйте любые ссылки, буквально в пару кликов.' },
+          3: { title: 'Визуально упорядоченные блоки', description: 'Визуально упорядоченные блоки для мгновенного доступа и взаимодействия с контентом.' },
+          4: { title: 'Удобный редактор заметок', description: 'Пишите детально и вдохновенно — без компромиссов.' },
+          5: { title: 'Тег-менеджмент', description: 'Позволяет не просто сохранить, но переоткрыть или переосознать желаемый контент.' },
+          6: { title: 'Палитра без границ', description: 'Выбирайте оттенки или создавайте собственные — подчеркните индивидуальность.' },
+          7: { title: 'Применяйте знания', description: 'Интернет полон полезного контента. Долой откладывать. Устанавливайте дедлайны и получайте напоминания.' },
+          8: { title: 'Простая сортировка', description: 'Мгновенная сортировка сегодня — безупречная система завтра.' },
+          9: { title: 'Расширенные настройки', description: 'Полный контроль над повторением контента через интуитивное меню опций.' }
         }
       },
       upcomingFeatures: {
         title: 'Скоро',
         description: 'Мы постоянно развиваем Memoryan. Вот что в планах:',
         sync: { title: 'Синхронизация на всех устройствах', description: 'Доступ к контенту с любого устройства.' },
-        backup: { title: 'Резервные копии', description: 'Автоматическое резервное копирование контента.' },
         moreBlocks: { title: 'Новые типы блоков', description: 'Документы (PDF, Word, Excel), медиа (фото, видео).' },
-        languages: { title: 'Больше языков', description: 'Испанский, немецкий, французский и другие.' },
-        friends: { title: 'Экран «Друзья»', description: 'Делитесь контентом с близкими без ограничений.' },
+        languages: { title: 'Больше языков', description: 'Испанский, китайский, французский и другие.' },
         more: { title: 'И многое другое', description: 'Улучшения, новые функции и доработки.' }
       },
       joinTests: {
@@ -260,9 +270,21 @@
         joinButton: 'Участвовать'
       },
       download: {
-        title: 'Скачайте Memoryan!',
-        ios: { title: 'Скачать для iOS', description: 'Нажмите, чтобы показать QR-код' },
-        android: { title: 'Скачать для Android', description: 'Нажмите, чтобы показать QR-код' }
+        title: 'Попробуйте Memoryan сегодня!',
+        ios: { title: 'Скачать для iOS', description: 'Нажмите для QR-кода или тапните ниже' },
+        android: { title: 'Скачать для Android', description: 'Нажмите для QR-кода или тапните ниже' }
+      },
+      privacyPolicy: {
+        title: 'Политика конфиденциальности',
+        lastUpdated: 'Последнее обновление:',
+        introduction: { title: '1. Введение', content: 'Добро пожаловать в Memoryan. Мы уважаем вашу конфиденциальность и стремимся защищать ваши персональные данные. Эта Политика конфиденциальности объясняет, как мы собираем, используем и защищаем вашу информацию при использовании нашего мобильного приложения.' },
+        informationCollected: { title: '2. Информация, которую мы собираем', content: 'Мы собираем следующие типы информации:', items: ['Информация об учетной записи: Email-адрес и данные аутентификации при регистрации.', 'Пользовательский контент: Контент, который вы сохраняете в приложении, включая ссылки, заметки и другие медиа.', 'Данные об использовании: Информация о том, как вы используете приложение, доступ к функциям и время использования.', 'Информация об устройстве: Тип устройства, операционная система и уникальные идентификаторы устройства.'] }
+      },
+      termsOfService: {
+        title: 'Условия использования',
+        lastUpdated: 'Последнее обновление:',
+        acceptanceOfTerms: { title: '1. Принятие условий', content: 'Получая доступ или используя мобильное приложение Memoryan, вы соглашаетесь соблюдать эти Условия использования и все применимые законы и правила.' },
+        userAccounts: { title: '2. Учетные записи пользователей', content: 'Вы должны создать учетную запись для использования определенных функций приложения. Вы несете ответственность за сохранение конфиденциальности информации вашей учетной записи и за все действия, которые происходят в рамках вашей учетной записи.' }
       },
       emailVerification: {
         title: 'Подтвердите свой Email',
@@ -332,13 +354,76 @@
         initiationRequired: 'Будь ласка, спочатку ініціюйте скидання паролю в мобільному додатку.'
       },
       common: {
+        features: 'Можливості',
+        screenshots: 'Скриншоти',
+        download: 'Завантажити',
+        appStore: 'App Store',
+        googlePlay: 'Google Play',
+        contact: 'Контакт:',
+        copied: 'Скопійовано!',
         emailAddress: 'Електронна адреса',
         enterEmailPlaceholder: 'Введіть електронну адресу',
         processing: 'Обробка запиту...',
         returnToHome: 'Повернутися на головну',
         privacyPolicy: 'Політика конфіденційності',
-        termsOfService: 'Умови надання послуг',
-        backToWebsite: 'Назад до сайту'
+        termsOfService: 'Умови використання',
+        backToWebsite: 'Назад до сайту',
+        footer: { copyright: '© 2026 Memoryan. Усі права захищено.', privacyPolicy: 'Політика конфіденційності', termsOfService: 'Умови використання' }
+      },
+      hero: {
+        title: 'Це Memoryan',
+        subtitle: 'Революція в тому, як ви зберігаєте та застосовуєте потоки інформації!',
+        description: 'Це не просто збереження посилань і нотаток — це мистецтво цінувати, систематизувати та відкривати щось нове.',
+        specialOffer: 'Стартова пропозиція!',
+        freePremium: '🎉 Безкоштовний Преміум до 1 березня! 🎉',
+        betaTesting: 'Бета-тестування з 20 лютого — будьте серед перших героїв Memoryan!',
+        loadingTrailer: 'Завантаження трейлера...',
+        videoNotSupported: 'Ваш браузер не підтримує відтворення відео.',
+        videoError: 'Не вдалося завантажити відео. Спробуйте пізніше.'
+      },
+      features: {
+        title: 'Ключові можливості Memoryan',
+        chambersCreation: { title: 'Створення колекцій', description: 'Групуйте контент у стильні налаштовувані колекції для швидкої навігації.' },
+        aiTitleGeneration: { title: 'ІІ-заголовки в один клік', description: 'Створення назв збереженого контенту ще ніколи не було таким простим.' },
+        smartTagSystem: { title: 'Зручна система тегів', description: 'Подумана система тегів для максимальної ефективності в застосуванні та організації контенту.' },
+        contentBlocks: { title: 'Красиві блоки контенту', description: 'Місце, де ваші посилання та нотатки мають чітке оформлення в єдиному стилі.' },
+        backupSystem: { title: 'Система резервного копіювання', description: 'Зберігайте цінний контент за допомогою автоматичних резервних копій.' },
+        sharingPlatform: { title: 'Нова платформа обміну', description: 'Діліться посиланнями з усією платформою.' }
+      },
+      screenshots: {
+        title: 'Погляд зсередини Memoryan',
+        keyboardHint: 'Використовуйте стрілки ← → для перегортання',
+        items: {
+          0: { title: 'Головна сторінка', description: 'Ваш персональний центр керування всіма колекціями.' },
+          1: { title: 'Дизайн колекцій', description: 'Градієнти, заголовки та емодзі для повного відображення того, що ви хочете зберігати.' },
+          2: { title: 'Миттєві збереження', description: 'Зберігайте будь-які посилання в кілька кліків.' },
+          3: { title: 'Візуально впорядковані блоки', description: 'Візуально впорядковані блоки для миттєвого доступу до контенту.' },
+          4: { title: 'Зручний редактор нотаток', description: 'Пишіть детально та натхненно — без компромісів.' },
+          5: { title: 'Тег-менеджмент', description: 'Дозволяє не лише зберегти, а й перевідкрити контент.' },
+          6: { title: 'Палітра без меж', description: 'Обирайте відтінки або створюйте власні.' },
+          7: { title: 'Застосовуйте знання', description: 'Інтернет повний корисного контенту. Встановлюйте дедлайни та отримуйте нагадування.' },
+          8: { title: 'Просте сортування', description: 'Миттєве сортування сьогодні — бездоганна система завтра.' },
+          9: { title: 'Розширені налаштування', description: 'Повний контроль через інтуїтивне меню опцій.' }
+        }
+      },
+      upcomingFeatures: {
+        title: 'Скоро',
+        description: 'Ми постійно розвиваємо Memoryan. Ось що в планах:',
+        sync: { title: 'Синхронізація на всіх пристроях', description: 'Доступ до контенту з будь-якого пристрою.' },
+        moreBlocks: { title: 'Нові типи блоків', description: 'Документи (PDF, Word, Excel), медіа (фото, відео).' },
+        languages: { title: 'Більше мов', description: 'Іспанська, китайська, французька та інші.' },
+        more: { title: 'І багато іншого', description: 'Покращення, нові функції та доопрацювання.' }
+      },
+      joinTests: {
+        title: 'Приєднуйтесь до закритого тесту в Google Play!',
+        subtitle: 'Беріть участь у тестах, дайте зворотний зв’язок та отримайте приємні подарунки',
+        benefits: { premium: '60 днів преміум-підписки', credits: 'ваше ім’я в титрах на сторінці Easter Egg' },
+        joinButton: 'Приєднатися'
+      },
+      download: {
+        title: 'Спробуйте Memoryan сьогодні!',
+        ios: { title: 'Завантажити для iOS', description: 'Натисніть для QR-коду або тапніть нижче' },
+        android: { title: 'Завантажити для Android', description: 'Натисніть для QR-коду або тапніть нижче' }
       },
       emailVerification: {
         title: 'Підтвердьте свій Email',
@@ -408,13 +493,76 @@
         initiationRequired: 'Bitte initialisieren Sie die Passwortzurücksetzung zuerst in der mobilen App.'
       },
       common: {
+        features: 'Funktionen',
+        screenshots: 'Screenshots',
+        download: 'Download',
+        appStore: 'App Store',
+        googlePlay: 'Google Play',
+        contact: 'Kontakt:',
+        copied: 'Kopiert!',
         emailAddress: 'E-Mail-Adresse',
         enterEmailPlaceholder: 'Geben Sie Ihre E-Mail-Adresse ein',
         processing: 'Vorgang wird verarbeitet...',
         returnToHome: 'Zur Startseite',
         privacyPolicy: 'Datenschutzerklärung',
         termsOfService: 'Nutzungsbedingungen',
-        backToWebsite: 'Zur Webseite'
+        backToWebsite: 'Zur Webseite',
+        footer: { copyright: '© 2026 Memoryan. Alle Rechte vorbehalten.', privacyPolicy: 'Datenschutzerklärung', termsOfService: 'Nutzungsbedingungen' }
+      },
+      hero: {
+        title: 'Das ist Memoryan',
+        subtitle: 'Eine App, die neu definiert, wie Menschen wertvolle Inhalte von überall speichern und anwenden.',
+        description: 'Es geht nicht nur ums Speichern von Links und Notizen — sondern um müheloses Organisieren und Wiederentdecken wie nie zuvor.',
+        specialOffer: 'Spezielles Startangebot!',
+        freePremium: '🎉 KOSTENLOSES PREMIUM bis zum 1. März! 🎉',
+        betaTesting: 'Beta-Testing startet am 20. Februar. Seien Sie unter den Ersten, die die volle Kraft von Memoryan erleben.',
+        loadingTrailer: 'Trailer wird geladen...',
+        videoNotSupported: 'Ihr Browser unterstützt keine Videowiedergabe.',
+        videoError: 'Video konnte nicht geladen werden. Bitte später erneut versuchen.'
+      },
+      features: {
+        title: 'Hauptfunktionen von Memoryan',
+        chambersCreation: { title: 'Sammlungen erstellen', description: 'Organisieren Sie Ihre Inhalte in visuell ansprechende, anpassbare Sammlungen.' },
+        aiTitleGeneration: { title: 'KI-Titelgenerierung', description: 'Die Erstellung von Titeln für gespeicherte Inhalte war noch nie so einfach.' },
+        smartTagSystem: { title: 'Smart-Tag-System', description: 'Kategorisieren Sie mit unserem einzigartigen „Save-Enjoy-Apply“-Ansatz für bessere Erinnerung.' },
+        contentBlocks: { title: 'Schöne Inhaltsblöcke', description: 'Ein Ort, an dem Ihre gespeicherten Inhalte eine einheitliche Form für Links und Notizen haben.' },
+        backupSystem: { title: 'Backup-System', description: 'Bewahren Sie Ihre wertvollen Inhalte mit automatischen Backups sicher auf.' },
+        sharingPlatform: { title: 'Neue Sharing-Plattform', description: 'Teilen Sie Ihre Links mit der gesamten Plattform.' }
+      },
+      screenshots: {
+        title: 'Memoryan erleben',
+        keyboardHint: 'Pfeiltasten (←→) zur Navigation',
+        items: {
+          0: { title: 'MemoryHub', description: 'Ihre persönliche Startseite für die Kontrolle über alle Sammlungen.' },
+          1: { title: 'Sammlungsdesign', description: 'Verläufe, Titel und Emojis für die volle Widerspiegelung dessen, was Sie dort speichern möchten.' },
+          2: { title: 'Inhalte mühelos speichern', description: 'Speichern Sie schnell Links, Notizen und mehr mit unserer intuitiven Oberfläche.' },
+          3: { title: 'Blöcke-Seite', description: 'Ansprechende Darstellung für Ihre Links, Notizen und anderen gespeicherten Inhalte.' },
+          4: { title: 'Notizen-Editor', description: 'Schreiben Sie detaillierte und leidenschaftliche Notizen ohne Kompromisse.' },
+          5: { title: 'Tagging-System', description: 'Organisieren Sie Inhalte mit unserem Save-Enjoy-Apply-Ansatz.' },
+          6: { title: 'Farbpalette', description: 'Wählen Sie aus schönen Verlaufoptionen für Ihre Sammlungen.' },
+          7: { title: 'Deadline-Verwaltung', description: 'Die Welt ist voll nützlicher Inhalte. Setzen Sie Fristen und legen Sie los.' },
+          8: { title: 'Praktische Sortierung', description: 'Organisieren Sie Ihre Inhalte heute in Sammlungen und danken Sie sich morgen.' },
+          9: { title: 'Erweiterte Optionen', description: 'Volle Kontrolle über Ihre Inhalte über das intuitive Optionsmenü.' }
+        }
+      },
+      upcomingFeatures: {
+        title: 'Geplante Funktionen',
+        description: 'Wir verbessern Memoryan ständig. Das kommt als Nächstes:',
+        sync: { title: 'Synchronisation auf allen Geräten', description: 'Greifen Sie nahtlos von allen Geräten auf Ihre Inhalte zu.' },
+        moreBlocks: { title: 'Weitere Blocktypen', description: 'Unterstützung für Dokumente (PDF, Word, Excel) und Medien (Foto, Video).' },
+        languages: { title: 'Weitere Sprachen', description: 'Spanisch, Chinesisch, Französisch und mehr in Kürze.' },
+        more: { title: 'Und vieles mehr', description: 'Kontinuierliche Verbesserungen und neue Funktionen.' }
+      },
+      joinTests: {
+        title: 'Nehmen Sie an unseren Closed Tests auf Google Play teil!',
+        subtitle: 'Nehmen Sie an den Tests teil, geben Sie uns Feedback und erhalten Sie anschließend kleine Geschenke',
+        benefits: { premium: '60 Tage Premium-Abo', credits: 'Ihr Name wird auf der Easter-Egg-Seite genannt' },
+        joinButton: 'Teilnehmen'
+      },
+      download: {
+        title: 'Holen Sie sich Memoryan jetzt!',
+        ios: { title: 'Download für iOS', description: 'Tippen für QR-Code oder unten klicken' },
+        android: { title: 'Download für Android', description: 'Tippen für QR-Code oder unten klicken' }
       },
       emailVerification: {
         title: 'Bestätigen Sie Ihre E-Mail',
