@@ -135,7 +135,12 @@
         position: relative;
     }
 
-    /* Header Styles */
+    /* Header Styles - high z-index so dropdown and button stay above hero/video */
+    header.main-header {
+        position: relative;
+        z-index: 1000;
+        isolation: isolate;
+    }
     header {
         display: flex;
         justify-content: space-between;
@@ -177,9 +182,10 @@
         text-decoration: none;
         font-weight: 500;
     }
-    /* Language selector (same as auth: circular button + dropdown) */
+    /* Language selector (same as auth: circular button + dropdown); always visible on all devices */
     .language-selector {
         position: relative;
+        flex-shrink: 0;
     }
     .language-button {
         display: flex;
@@ -217,6 +223,7 @@
         backdrop-filter: blur(10px);
         -webkit-backdrop-filter: blur(10px);
     }
+    /* When open, positioning is set by JS (portal to body + fixed) so dropdown appears above video/content */
     .language-dropdown.active {
         opacity: 1;
         transform: translateY(0);
@@ -233,6 +240,25 @@
     .language-option:hover {
         background-color: rgba(255, 255, 255, 0.1);
         color: white;
+    }
+
+    /* Ensure language button is visible on small/phone viewports and tap-friendly */
+    @media (max-width: 768px) {
+        .language-selector {
+            margin-left: auto;
+        }
+        .language-button {
+            min-width: 44px;
+            min-height: 44px;
+            width: 44px;
+            height: 44px;
+        }
+    }
+    @media (max-width: 480px) {
+        header.main-header {
+            padding-left: 12px;
+            padding-right: 12px;
+        }
     }
 
     /* Hero Section - Modern Responsive Layout */
