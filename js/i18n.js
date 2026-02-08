@@ -105,7 +105,6 @@
         description: "We're constantly improving Memoryan. Here's what's coming next:",
         sync: { title: 'Synchronization across devices', description: 'Access your content seamlessly from all your devices.' },
         moreBlocks: { title: 'More types of blocks', description: 'Support for Documents (PDF, Word, Excel) and Media (Photo, Video).' },
-        languages: { title: 'More supported languages', description: 'Spanish, Chinese, French and more coming soon.' },
         more: { title: 'And much more', description: 'Continuous enhancements, useful features, and fixes.' }
       },
       joinTests: {
@@ -260,7 +259,6 @@
         description: 'Мы постоянно развиваем Memoryan. Вот что в планах:',
         sync: { title: 'Синхронизация на всех устройствах', description: 'Доступ к контенту с любого устройства.' },
         moreBlocks: { title: 'Новые типы блоков', description: 'Документы (PDF, Word, Excel), медиа (фото, видео).' },
-        languages: { title: 'Больше языков', description: 'Испанский, китайский, французский и другие.' },
         more: { title: 'И многое другое', description: 'Улучшения, новые функции и доработки.' }
       },
       joinTests: {
@@ -411,7 +409,6 @@
         description: 'Ми постійно розвиваємо Memoryan. Ось що в планах:',
         sync: { title: 'Синхронізація на всіх пристроях', description: 'Доступ до контенту з будь-якого пристрою.' },
         moreBlocks: { title: 'Нові типи блоків', description: 'Документи (PDF, Word, Excel), медіа (фото, відео).' },
-        languages: { title: 'Більше мов', description: 'Іспанська, китайська, французька та інші.' },
         more: { title: 'І багато іншого', description: 'Покращення, нові функції та доопрацювання.' }
       },
       joinTests: {
@@ -550,7 +547,6 @@
         description: 'Wir verbessern Memoryan ständig. Das kommt als Nächstes:',
         sync: { title: 'Synchronisation auf allen Geräten', description: 'Greifen Sie nahtlos von allen Geräten auf Ihre Inhalte zu.' },
         moreBlocks: { title: 'Weitere Blocktypen', description: 'Unterstützung für Dokumente (PDF, Word, Excel) und Medien (Foto, Video).' },
-        languages: { title: 'Weitere Sprachen', description: 'Spanisch, Chinesisch, Französisch und mehr in Kürze.' },
         more: { title: 'Und vieles mehr', description: 'Kontinuierliche Verbesserungen und neue Funktionen.' }
       },
       joinTests: {
