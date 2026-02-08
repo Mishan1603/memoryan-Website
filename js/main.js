@@ -10,11 +10,46 @@
             var languageDropdown = document.getElementById('language-dropdown');
             var languageOptions = document.querySelectorAll('.language-option');
             var currentBadge = document.getElementById('current-language');
+            var languageSelector = document.querySelector('.language-selector');
+            var BACKDROP_ID = 'website-lang-dropdown-backdrop';
+            var Z_TOP = '2147483647';
+            var Z_BACKDROP = '2147483646';
+
+            function positionLanguageDropdown(open) {
+                if (!languageDropdown || !languageButton || !languageSelector) return;
+                if (open) {
+                    languageDropdown.classList.add('active');
+                    var rect = languageButton.getBoundingClientRect();
+                    var backdrop = document.getElementById(BACKDROP_ID);
+                    if (!backdrop) {
+                        backdrop = document.createElement('div');
+                        backdrop.id = BACKDROP_ID;
+                        backdrop.setAttribute('aria-hidden', 'true');
+                        backdrop.style.cssText = 'position:fixed;inset:0;z-index:' + Z_BACKDROP + ';background:transparent;';
+                        backdrop.addEventListener('click', function() { positionLanguageDropdown(false); });
+                    }
+                    document.body.appendChild(backdrop);
+                    document.body.appendChild(languageDropdown);
+                    languageDropdown.style.cssText = 'position:fixed;top:' + (rect.bottom + 10) + 'px;right:' + (window.innerWidth - rect.right) + 'px;left:auto;z-index:' + Z_TOP + ';opacity:1;transform:translateY(0);pointer-events:all;';
+                    requestAnimationFrame(function() {
+                        var r = languageButton.getBoundingClientRect();
+                        languageDropdown.style.top = (r.bottom + 10) + 'px';
+                        languageDropdown.style.right = (window.innerWidth - r.right) + 'px';
+                    });
+                } else {
+                    languageDropdown.classList.remove('active');
+                    var b = document.getElementById(BACKDROP_ID);
+                    if (b && b.parentNode) b.remove();
+                    if (languageDropdown.parentNode !== languageSelector) languageSelector.appendChild(languageDropdown);
+                    languageDropdown.style.cssText = '';
+                }
+            }
 
             if (languageButton && languageDropdown) {
                 languageButton.addEventListener('click', function(e) {
                     e.stopPropagation();
                     languageDropdown.classList.toggle('active');
+                    positionLanguageDropdown(languageDropdown.classList.contains('active'));
                 });
                 languageOptions.forEach(function(option) {
                     option.addEventListener('click', function(e) {
@@ -22,14 +57,16 @@
                         var lang = option.getAttribute('data-lang');
                         if (window.i18n && lang) {
                             window.i18n.changeLanguage(lang);
-                            languageDropdown.classList.remove('active');
                             if (currentBadge) currentBadge.textContent = lang.toUpperCase();
+                            languageDropdown.classList.remove('active');
+                            positionLanguageDropdown(false);
                         }
                     });
                 });
                 document.addEventListener('click', function(e) {
                     if (!languageButton.contains(e.target) && !languageDropdown.contains(e.target)) {
                         languageDropdown.classList.remove('active');
+                        positionLanguageDropdown(false);
                     }
                 });
             }
