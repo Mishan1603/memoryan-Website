@@ -107,16 +107,6 @@
                         setTimeout(() => {
                             cookieConsent.style.display = 'none';
                         }, 500);
-                        
-                        // Initialize analytics if available and preferences allow
-                        if (window.Memoryan && window.Memoryan.Analytics && window.MemoryanConfig && window.MemoryanConfig.supabase) {
-                            const { url, anonKey } = window.MemoryanConfig.supabase;
-                            window.Memoryan.Analytics.init(url, anonKey).then(success => {
-                                if (success) {
-                                    window.Memoryan.Analytics.trackPageVisit();
-                                }
-                            });
-                        }
                     });
                 }
                 
