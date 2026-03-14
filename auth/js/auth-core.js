@@ -19,7 +19,7 @@ class MemoryanAuth {
         this.edgeFunctionBaseUrl = null;
         this.supabaseAnonKey = null; // Add this
         this.debug = true; // Set to false in production
-        this.rateLimitTracker = new Map();
+        this.rateLimitStorageKey = 'memoryan_auth_ratelimit';
         this.maxRetryAttempts = 3;
         this.retryDelay = 1000; // 1 second base delay
     this.blockingOverlayActive = false;
@@ -373,6 +373,26 @@ class MemoryanAuth {
     }
 
     /**
+     * Get rate-limit operation and identifier for an edge function (for anti-spam).
+     * @param {string} functionName - Edge function name
+     * @param {Object} payload - Request payload
+     * @returns {{ operation: string, identifier: string }|null}
+     */
+    _getRateLimitContext(functionName, payload) {
+        const email = payload && typeof payload.email === 'string' ? payload.email.trim().toLowerCase() : '';
+        const limits = {
+            'send-email-verification-otp': { operation: 'email-verification', identifier: email },
+            'verify-email-otp': { operation: 'email-verification', identifier: email },
+            'send-password-reset-otp': { operation: 'password-reset', identifier: email },
+            'verify-password-reset-otp': { operation: 'password-reset', identifier: email },
+            'confirm-password-reset': { operation: 'password-reset', identifier: (payload && payload.email) ? String(payload.email).trim().toLowerCase() : '' },
+        };
+        const ctx = limits[functionName];
+        if (!ctx || !ctx.identifier) return null;
+        return ctx;
+    }
+
+    /**
      * Call a Supabase Edge Function
      * @param {string} functionName - Name of the function to call
      * @param {Object} payload - Data to send to the function
@@ -380,6 +400,12 @@ class MemoryanAuth {
      */
     async callEdgeFunction(functionName, payload) {
         try {
+            const rlCtx = this._getRateLimitContext(functionName, payload);
+            if (rlCtx && !this.checkRateLimit(rlCtx.operation, rlCtx.identifier)) {
+                this.log(`Rate limit exceeded for ${functionName}`);
+                return { success: false, message: 'Too many attempts. Please try again in a few minutes.' };
+            }
+
             this.log(`Calling Edge Function: ${functionName}`, payload);
             
             // Get current session if available
@@ -410,11 +436,30 @@ class MemoryanAuth {
             if (!response.ok) {
                 this.error(`Edge Function ${functionName} failed:`, body?.message || `HTTP ${response.status}`);
             }
+            if (rlCtx) this.updateRateLimit(rlCtx.operation, rlCtx.identifier);
             return body;
         } catch (error) {
             this.error(`Error calling Edge Function ${functionName}:`, error);
             throw error; // Re-throw to be caught by the calling method
         }
+    }
+
+    /**
+     * Load rate limit attempts from localStorage (persists across tabs/refresh).
+     */
+    _loadRateLimitStorage() {
+        try {
+            const raw = localStorage.getItem(this.rateLimitStorageKey);
+            return raw ? JSON.parse(raw) : {};
+        } catch (_) {
+            return {};
+        }
+    }
+
+    _saveRateLimitStorage(data) {
+        try {
+            localStorage.setItem(this.rateLimitStorageKey, JSON.stringify(data));
+        } catch (_) {}
     }
 
     /**
@@ -427,36 +472,27 @@ class MemoryanAuth {
         const key = `${operation}:${identifier}`;
         const now = Date.now();
         const limit = this.getRateLimit(operation);
-        
-        if (!this.rateLimitTracker.has(key)) {
-            this.rateLimitTracker.set(key, []);
-        }
-        
-        const attempts = this.rateLimitTracker.get(key);
-        
-        // Remove old attempts outside the time window
-        const validAttempts = attempts.filter(time => now - time < limit.window);
-        this.rateLimitTracker.set(key, validAttempts);
-        
-        return validAttempts.length < limit.maxAttempts;
+        const storage = this._loadRateLimitStorage();
+        let attempts = Array.isArray(storage[key]) ? storage[key] : [];
+        attempts = attempts.filter(time => now - time < limit.window);
+        return attempts.length < limit.maxAttempts;
     }
 
     /**
-     * Update rate limiting tracker
+     * Update rate limiting tracker (persisted to localStorage).
      * @param {string} operation - Operation type
      * @param {string} identifier - User identifier
      */
     updateRateLimit(operation, identifier) {
         const key = `${operation}:${identifier}`;
         const now = Date.now();
-        
-        if (!this.rateLimitTracker.has(key)) {
-            this.rateLimitTracker.set(key, []);
-        }
-        
-        const attempts = this.rateLimitTracker.get(key);
+        const limit = this.getRateLimit(operation);
+        const storage = this._loadRateLimitStorage();
+        let attempts = Array.isArray(storage[key]) ? storage[key] : [];
+        attempts = attempts.filter(time => now - time < limit.window);
         attempts.push(now);
-        this.rateLimitTracker.set(key, attempts);
+        storage[key] = attempts;
+        this._saveRateLimitStorage(storage);
     }
 
     /**
