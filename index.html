@@ -422,7 +422,7 @@
                 </div>
                 
                 <div class="join-tests-action" data-aos="fade-up" data-aos-delay="500">
-                    <a href="https://groups.google.com/u/4/g/memoryan-closed-testing" target="_blank" rel="noopener noreferrer" class="join-button store-button" data-analytics="join-tests">
+                    <a href="https://groups.google.com/u/4/g/memoryan-closed-testing" target="_blank" rel="noopener noreferrer" class="join-button store-button">
                         <span data-i18n="joinTests.joinButton">Join</span>
                     </a>
                 </div>
@@ -443,7 +443,7 @@
                         <div class="flip-card-front glass-card">
                             <h3 data-i18n="download.ios.title">Download for iOS</h3>
                             <p data-i18n="download.ios.description">Tap to see QR code or click below</p>
-                            <button class="store-button download-button" data-platform="ios" data-analytics="download" data-i18n="common.appStore">App Store</button>
+                            <button class="store-button download-button" data-platform="ios" data-i18n="common.appStore">App Store</button>
                         </div>
                         <div class="flip-card-back glass-card">
                             <img src="images/qr-ios.jpg" alt="QR Code for iOS" loading="lazy">
@@ -459,7 +459,7 @@
                         <div class="flip-card-front glass-card">
                             <h3 data-i18n="download.android.title">Download for Android</h3>
                             <p data-i18n="download.android.description">Tap to see QR code or click below</p>
-                            <button class="store-button download-button" data-platform="android" data-analytics="download" data-i18n="common.googlePlay">Google Play</button>
+                            <button class="store-button download-button" data-platform="android" data-i18n="common.googlePlay">Google Play</button>
                         </div>
                         <div class="flip-card-back glass-card">
                             <img src="images/qr-android.jpg" alt="QR Code for Android" loading="lazy">
@@ -479,15 +479,15 @@
                 <a href="terms-of-service" title="Terms of Service" class="magnetic-element" data-i18n="common.footer.termsOfService">Terms of Service</a>
         </div>
         <div class="social-links">
-            <a href="https://www.tiktok.com/@memoryan.project?_t=ZM-8xuhS07XIGe" target="_blank" rel="noopener noreferrer" class="social-link magnetic-element" data-analytics="social-tiktok">
+            <a href="https://www.tiktok.com/@memoryan.project?_t=ZM-8xuhS07XIGe" target="_blank" rel="noopener noreferrer" class="social-link magnetic-element">
                 <img src="images/TikTok_Icon.png" alt="TikTok" class="social-icon">
                 <span>TikTok</span>
             </a>
-            <a href="https://www.instagram.com/mymemoryan?igsh=MTc1YzdvMW5yNDI1dQ%3D%3D&utm_source=qr" target="_blank" rel="noopener noreferrer" class="social-link magnetic-element" data-analytics="social-instagram">
+            <a href="https://www.instagram.com/mymemoryan?igsh=MTc1YzdvMW5yNDI1dQ%3D%3D&utm_source=qr" target="_blank" rel="noopener noreferrer" class="social-link magnetic-element">
                 <img src="images/InGram.png" alt="Instagram" class="social-icon">
                 <span>Instagram</span>
             </a>
-            <a href="https://www.reddit.com/u/ok_ok_i_think/s/HPPG6ipDz0" target="_blank" rel="noopener noreferrer" class="social-link magnetic-element" data-analytics="social-reddit">
+            <a href="https://www.reddit.com/u/ok_ok_i_think/s/HPPG6ipDz0" target="_blank" rel="noopener noreferrer" class="social-link magnetic-element">
                 <img src="images/reddit.png" alt="Reddit" class="social-icon">
                 <span>Reddit</span>
             </a>
@@ -508,98 +508,11 @@
     <script src="https://unpkg.com/aos@2.3.1/dist/aos.js" defer></script>
     <script src="https://cdn.jsdelivr.net/npm/swiper@9/swiper-bundle.min.js" defer></script>
     <script src="js/i18n.js" defer></script>
-    <script src="js/rate-limiter.js" defer></script>
     <script src="js/simple-video-optimizer.js" defer></script>
     <script src="js/smart-carousel-optimizer.js" defer></script>
     <script src="js/video-player.js" defer></script>
     
-    <!-- Correct loading order for analytics -->
     <script src="js/config.js"></script>
-    <script src="js/supabase-loader.js"></script>
-    <script>
-        // Ensure Supabase is fully loaded before initializing analytics
-        let supabaseInitAttempts = 0;
-        const maxInitAttempts = 20;
-        
-        function waitForSupabase() {
-            supabaseInitAttempts++;
-            console.log(`Waiting for Supabase (attempt ${supabaseInitAttempts}/${maxInitAttempts})`);
-            
-            if (window.supabase) {
-                console.log('Supabase detected, proceeding with analytics initialization');
-                initializeAnalytics();
-                return;
-            }
-            
-            if (supabaseInitAttempts >= maxInitAttempts) {
-                console.error('Failed to initialize Supabase after maximum attempts');
-                // Try one last time with direct initialization
-                if (window.MemoryanSupabase && window.MemoryanConfig && window.MemoryanConfig.supabase) {
-                    const { url, anonKey } = window.MemoryanConfig.supabase;
-                    window.MemoryanSupabase.initialize(url, anonKey)
-                        .then(client => {
-                            console.log('Last attempt to initialize Supabase succeeded');
-                            window.supabase = client;
-                            initializeAnalytics();
-                        })
-                        .catch(error => console.error('Final Supabase init failed:', error));
-                }
-                return;
-            }
-            
-            // Try initialization if possible
-            if (window.MemoryanSupabase && window.MemoryanConfig && window.MemoryanConfig.supabase) {
-                const { url, anonKey } = window.MemoryanConfig.supabase;
-                window.MemoryanSupabase.initialize(url, anonKey)
-                    .then(client => {
-                        console.log('Successfully initialized Supabase via loader');
-                        window.supabase = client;
-                        initializeAnalytics();
-                    })
-                    .catch(error => {
-                        console.error('Failed to initialize Supabase:', error);
-                        // Retry after a delay
-                        setTimeout(waitForSupabase, 250);
-                    });
-            } else {
-                // Check again after a short delay
-                setTimeout(waitForSupabase, 250);
-            }
-        }
-        
-        function initializeAnalytics() {
-            if (window.Memoryan && window.Memoryan.Analytics) {
-                console.log('Initializing Memoryan.Analytics...');
-                if (window.MemoryanConfig && window.MemoryanConfig.supabase) {
-                    const { url, anonKey } = window.MemoryanConfig.supabase;
-                    window.Memoryan.Analytics.init(url, anonKey)
-                        .then(success => {
-                            console.log('Analytics initialization ' + (success ? 'successful' : 'failed'));
-                            
-                            // Force re-attach to download buttons for reliability
-                            if (success && window.Memoryan.Analytics._attachToDownloadButtons) {
-                                setTimeout(() => {
-                                    window.Memoryan.Analytics._attachToDownloadButtons();
-                                    console.log('Re-attached to download buttons');
-                                }, 500);
-                            }
-                            
-                            // Bridge objects for compatibility
-                            window.analytics = window.Memoryan.Analytics;
-                        });
-                }
-            } else {
-                console.error('Memoryan.Analytics not available');
-            }
-        }
-        
-        // Start initialization process on page load
-        window.addEventListener('load', function() {
-            console.log('Page loaded, starting Supabase initialization');
-            waitForSupabase();
-        });
-    </script>
-    <script src="js/analytics.js"></script>
     <script src="js/main.js"></script>
     
     <!-- Cookie Consent Dialog -->
