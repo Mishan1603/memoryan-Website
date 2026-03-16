@@ -69,8 +69,8 @@
         subtitle: 'An app that redefines how people save and apply valuable content from anywhere.',
         description: "It's not just about saving links and notes — it's about effortlessly organizing and rediscovering them like never before.",
         specialOffer: 'Special Launch Offer!',
-        freePremium: '🎉 FREE PREMIUM Until the 1st of March! 🎉',
-        betaTesting: 'Beta Testing starts 20th February. Be among the first to experience the full power of Memoryan.',
+        freePremium: '🎉 FREE PREMIUM Until the 21st of April! 🎉',
+        betaTesting: 'Beta Testing starts 1st of April. Be among the first to experience the full power of Memoryan.',
         loadingTrailer: 'Loading trailer...',
         videoNotSupported: 'Your browser does not support the video tag.',
         videoError: 'Unable to load video. Please try again later.'
@@ -223,8 +223,8 @@
         subtitle: 'Революция в том, как вы сохраняете и применяете потоки информации!',
         description: 'Это не просто сохранение ссылок и заметок — это искусство ценить, систематизировать и открывать что то новое.',
         specialOffer: 'Стартовое предложение!',
-        freePremium: '🎉 Бесплатный Премиум до 1 марта! 🎉',
-        betaTesting: 'Бета-тестирование с 20 февраля — станьте первыми героями Memoryan!',
+        freePremium: '🎉 Бесплатный Премиум до 21 апреля! 🎉',
+        betaTesting: 'Бета-тестирование с 1 апреля — станьте первыми героями Memoryan!',
         loadingTrailer: 'Загрузка трейлера...',
         videoNotSupported: 'Ваш браузер не поддерживает воспроизведение видео.',
         videoError: 'Не удалось загрузить видео. Попробуйте позже.'
@@ -373,8 +373,8 @@
         subtitle: 'Революція в тому, як ви зберігаєте та застосовуєте потоки інформації!',
         description: 'Це не просто збереження посилань і нотаток — це мистецтво цінувати, систематизувати та відкривати щось нове.',
         specialOffer: 'Стартова пропозиція!',
-        freePremium: '🎉 Безкоштовний Преміум до 1 березня! 🎉',
-        betaTesting: 'Бета-тестування з 20 лютого — будьте серед перших героїв Memoryan!',
+        freePremium: '🎉 Безкоштовний Преміум до 21 квітня! 🎉',
+        betaTesting: 'Бета-тестування з 1 квітня — будьте серед перших героїв Memoryan!',
         loadingTrailer: 'Завантаження трейлера...',
         videoNotSupported: 'Ваш браузер не підтримує відтворення відео.',
         videoError: 'Не вдалося завантажити відео. Спробуйте пізніше.'
@@ -492,7 +492,7 @@
       common: {
         features: 'Funktionen',
         screenshots: 'Screenshots',
-        download: 'Download',
+        download: 'Herunterladen',
         appStore: 'App Store',
         googlePlay: 'Google Play',
         contact: 'Kontakt:',
@@ -511,8 +511,8 @@
         subtitle: 'Eine App, die neu definiert, wie Menschen wertvolle Inhalte von überall speichern und anwenden.',
         description: 'Es geht nicht nur ums Speichern von Links und Notizen — sondern um müheloses Organisieren und Wiederentdecken wie nie zuvor.',
         specialOffer: 'Spezielles Startangebot!',
-        freePremium: '🎉 KOSTENLOSES PREMIUM bis zum 1. März! 🎉',
-        betaTesting: 'Beta-Testing startet am 20. Februar. Seien Sie unter den Ersten, die die volle Kraft von Memoryan erleben.',
+        freePremium: '🎉 KOSTENLOSES PREMIUM bis zum 21. April! 🎉',
+        betaTesting: 'Beta-Testing startet am 1. April. Seien Sie unter den Ersten, die die volle Kraft von Memoryan erleben.',
         loadingTrailer: 'Trailer wird geladen...',
         videoNotSupported: 'Ihr Browser unterstützt keine Videowiedergabe.',
         videoError: 'Video konnte nicht geladen werden. Bitte später erneut versuchen.'
