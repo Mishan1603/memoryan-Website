@@ -110,7 +110,7 @@
       joinTests: {
         title: 'Join our Closed Tests on Google Play!',
         subtitle: 'Join our tests, provide us a feedback, and get some pleasant gifts afterwords',
-        benefits: { premium: '60 Days Premium subscription', credits: 'your name will be Mentioned in credentials on Easter Egg Page' },
+        benefits: { premium: '60 Days Premium subscription', credits: 'Your name will be Mentioned in credentials on Easter Egg Page' },
         joinButton: 'Join'
       },
       download: {
@@ -264,7 +264,7 @@
       joinTests: {
         title: 'Присоединяйтесь к закрытому тесту в Google Play!',
         subtitle: 'Участвуйте в тестах, дайте обратную связь и получите приятные подарки',
-        benefits: { premium: '60 дней премиум-подписки', credits: 'ваше имя в титрах на странице Easter Egg' },
+        benefits: { premium: '60 дней премиум-подписки', credits: 'Ваше имя в титрах на странице Easter Egg' },
         joinButton: 'Участвовать'
       },
       download: {
@@ -414,7 +414,7 @@
       joinTests: {
         title: 'Приєднуйтесь до закритого тесту в Google Play!',
         subtitle: 'Беріть участь у тестах, дайте зворотний зв’язок та отримайте приємні подарунки',
-        benefits: { premium: '60 днів преміум-підписки', credits: 'ваше ім’я в титрах на сторінці Easter Egg' },
+        benefits: { premium: '60 днів преміум-підписки', credits: 'Ваше ім’я в титрах на сторінці Easter Egg' },
         joinButton: 'Приєднатися'
       },
       download: {
