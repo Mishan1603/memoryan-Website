@@ -292,7 +292,7 @@ class MemoryanVideoPlayer {
     }
     
     handleMouseLeave() {
-        if (this.isPlaying) {
+        if (this.video && !this.video.paused) {
             this.hideControls();
         }
     }
@@ -326,11 +326,12 @@ class MemoryanVideoPlayer {
         this.showControls();
         this.clearControlsTimeout();
         
-        // Auto-hide controls after 2 seconds if playing
-        if (this.isPlaying) {
+        // Auto-hide only while actually playing (use video.paused — not this.isPlaying,
+        // which updates one tick later and caused wrong hide/show behavior).
+        if (this.video && !this.video.paused) {
             this.controlsTimeout = setTimeout(() => {
-                this.hideControls();
-            }, 2000);
+                if (this.video && !this.video.paused) this.hideControls();
+            }, 700);
         }
     }
     
@@ -419,16 +420,24 @@ class MemoryanVideoPlayer {
         this.isPlaying = true;
         this.updateButtonStates();
         this.video.classList.add('loaded');
+        // Show overlay briefly, then hide while playing (matches user expectation).
+        this.showControls();
+        this.controlsTimeout = setTimeout(() => {
+            if (this.video && !this.video.paused) this.hideControls();
+        }, 2000);
     }
     
     handlePause() {
         this.isPlaying = false;
         this.updateButtonStates();
+        this.clearControlsTimeout();
+        this.showControls();
     }
     
     handleVideoEnded() {
         this.isPlaying = false;
         this.updateButtonStates();
+        this.clearControlsTimeout();
         this.showControls();
     }
     
@@ -446,8 +455,8 @@ class MemoryanVideoPlayer {
                 });
             }
         }
-        
-        this.showControlsTemporarily();
+        // UI timing is driven by `play` / `pause` events (handlePlay / handlePause).
+        // Do not call showControlsTemporarily() here — it ran with stale isPlaying and broke auto-hide.
     }
     
     toggleMute() {
