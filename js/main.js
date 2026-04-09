@@ -286,10 +286,6 @@
             return isTouchDevice && (aspectRatio < 1.3 || hasSmallScreen);
         };
         
-        const isAndroidDevice = () => {
-            return /android/i.test(navigator.userAgent);
-        };
-        
         const isTabletDevice = () => {
             // Detect tablets (larger screen touch devices)
             const aspectRatio = window.innerWidth / window.innerHeight;
@@ -298,6 +294,18 @@
             
             return isTouchDevice && hasLargeScreen;
         };
+
+        var STORE_SEARCH_IOS = 'itms-apps://search.itunes.apple.com/WebObjects/MZSearch.woa/wa/search?media=software&term=Memoryan';
+        var STORE_SEARCH_ANDROID = 'https://play.google.com/store/search?q=Memoryan&c=apps';
+
+        /** On phone: confirm then redirect to App Store / Play search. Returns true if navigation handled or user cancelled. */
+        function tryMobileStoreRedirect(platform) {
+            if (!isMobileDevice() || isTabletDevice()) return false;
+            var msg = (window.i18n && window.i18n.t) ? window.i18n.t('common.storeRedirectConfirm') : 'Open the store to search for Memoryan?';
+            if (!window.confirm(msg)) return true;
+            window.location.href = (platform === 'android') ? STORE_SEARCH_ANDROID : STORE_SEARCH_IOS;
+            return true;
+        }
         
         // Completely isolated flip card implementation with mobile-aware behavior
         const setupFlipCards = () => {
@@ -346,19 +354,9 @@
                         event.stopPropagation();
                         event.preventDefault();
                         
-                        // Check if user is on mobile device
-                        if (isMobileDevice() && !isTabletDevice()) {
-                            console.log('Mobile device detected');
-                            
-                            // For Android cards on mobile, redirect to Play Store
-                            if (isAndroidCard && isAndroidDevice()) {
-                                console.log('Redirecting Android mobile user to Play Store');
-                                window.open('https://play.google.com/store/apps/details?id=com.memoryan.app', '_blank');
-                                return;
-                            }
-                            
-                            // For iOS cards on mobile, still show QR code (fall through to flip)
-                            // For tablets and desktop, always show QR code (fall through to flip)
+                        var platform = isAndroidCard ? 'android' : (isIOSCard ? 'ios' : null);
+                        if (platform && tryMobileStoreRedirect(platform)) {
+                            return;
                         }
                         
                         // Default behavior: flip the card to show QR code
@@ -375,13 +373,9 @@
                             event.stopPropagation();
                             event.preventDefault();
                             
-                            // Check if user is on mobile device
-                            if (isMobileDevice() && !isTabletDevice()) {
-                                if (isAndroidCard && isAndroidDevice()) {
-                                    console.log('Download button: Redirecting Android mobile user to Play Store');
-                                    window.open('https://play.google.com/store/apps/details?id=com.memoryan.app', '_blank');
-                                    return;
-                                }
+                            var platform = downloadButton.getAttribute('data-platform');
+                            if (platform === 'ios' || platform === 'android') {
+                                if (tryMobileStoreRedirect(platform)) return;
                             }
                             
                             // Default behavior: flip the card
