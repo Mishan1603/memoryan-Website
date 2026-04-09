@@ -31,7 +31,7 @@
             <img src="images/app-logo-ios.png" alt="Memoryan" class="logo">
             <span class="header-app-name">Memoryan</span>
         </a>
-        <nav class="header-nav">
+        <nav class="header-nav" aria-label="Main">
             <a href="#features" class="magnetic-element" data-i18n="common.features">Features</a>
             <a href="#screenshots" class="magnetic-element" data-i18n="common.screenshots">Screenshots</a>
             <a href="#download-qr" class="magnetic-element" data-i18n="common.download">Download</a>
@@ -62,18 +62,6 @@
                     </div>
                     <h2 data-i18n="hero.subtitle">An app that redefines how people save and apply valuable content from anywhere.</h2>
                     <p data-i18n="hero.description">It's not just about saving — it's about cherishing, organizing, and effortlessly rediscovering what truly matters to you.</p>
-                </div>
-                
-                <!-- Special Launch Offer -->
-                <div class="hero-announcement" data-aos="zoom-in" data-aos-delay="300">
-                    <div class="glass-special-card">
-                        <h2 data-i18n="hero.specialOffer">Special Launch Offer!</h2>
-                        <div class="announcement-text">
-                            <div class="glow-text" data-i18n="hero.freePremium">🎉 FREE PREMIUM Until the 1st of June! 🎉</div>
-                            <p data-i18n="hero.betaTesting">Beta Testing starts 2nd of June. Be among the first to experience the full power of Memoryan.</p>
-                        </div>
-                        <div class="announcement-decoration"></div>
-                    </div>
                 </div>
             </div>
             
@@ -403,35 +391,6 @@
         </div>
     </section>
 
-    <!-- Join Tests Section -->
-    <section id="join-tests">
-        <div class="join-tests-container">
-            <div class="join-tests-content glass-special-card" data-aos="fade-up" data-aos-delay="200">
-                <h2 data-i18n="joinTests.title">Join our Closed Tests on Google Play!</h2>
-                <p class="join-tests-subtitle" data-i18n="joinTests.subtitle">Join our tests, provide us a feedback, and get some pleasant gifts afterwords</p>
-                
-                <div class="join-tests-benefits">
-                    <div class="benefit-item" data-aos="fade-up" data-aos-delay="300">
-                        <div class="benefit-icon">🎁</div>
-                        <span data-i18n="joinTests.benefits.premium">60 Days Premium subscription</span>
-                    </div>
-                    <div class="benefit-item" data-aos="fade-up" data-aos-delay="400">
-                        <div class="benefit-icon">⭐</div>
-                        <span data-i18n="joinTests.benefits.credits">your name will be Mentioned in credentials on Easter Egg Page</span>
-                    </div>
-                </div>
-                
-                <div class="join-tests-action" data-aos="fade-up" data-aos-delay="500">
-                    <a href="https://groups.google.com/u/4/g/memoryan-closed-testing" target="_blank" rel="noopener noreferrer" class="join-button store-button">
-                        <span data-i18n="joinTests.joinButton">Join</span>
-                    </a>
-                </div>
-                
-                <div class="join-tests-decoration"></div>
-            </div>
-        </div>
-    </section>
-
     <!-- QR Codes Section with Interactive Flip Cards -->
     <section id="download-qr">
         <h2 data-aos="fade-up" data-i18n="download.title">Get Memoryan Now!</h2>
@@ -443,7 +402,7 @@
                         <div class="flip-card-front glass-card">
                             <h3 data-i18n="download.ios.title">Download for iOS</h3>
                             <p data-i18n="download.ios.description">Tap to see QR code or click below</p>
-                            <button class="store-button download-button" data-platform="ios" data-i18n="common.appStore">App Store</button>
+                            <button type="button" class="store-button download-button" data-platform="ios" data-i18n="common.getNow">Get now</button>
                         </div>
                         <div class="flip-card-back glass-card">
                             <img src="images/qr-ios.jpg" alt="QR Code for iOS" loading="lazy">
@@ -459,7 +418,7 @@
                         <div class="flip-card-front glass-card">
                             <h3 data-i18n="download.android.title">Download for Android</h3>
                             <p data-i18n="download.android.description">Tap to see QR code or click below</p>
-                            <button class="store-button download-button" data-platform="android" data-i18n="common.googlePlay">Google Play</button>
+                            <button type="button" class="store-button download-button" data-platform="android" data-i18n="common.getNow">Get now</button>
                         </div>
                         <div class="flip-card-back glass-card">
                             <img src="images/qr-android.jpg" alt="QR Code for Android" loading="lazy">
