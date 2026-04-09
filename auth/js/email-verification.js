@@ -51,9 +51,11 @@ class EmailVerification {
         const languageOptions = document.querySelectorAll('.language-option');
         
         if (languageButton && languageDropdown) {
-            // Toggle dropdown
             languageButton.addEventListener('click', () => {
                 languageDropdown.classList.toggle('active');
+                if (window.MemoryanAuth && window.MemoryanAuth.positionLanguageDropdown) {
+                    window.MemoryanAuth.positionLanguageDropdown(languageDropdown.classList.contains('active'));
+                }
             });
             
             // Handle language selection (updates in place, same as main website)
@@ -64,14 +66,18 @@ class EmailVerification {
                     if (window.i18n && lang) {
                         window.i18n.changeLanguage(lang);
                         languageDropdown.classList.remove('active');
+                        if (window.MemoryanAuth && window.MemoryanAuth.positionLanguageDropdown) {
+                            window.MemoryanAuth.positionLanguageDropdown(false);
+                        }
                     }
                 });
             });
-            
-            // Close dropdown when clicking outside
             document.addEventListener('click', (event) => {
                 if (!languageButton.contains(event.target) && !languageDropdown.contains(event.target)) {
                     languageDropdown.classList.remove('active');
+                    if (window.MemoryanAuth && window.MemoryanAuth.positionLanguageDropdown) {
+                        window.MemoryanAuth.positionLanguageDropdown(false);
+                    }
                 }
             });
         }
@@ -137,8 +143,19 @@ class EmailVerification {
         return;
       }
 
+      const turnstileToken = window.MemoryanTurnstile && typeof window.MemoryanTurnstile.getToken === 'function'
+        ? window.MemoryanTurnstile.getToken()
+        : null;
+      if (!turnstileToken) {
+        window.MemoryanAuth.displayError('Please complete the CAPTCHA first.');
+        return;
+      }
+
       // Call edge function; our core returns body even on errors
-            const result = await window.MemoryanAuth.callEdgeFunction('send-email-verification-otp', { email: this.currentEmail });
+            const result = await window.MemoryanAuth.callEdgeFunction('send-email-verification-otp', {
+                email: this.currentEmail,
+                turnstileToken
+            });
             const apiMessage = (result && (result.message || result.error)) ? String(result.message || result.error).trim() : '';
             const raw = apiMessage.toLowerCase();
 
