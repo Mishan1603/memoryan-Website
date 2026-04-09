@@ -59,11 +59,15 @@ class SimpleVideoOptimizer {
                     if (node.nodeType === Node.ELEMENT_NODE) {
                         // Check if the node itself is a video
                         if (node.tagName === 'VIDEO') {
+                            if (node && node.id === 'trailerVideo') return;
                             this.optimizeVideo(node);
                         }
                         // Check for videos within the added node
                         const videos = node.querySelectorAll ? node.querySelectorAll('video') : [];
-                        videos.forEach(video => this.optimizeVideo(video));
+                        videos.forEach(video => {
+                            if (video && video.id === 'trailerVideo') return;
+                            this.optimizeVideo(video);
+                        });
                     }
                 });
             });
@@ -82,6 +86,9 @@ class SimpleVideoOptimizer {
         console.log(`🔍 Found ${allVideos.length} videos to optimize`);
         
         allVideos.forEach(video => {
+            // The hero trailer is managed by `video-player.js` (autoplay, controls, sizing).
+            // Don't let the visibility-pauser fight it.
+            if (video && video.id === 'trailerVideo') return;
             this.optimizeVideo(video);
         });
     }
