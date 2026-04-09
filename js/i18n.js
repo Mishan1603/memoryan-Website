@@ -47,8 +47,10 @@
         features: 'Features',
         screenshots: 'Screenshots',
         download: 'Download',
-        appStore: 'App Store',
-        googlePlay: 'Google Play',
+        getNow: 'Get now',
+        storeRedirectConfirm: 'Open the store to search for Memoryan?',
+        appStore: 'Get now',
+        googlePlay: 'Get now',
         contact: 'Contact:',
         copied: 'Copied!',
         emailAddress: 'Email Address',
@@ -69,7 +71,7 @@
         subtitle: 'An app that redefines how people save and apply valuable content from anywhere.',
         description: "It's not just about saving links and notes — it's about effortlessly organizing and rediscovering them like never before.",
         specialOffer: 'Special Launch Offer!',
-        freePremium: '🎉 FREE PREMIUM Until the 21st of April! 🎉',
+        freePremium: 'Free Premium for the first 100 users!',
         betaTesting: 'Beta Testing starts 1st of April. Be among the first to experience the full power of Memoryan.',
         loadingTrailer: 'Loading trailer...',
         videoNotSupported: 'Your browser does not support the video tag.',
@@ -106,12 +108,6 @@
         sync: { title: 'Synchronization across devices', description: 'Access your content seamlessly from all your devices.' },
         moreBlocks: { title: 'More types of blocks', description: 'Support for Documents (PDF, Word, Excel) and Media (Photo, Video).' },
         more: { title: 'And much more', description: 'Continuous enhancements, useful features, and fixes.' }
-      },
-      joinTests: {
-        title: 'Join our Closed Tests on Google Play!',
-        subtitle: 'Join our tests, provide us a feedback, and get some pleasant gifts afterwords',
-        benefits: { premium: '60 Days Premium subscription', credits: 'Your name will be Mentioned in credentials on Easter Egg Page' },
-        joinButton: 'Join'
       },
       download: {
         title: 'Get Memoryan Now!',
@@ -201,8 +197,10 @@
         features: 'Возможности',
         screenshots: 'Скриншоты',
         download: 'Скачать',
-        appStore: 'App Store',
-        googlePlay: 'Google Play',
+        getNow: 'Скачать',
+        storeRedirectConfirm: 'Открыть магазин для поиска Memoryan?',
+        appStore: 'Скачать',
+        googlePlay: 'Скачать',
         contact: 'Контакты:',
         copied: 'Скопировано!',
         emailAddress: 'Адрес электронной почты',
@@ -260,12 +258,6 @@
         sync: { title: 'Синхронизация на всех устройствах', description: 'Доступ к контенту с любого устройства.' },
         moreBlocks: { title: 'Новые типы блоков', description: 'Документы (PDF, Word, Excel), медиа (фото, видео).' },
         more: { title: 'И многое другое', description: 'Улучшения, новые функции и доработки.' }
-      },
-      joinTests: {
-        title: 'Присоединяйтесь к закрытому тесту в Google Play!',
-        subtitle: 'Участвуйте в тестах, дайте обратную связь и получите приятные подарки',
-        benefits: { premium: '60 дней премиум-подписки', credits: 'Ваше имя в титрах на странице Easter Egg' },
-        joinButton: 'Участвовать'
       },
       download: {
         title: 'Попробуйте Memoryan сегодня!',
@@ -355,8 +347,10 @@
         features: 'Можливості',
         screenshots: 'Скриншоти',
         download: 'Завантажити',
-        appStore: 'App Store',
-        googlePlay: 'Google Play',
+        getNow: 'Завантажити',
+        storeRedirectConfirm: 'Відкрити магазин для пошуку Memoryan?',
+        appStore: 'Завантажити',
+        googlePlay: 'Завантажити',
         contact: 'Контакт:',
         copied: 'Скопійовано!',
         emailAddress: 'Електронна адреса',
@@ -410,12 +404,6 @@
         sync: { title: 'Синхронізація на всіх пристроях', description: 'Доступ до контенту з будь-якого пристрою.' },
         moreBlocks: { title: 'Нові типи блоків', description: 'Документи (PDF, Word, Excel), медіа (фото, відео).' },
         more: { title: 'І багато іншого', description: 'Покращення, нові функції та доопрацювання.' }
-      },
-      joinTests: {
-        title: 'Приєднуйтесь до закритого тесту в Google Play!',
-        subtitle: 'Беріть участь у тестах, дайте зворотний зв’язок та отримайте приємні подарунки',
-        benefits: { premium: '60 днів преміум-підписки', credits: 'Ваше ім’я в титрах на сторінці Easter Egg' },
-        joinButton: 'Приєднатися'
       },
       download: {
         title: 'Спробуйте Memoryan сьогодні!',
@@ -493,8 +481,10 @@
         features: 'Funktionen',
         screenshots: 'Screenshots',
         download: 'Herunterladen',
-        appStore: 'App Store',
-        googlePlay: 'Google Play',
+        getNow: 'Jetzt holen',
+        storeRedirectConfirm: 'Store öffnen, um nach Memoryan zu suchen?',
+        appStore: 'Jetzt holen',
+        googlePlay: 'Jetzt holen',
         contact: 'Kontakt:',
         copied: 'Kopiert!',
         emailAddress: 'E-Mail-Adresse',
@@ -548,12 +538,6 @@
         sync: { title: 'Synchronisation auf allen Geräten', description: 'Greifen Sie nahtlos von allen Geräten auf Ihre Inhalte zu.' },
         moreBlocks: { title: 'Weitere Blocktypen', description: 'Unterstützung für Dokumente (PDF, Word, Excel) und Medien (Foto, Video).' },
         more: { title: 'Und vieles mehr', description: 'Kontinuierliche Verbesserungen und neue Funktionen.' }
-      },
-      joinTests: {
-        title: 'Nehmen Sie an unseren Closed Tests auf Google Play teil!',
-        subtitle: 'Nehmen Sie an den Tests teil, geben Sie uns Feedback und erhalten Sie anschließend kleine Geschenke',
-        benefits: { premium: '60 Tage Premium-Abo', credits: 'Ihr Name wird auf der Easter-Egg-Seite genannt' },
-        joinButton: 'Teilnehmen'
       },
       download: {
         title: 'Holen Sie sich Memoryan jetzt!',
