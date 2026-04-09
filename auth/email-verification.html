@@ -1,251 +1,192 @@
-/**
- * Email Verification Page JavaScript
- * Handles the email verification process using OTP code.
- */
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Email Verification - Memoryan</title>
+    <meta name="description" content="Verify your Memoryan account email address">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="../images/memoryan-logo.png">
+    
+    <!-- CSS -->
+    <link rel="stylesheet" href="../style.css">
+    <link rel="stylesheet" href="auth-styles.css">
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&family=Open+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
 
-class EmailVerification {
-    constructor() {
-        this.isProcessing = false;
-        this.currentEmail = null;
-    this.lastFailed = { email: null, otp: null }; // prevent repeated same invalid value
-        
-        this.init = this.init.bind(this);
-        this.showSection = this.showSection.bind(this);
-    }
+    <!-- Cloudflare Turnstile (shown only on Step 1) -->
+    <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+</head>
+<body>
+    <!-- Animated Gradient Background -->
+    <div class="animated-gradient"></div>
 
-    async init() {
-        await this.waitForAuth();
-        
-        // Initialize language support (saved or browser language)
-        if (window.i18n) {
-            window.i18n.init({
-                selector: '[data-i18n]',
-                placeholderSelector: '[data-i18n-placeholder]'
-            });
-        }
-        
-        this.setupEventListeners();
-        this.setupLanguageSelector();
-        
-        // Check if URL has verification token
-        this.handleUrlParameters();
-    }
+    <!-- Auth Header -->
+    <header class="auth-header glass-panel">
+        <a href="https://mymemoryan.com" class="auth-logo-link" title="Home">
+            <img src="../images/memoryan-logo.png" alt="Memoryan Logo" class="auth-logo">
+            <span class="auth-title">Memoryan</span>
+        </a>
+        <div class="language-selector">
+            <button id="language-button" class="language-button">
+                <span id="current-language">EN</span>
+            </button>
+            <div id="language-dropdown" class="language-dropdown">
+                <a href="#" data-lang="en" class="language-option">English</a>
+                <a href="#" data-lang="ru" class="language-option">Русский</a>
+                <a href="#" data-lang="uk" class="language-option">Українська</a>
+                <a href="#" data-lang="de" class="language-option">Deutsch</a>
+            </div>
+        </div>
+    </header>
 
-    async waitForAuth() {
-        while (!window.MemoryanAuth || !window.MemoryanAuth.isInitialized) {
-            await new Promise(resolve => setTimeout(resolve, 100));
-        }
-    }
+    <!-- Main Content -->
+    <main class="auth-main-container">
+        <div class="auth-form-container">
+            <!-- No back hub; home is in header -->
 
-    setupEventListeners() {
-        document.getElementById('request-otp-form').addEventListener('submit', this.handleRequestOtp.bind(this));
-        document.getElementById('verify-otp-form').addEventListener('submit', this.handleVerifyOtp.bind(this));
-    // Remove resend (disabled per requirement)
-    const resend = document.getElementById('resend-otp-link');
-    if (resend) resend.style.display = 'none';
-    }
+            <!-- Email Verification Form -->
+            <div class="auth-form">
+                <div id="email-verification-content">
+                    <!-- Step 1: Request OTP -->
+                    <div id="request-otp-section">
+                        <h1 data-i18n="emailVerification.title">Verify Your Email</h1>
+                        <p class="auth-description" data-i18n="emailVerification.description">
+                            Enter your email to receive a 6-digit code to verify your account.
+                        </p>
+                        <form id="request-otp-form">
+                            <div class="auth-form-group">
+                                <label for="verification-email" class="auth-form-label" data-i18n="common.emailAddress">Email Address</label>
+                                <input type="email" id="verification-email" name="email" class="auth-form-input" 
+                                    data-i18n-placeholder="common.enterEmailPlaceholder" placeholder="Enter your email address" 
+                                    required autocomplete="email">
+                            </div>
+                            <div class="auth-form-group" id="turnstile-wrap-request-otp">
+                                <div
+                                    id="turnstile-email-verification"
+                                    class="cf-turnstile"
+                                    data-sitekey="0x4AAAAAAC2vl062BH3RSztD"
+                                    data-callback="memoryanTurnstileOnSuccess"
+                                    data-error-callback="memoryanTurnstileOnError"
+                                    data-expired-callback="memoryanTurnstileOnExpired"
+                                ></div>
+                            </div>
+                            <button type="submit" class="auth-form-button" id="send-otp-btn" data-i18n="emailVerification.receiveOTP">
+                                Receive Verification Code
+                            </button>
+                        </form>
+                    </div>
 
-    setupLanguageSelector() {
-        const languageButton = document.getElementById('language-button');
-        const languageDropdown = document.getElementById('language-dropdown');
-        const languageOptions = document.querySelectorAll('.language-option');
-        
-        if (languageButton && languageDropdown) {
-            languageButton.addEventListener('click', () => {
-                languageDropdown.classList.toggle('active');
-                if (window.MemoryanAuth && window.MemoryanAuth.positionLanguageDropdown) {
-                    window.MemoryanAuth.positionLanguageDropdown(languageDropdown.classList.contains('active'));
-                }
-            });
-            
-            // Handle language selection (updates in place, same as main website)
-            languageOptions.forEach(option => {
-                option.addEventListener('click', (event) => {
-                    event.preventDefault();
-                    const lang = option.getAttribute('data-lang');
-                    if (window.i18n && lang) {
-                        window.i18n.changeLanguage(lang);
-                        languageDropdown.classList.remove('active');
-                        if (window.MemoryanAuth && window.MemoryanAuth.positionLanguageDropdown) {
-                            window.MemoryanAuth.positionLanguageDropdown(false);
-                        }
-                    }
-                });
-            });
-            document.addEventListener('click', (event) => {
-                if (!languageButton.contains(event.target) && !languageDropdown.contains(event.target)) {
-                    languageDropdown.classList.remove('active');
-                    if (window.MemoryanAuth && window.MemoryanAuth.positionLanguageDropdown) {
-                        window.MemoryanAuth.positionLanguageDropdown(false);
-                    }
-                }
-            });
-        }
-    }
+                    <!-- Step 2: Enter OTP -->
+                    <div id="enter-otp-section" style="display: none;">
+                        <h1 data-i18n="emailVerification.enterCodeTitle">Enter Verification Code</h1>
+                        <p class="auth-description">
+                            <span data-i18n="emailVerification.codeSentTo">We sent a 6-digit code to</span> 
+                            <strong id="otp-email"></strong>. 
+                            <span data-i18n="emailVerification.enterBelow">Please enter it below.</span>
+                        </p>
+                        <form id="verify-otp-form">
+                            <div class="auth-form-group">
+                                <label for="otp-input" class="auth-form-label" data-i18n="emailVerification.sixDigitCode">6-Digit Code</label>
+                                <input type="text" id="otp-input" name="otp" class="auth-form-input" 
+                                    data-i18n-placeholder="emailVerification.enterOTP" placeholder="—  —  —  —  —  —" 
+                                    required maxlength="6" pattern="\d{6}" inputmode="numeric" autocomplete="one-time-code">
+                            </div>
+                            <button type="submit" class="auth-form-button" id="verify-otp-btn" data-i18n="emailVerification.verifyCode">
+                                Verify Code
+                            </button>
+                        </form>
+                        <p class="auth-secondary-link">
+                            <a href="#" id="resend-otp-link" data-i18n="emailVerification.resendCode">Resend Code</a>
+                        </p>
+                    </div>
 
-    showSection(sectionId) {
-        ['request-otp-section', 'enter-otp-section', 'verification-success-section'].forEach(id => {
-            document.getElementById(id).style.display = (id === sectionId) ? 'block' : 'none';
-        });
-    }
+                    <!-- Step 3: Success Confirmation -->
+                    <div id="verification-success-section" style="display: none;">
+                        <div class="auth-success-container">
+                            <div class="success-icon">✓</div>
+                            <h2 data-i18n="emailVerification.verified">Email Verified!</h2>
+                            <p class="auth-description" data-i18n="emailVerification.successMessage">
+                                Your email has been verified successfully. You can now access all Memoryan features.
+                            </p>
+                            <a href="https://mymemoryan.com" class="auth-form-button" data-i18n="common.returnToHome">Return to Home</a>
+                        </div>
+                    </div>
 
-    async handleUrlParameters() {
-        const urlParams = new URLSearchParams(window.location.search);
-        const token = urlParams.get('token');
-        const type = urlParams.get('type');
-        const otpFromUrl = urlParams.get('otp');
-        
-        if (token && type === 'signup') {
-            window.MemoryanAuth.showLoading('Verifying your email...');
-            
-            try {
-                const result = await window.MemoryanAuth.handleEmailVerification(urlParams);
-                
-                if (result.success) {
-                    this.showSection('verification-success-section');
-                } else {
-                    window.MemoryanAuth.displayError(result.message || 'Verification failed.');
-                    this.showSection('request-otp-section');
-                }
-            } catch (error) {
-                window.MemoryanAuth.displayError('An error occurred during verification.');
-                this.showSection('request-otp-section');
-            } finally {
-                window.MemoryanAuth.hideLoading();
-            }
-        }
+                    <!-- Error State Display -->
+                    <div id="error-display" style="display: none;"></div>
+                </div>
+            </div>
 
-        // Prefill OTP if provided via URL (from email button)
-        if (otpFromUrl) {
-            const otpInput = document.getElementById('otp-input');
-            if (otpInput) {
-                otpInput.value = otpFromUrl;
-                this.showSection('enter-otp-section');
-                window.MemoryanAuth.displaySuccess('We prefilled your verification code.');
-            }
-        }
-    }
+            <!-- Security Information -->
+            <div class="auth-security-notice">
+                <div class="security-icon">
+                    <svg viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12,1L3,5V11C3,16.55 6.84,21.74 12,23C17.16,21.74 21,16.55 21,11V5L12,1M12,7C13.4,7 14.8,8.6 14.8,10V11H16V16H8V11H9.2V10C9.2,8.6 10.6,7 12,7M12,8.2C11.2,8.2 10.4,8.7 10.4,10V11H13.6V10C13.6,8.7 12.8,8.2 12,8.2Z"/>
+                    </svg>
+                </div>
+                <div class="security-content">
+                    <h3 data-i18n="emailVerification.secureVerification">Secure Email Verification</h3>
+                    <p data-i18n="emailVerification.securityInfo">
+                        Verification codes are time-limited and single-use for maximum security. 
+                        Verifying your email helps protect your account and enables all Memoryan features.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </main>
 
-    async handleRequestOtp(event) {
-        event.preventDefault();
-        if (this.isProcessing) return;
-        
-        this.isProcessing = true;
-        window.MemoryanAuth.showLoading(window.i18n ? window.i18n.t('common.processing') : 'Processing request...');
-        window.MemoryanAuth.clearMessages();
+    <!-- Footer -->
+    <footer class="auth-footer glass-panel">
+        <div class="auth-footer-content">
+            <p>&copy; 2024 Memoryan. All rights reserved.</p>
+            <div class="auth-footer-links">
+                <a href="../privacy-policy.html" data-i18n="common.privacyPolicy">Privacy Policy</a>
+                <a href="../terms-of-service.html" data-i18n="common.termsOfService">Terms of Service</a>
+                <a href="../index.html" data-i18n="common.backToWebsite">Back to Website</a>
+            </div>
+        </div>
+    </footer>
 
-        try {
-            this.currentEmail = document.getElementById('verification-email').value;
-            
-      // Debounce identical failing email: if previous attempt failed for same email, return early
-      if (this.lastFailed.email && this.lastFailed.email === this.currentEmail) {
-        window.MemoryanAuth.displayError(window.i18n ? window.i18n.t('errors.emailNotFound') : 'Email not found.');
-        return;
-      }
+    <!-- Loading Indicator -->
+    <div id="auth-loading" class="auth-loading-overlay" style="display: none;">
+        <div class="auth-loading-spinner"></div>
+        <p id="loading-text" data-i18n="common.processing">Processing request...</p>
+    </div>
 
-      const turnstileToken = window.MemoryanTurnstile && typeof window.MemoryanTurnstile.getToken === 'function'
-        ? window.MemoryanTurnstile.getToken()
-        : null;
-      if (!turnstileToken) {
-        window.MemoryanAuth.displayError('Please complete the CAPTCHA first.');
-        return;
-      }
+    <!-- Scripts -->
+    <script src="../js/config.js"></script>
+    <script src="../js/supabase-loader.js"></script>
+    <script src="../js/i18n.js"></script>
+    <script src="js/auth-core.js"></script>
+    <script src="js/email-verification.js"></script>
+    <script>
+      (function () {
+        const btn = document.getElementById('send-otp-btn');
+        if (btn) btn.disabled = true;
 
-      // Call edge function; our core returns body even on errors
-            const result = await window.MemoryanAuth.callEdgeFunction('send-email-verification-otp', {
-                email: this.currentEmail,
-                turnstileToken
-            });
-            const apiMessage = (result && (result.message || result.error)) ? String(result.message || result.error).trim() : '';
-            const raw = apiMessage.toLowerCase();
+        window.MemoryanTurnstile = {
+          token: null,
+          getToken: function () { return this.token; }
+        };
 
-            if (result && result.success) {
-                document.getElementById('otp-email').textContent = this.currentEmail;
-                this.showSection('enter-otp-section');
-                window.MemoryanAuth.displaySuccess(result.message || (window.i18n ? window.i18n.t('emailVerification.codeSent') : 'Verification code sent successfully!'));
-            } else {
-                if (raw.includes('already verified')) {
-                    this.showSection('verification-success-section');
-                    window.MemoryanAuth.displaySuccess(window.i18n ? window.i18n.t('errors.alreadyVerified') : 'Your email is already verified. You can sign in to your account.');
-                    return;
-                }
-                if (raw.includes('no account') || raw.includes('not found') || raw.includes("sign up first")) {
-                    this.lastFailed.email = this.currentEmail;
-                    window.MemoryanAuth.displayError(window.i18n ? window.i18n.t('errors.emailNotFound') : "This email isn't linked to any existing account. Please check and try again.");
-                    return;
-                }
-                if (raw.includes('too many') || raw.includes('rate') || raw.includes('wait')) {
-                    window.MemoryanAuth.displayError(window.i18n ? window.i18n.t('errors.tooManyAttempts') : 'Too many attempts. Please try again after 24 hours.');
-                    return;
-                }
-                const fallback = window.i18n ? window.i18n.t('errors.unexpected') : 'An unexpected error occurred. Please try again.';
-                window.MemoryanAuth.displayError(apiMessage || fallback);
-            }
-        } catch (error) {
-            const msg = String(error && (error.message || error) || '').toLowerCase();
-            if (msg.includes('already verified')) {
-                this.showSection('verification-success-section');
-                window.MemoryanAuth.displaySuccess(window.i18n ? window.i18n.t('errors.alreadyVerified') : 'Your email is already verified. You can sign in to your account.');
-            } else if (msg.includes('no account') || msg.includes('not found')) {
-                this.lastFailed.email = this.currentEmail;
-                window.MemoryanAuth.displayError(window.i18n ? window.i18n.t('errors.emailNotFound') : "This email isn't linked to any existing account. Please check and try again.");
-            } else {
-                window.MemoryanAuth.displayError(window.i18n ? window.i18n.t('errors.unexpected') : 'An unexpected error occurred. Please try again.');
-            }
-        } finally {
-            this.isProcessing = false;
-            window.MemoryanAuth.hideLoading();
-        }
-    }
-
-    async handleVerifyOtp(event) {
-        event.preventDefault();
-        if (this.isProcessing) return;
-        
-        this.isProcessing = true;
-        window.MemoryanAuth.showLoading('Verifying code...');
-        window.MemoryanAuth.clearMessages();
-
-        try {
-      const otp = document.getElementById('otp-input').value;
-
-      // Prevent repeated same invalid OTP attempts locally
-      if (this.lastFailed.otp && this.lastFailed.otp === otp) {
-        window.MemoryanAuth.displayError(window.i18n ? window.i18n.t('errors.invalidCode') : 'Invalid verification code.');
-        return;
-      }
-            
-            // Call the Edge Function to verify the OTP
-      const result = await window.MemoryanAuth.callEdgeFunction('verify-email-otp', {
-                email: this.currentEmail,
-                otp: otp
-            });
-            
-            if (result.success) {
-                this.showSection('verification-success-section');
-      } else {
-        this.lastFailed.otp = otp;
-        window.MemoryanAuth.displayError(result.message || (window.i18n ? window.i18n.t('errors.invalidCode') : 'Invalid verification code.'));
-      }
-        } catch (error) {
-            window.MemoryanAuth.displayError('An unexpected error occurred. Please try again.');
-        } finally {
-            this.isProcessing = false;
-            window.MemoryanAuth.hideLoading();
-        }
-    }
-
-    handleResendOtp(event) {
-        event.preventDefault();
-        // Just reuse the request OTP form submission
-        this.showSection('request-otp-section');
-        if (this.currentEmail) {
-            document.getElementById('verification-email').value = this.currentEmail;
-        }
-    }
-}
-
-// Initialize on page load
-document.addEventListener('DOMContentLoaded', () => {
-    new EmailVerification().init();
-}); 
+        window.memoryanTurnstileOnSuccess = function (token) {
+          window.MemoryanTurnstile.token = token;
+          if (btn) btn.disabled = false;
+        };
+        window.memoryanTurnstileOnExpired = function () {
+          window.MemoryanTurnstile.token = null;
+          if (btn) btn.disabled = true;
+        };
+        window.memoryanTurnstileOnError = function () {
+          window.MemoryanTurnstile.token = null;
+          if (btn) btn.disabled = true;
+        };
+      })();
+    </script>
+</body>
+</html> 
