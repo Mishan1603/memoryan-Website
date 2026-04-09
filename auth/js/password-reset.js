@@ -195,9 +195,19 @@ class PasswordReset {
                 return;
             }
 
+            const turnstileToken = window.MemoryanTurnstile && typeof window.MemoryanTurnstile.getToken === 'function'
+              ? window.MemoryanTurnstile.getToken()
+              : null;
+            if (!turnstileToken) {
+                window.MemoryanAuth.displayError('Please complete the CAPTCHA first.');
+                this.showSection('email-section');
+                return;
+            }
+
             // Call the send-password-reset-otp Edge Function
             const result = await window.MemoryanAuth.callEdgeFunction('send-password-reset-otp', { 
-                email: this.currentEmail
+                email: this.currentEmail,
+                turnstileToken
             });
             
             if (result.success) {
@@ -210,6 +220,9 @@ class PasswordReset {
                   // Blocked state → show overlay + redirect
                   const text = window.i18n ? window.i18n.t('errors.tooManyAttempts') : 'Too many attempts. Please try again after 24 hours.';
                   window.MemoryanAuth.displayBlockingOverlay(text, 'https://mymemoryan.com', 5000);
+              } else if (msg.includes('captcha') || msg.includes('turnstile')) {
+                  window.MemoryanAuth.displayError(result.message || 'CAPTCHA verification failed. Please try again.');
+                  this.showSection('email-section');
               } else if (msg.includes('not initiated')) {
                   const text = window.i18n ? window.i18n.t('errors.initiationRequired') : 'Please initiate password reset from the mobile app first.';
                   window.MemoryanAuth.displayError(text);
