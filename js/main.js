@@ -5,6 +5,10 @@
             setupLanguageSelector();
         }
 
+        if (typeof window.initMemoryanWaitlist === 'function' && document.getElementById('waitlist-form')) {
+            window.initMemoryanWaitlist();
+        }
+
         function setupLanguageSelector() {
             var languageButton = document.getElementById('language-button');
             var languageDropdown = document.getElementById('language-dropdown');
@@ -597,6 +601,9 @@
                 
                 // Call original method
                 originalChangeLanguage(lang);
+                if (typeof window.memoryanWaitlistRefresh === 'function') {
+                    window.memoryanWaitlistRefresh();
+                }
                 
                 // Translate all Swiper slides at different intervals to catch all dynamic content
                 [50, 200, 500, 1000].forEach(delay => {
@@ -751,7 +758,10 @@
                             <h3>1. Introduction</h3>
                             <p>Welcome to Memoryan. We respect your privacy and are committed to protecting your personal data. This Privacy Policy explains how we collect, use, and safeguard your information when you use our mobile application.</p>
                             
-                            <h3>2. Information We Collect</h3>
+                            <h3>2. Waitlist (website)</h3>
+                            <p>If you join the early list on our website, we collect your email address to notify you about Memoryan. This is processed through our secure servers; we do not sell your email. You may receive a confirmation or reminder email after you sign up.</p>
+                            
+                            <h3>3. Information We Collect</h3>
                             <p>We collect the following types of information:</p>
                             <ul>
                                 <li><strong>Account Information:</strong> Email address and authentication information when you register.</li>
@@ -760,7 +770,7 @@
                                 <li><strong>Device Information:</strong> Device type, operating system, and unique device identifiers.</li>
                             </ul>
                             
-                            <h3>3. How We Use Your Information</h3>
+                            <h3>4. How We Use Your Information</h3>
                             <p>We use your information to:</p>
                             <ul>
                                 <li>Provide and improve our services</li>
@@ -770,10 +780,10 @@
                                 <li>Analyze usage patterns to enhance functionality</li>
                             </ul>
                             
-                            <h3>4. Data Storage and Security</h3>
+                            <h3>5. Data Storage and Security</h3>
                             <p>Your data is stored securely in our cloud servers. We implement appropriate technical and organizational measures to protect your personal information.</p>
                             
-                            <h3>5. Your Rights</h3>
+                            <h3>6. Your Rights</h3>
                             <p>You have the right to:</p>
                             <ul>
                                 <li>Access your personal data</li>
@@ -783,16 +793,16 @@
                                 <li>Object to certain processing of your data</li>
                             </ul>
                             
-                            <h3>6. Third-Party Services</h3>
+                            <h3>7. Third-Party Services</h3>
                             <p>We may use third-party services for analytics, crash reporting, and other functionality. These services may collect information about your use of the app.</p>
                             
-                            <h3>7. Children's Privacy</h3>
+                            <h3>8. Children's Privacy</h3>
                             <p>Our services are not intended for children under 13. We do not knowingly collect personal information from children under 13.</p>
                             
-                            <h3>8. Changes to This Policy</h3>
+                            <h3>9. Changes to This Policy</h3>
                             <p>We may update this policy periodically. We will notify you of any significant changes through the app or via email.</p>
                             
-                            <h3>9. Contact Us</h3>
+                            <h3>10. Contact Us</h3>
                             <p>If you have any questions about this Privacy Policy, please contact us at info@memoryan.com.</p>
                         </div>
                     </div>
