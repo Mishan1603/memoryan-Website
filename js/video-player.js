@@ -29,8 +29,12 @@ class MemoryanVideoPlayer {
         this.isPlaying = false;
         this.isMuted = true;
         this.currentLanguage = 'en';
-        this.loadingThreshold = 0.3;
-        this.hasAutoPlayed = false;
+        /** When true, next canplay/playable will call play() (user opened trailer modal). */
+        this.playWhenReady = false;
+        this.progressDragging = false;
+        this._progressPointerId = null;
+        this.suppressNextProgressClick = false;
+        this._loadedTrailerKey = null;
         
         // Performance optimization properties
         this.controlsTimeout = null;
@@ -62,7 +66,7 @@ class MemoryanVideoPlayer {
         this.setupEventListeners();
         this.detectLanguage();
         this.setupOptimizedSizing();
-        this.loadVideo();
+        this.deferTrailerUntilModalOpen();
     }
     
     setupElements() {
@@ -78,7 +82,8 @@ class MemoryanVideoPlayer {
         this.progressHandle = document.getElementById('progressHandle');
         this.volumeBtn = document.getElementById('volumeBtn');
         this.fullscreenBtn = document.getElementById('fullscreenBtn');
-        this.videoWrapper = document.querySelector('.video-player-wrapper');
+        this.videoWrapper = document.querySelector('.video-player-wrapper--modal')
+            || document.querySelector('.video-player-wrapper');
         
         if (!this.video) {
             console.error('Video element not found');
@@ -89,7 +94,85 @@ class MemoryanVideoPlayer {
         this.isMuted = this.video.muted;
         this.updateButtonStates();
     }
-    
+
+    deferTrailerUntilModalOpen() {
+        if (!this.video || !this.videoSource) return;
+        try {
+            this.video.pause();
+            this.video.removeAttribute('src');
+            this.videoSource.removeAttribute('src');
+            if (this.videoSourceFallback) this.videoSourceFallback.removeAttribute('src');
+            this.video.load();
+        } catch (_) {}
+        this._loadedTrailerKey = null;
+        this.playWhenReady = false;
+        this.hideLoading();
+    }
+
+    onTrailerModalOpen() {
+        this.playWhenReady = true;
+        this.loadVideo();
+        if (this.video && this.video.readyState >= HTMLMediaElement.HAVE_FUTURE_DATA) {
+            this.attemptPlay();
+        }
+    }
+
+    attemptPlay() {
+        if (!this.video || !this.playWhenReady) return;
+        this.playWhenReady = false;
+        const playPromise = this.video.play();
+        if (playPromise !== undefined) {
+            playPromise.catch((error) => {
+                console.log('Play prevented:', error);
+                this.isPlaying = false;
+                this.updateButtonStates();
+            });
+        }
+    }
+
+    seekFromClientX(clientX) {
+        if (!this.video || !this.progressBar) return;
+        const d = this.video.duration;
+        if (!isFinite(d) || d <= 0) return;
+        const rect = this.progressBar.getBoundingClientRect();
+        const w = rect.width || 1;
+        const pct = Math.max(0, Math.min(1, (clientX - rect.left) / w));
+        this.video.currentTime = pct * d;
+        this.updateProgress();
+    }
+
+    onProgressPointerDown(e) {
+        if (!this.progressBar) return;
+        if (e.pointerType === 'mouse' && e.button !== 0) return;
+        this.progressDragging = true;
+        this._progressPointerId = e.pointerId;
+        try {
+            this.progressBar.setPointerCapture(e.pointerId);
+        } catch (_) {}
+        this.seekFromClientX(e.clientX);
+        this.showControlsTemporarily();
+    }
+
+    onProgressPointerMove(e) {
+        if (!this.progressDragging || e.pointerId !== this._progressPointerId) return;
+        this.seekFromClientX(e.clientX);
+    }
+
+    onProgressPointerUp(e) {
+        if (!this.progressDragging) return;
+        if (e.pointerId !== this._progressPointerId) return;
+        this.progressDragging = false;
+        this._progressPointerId = null;
+        try {
+            if (this.progressBar) this.progressBar.releasePointerCapture(e.pointerId);
+        } catch (_) {}
+        this.suppressNextProgressClick = true;
+        requestAnimationFrame(() => {
+            this.suppressNextProgressClick = false;
+        });
+        this.showControlsTemporarily();
+    }
+
     detectMobileDevice() {
         // Optimized mobile detection - cache result
         const userAgent = navigator.userAgent.toLowerCase();
@@ -125,7 +208,10 @@ class MemoryanVideoPlayer {
                 e.stopPropagation();
                 this.togglePlayPause();
             },
-            progressClick: (e) => this.seekVideo(e),
+            progressClick: (e) => {
+                if (this.suppressNextProgressClick) return;
+                this.seekVideo(e);
+            },
             volumeClick: (e) => {
                 e.stopPropagation();
                 this.toggleMute();
@@ -149,8 +235,16 @@ class MemoryanVideoPlayer {
             // Language change
             languageChange: (e) => {
                 this.currentLanguage = e.detail.language;
+                this._loadedTrailerKey = null;
                 this.loadVideo();
             },
+
+            trailerModalOpen: () => this.onTrailerModalOpen(),
+
+            progressPointerDown: (e) => this.onProgressPointerDown(e),
+            progressPointerMove: (e) => this.onProgressPointerMove(e),
+            progressPointerUp: (e) => this.onProgressPointerUp(e),
+            progressPointerCancel: (e) => this.onProgressPointerUp(e),
             
             // Keyboard
             keydown: (e) => this.handleKeyboard(e),
@@ -194,7 +288,13 @@ class MemoryanVideoPlayer {
         
         if (this.progressBar) {
             this.progressBar.addEventListener('click', this.boundHandlers.progressClick);
+            this.progressBar.addEventListener('pointerdown', this.boundHandlers.progressPointerDown);
+            this.progressBar.addEventListener('pointermove', this.boundHandlers.progressPointerMove);
+            this.progressBar.addEventListener('pointerup', this.boundHandlers.progressPointerUp);
+            this.progressBar.addEventListener('pointercancel', this.boundHandlers.progressPointerCancel);
         }
+
+        document.addEventListener('memoryan:trailer-modal-open', this.boundHandlers.trailerModalOpen);
         
         if (this.volumeBtn) {
             this.volumeBtn.addEventListener('click', this.boundHandlers.volumeClick);
@@ -347,28 +447,28 @@ class MemoryanVideoPlayer {
     
     loadVideo() {
         if (!this.video || !this.videoSource) return;
-        
-        // Try WEBM first (smaller file size, better compression)
+
         const webmFile = this.currentLanguage === 'ru' ? 'trailer_ru.webm' : 'trailer.webm';
         const mp4File = this.currentLanguage === 'ru' ? 'trailer_ru.mp4' : 'trailer.mp4';
-        
-        // Only reload if source actually changed
-        if (this.videoSource.src !== webmFile) {
-            this.showLoading();
-            this.hideError();
-            
-            // Set WEBM as primary source
-            this.videoSource.src = webmFile;
-            
-            // Set MP4 as fallback source for older browsers
-            if (this.videoSourceFallback) {
-                this.videoSourceFallback.src = mp4File;
+
+        if (this._loadedTrailerKey === webmFile) {
+            if (this.playWhenReady && this.video.readyState >= HTMLMediaElement.HAVE_FUTURE_DATA) {
+                this.attemptPlay();
             }
-            
-            this.video.load();
-            
-            console.log(`Loading video: ${webmFile} (WEBM) with fallback: ${mp4File} (MP4) for language: ${this.currentLanguage}`);
+            return;
         }
+
+        this._loadedTrailerKey = webmFile;
+        this.showLoading();
+        this.hideError();
+
+        this.videoSource.src = webmFile;
+        if (this.videoSourceFallback) {
+            this.videoSourceFallback.src = mp4File;
+        }
+        this.video.load();
+
+        console.log(`Loading video: ${webmFile} (WEBM) with fallback: ${mp4File} (MP4) for language: ${this.currentLanguage}`);
     }
     
     // Optimized event handlers
@@ -378,35 +478,18 @@ class MemoryanVideoPlayer {
     }
     
     handleVideoProgress() {
-        if (!this.video.buffered.length) return;
-        
+        if (!this.video || !this.video.buffered.length) return;
         const buffered = this.video.buffered.end(this.video.buffered.length - 1);
         const duration = this.video.duration;
-        
-        if (duration > 0) {
-            const loadedPercentage = buffered / duration;
-            
-            if (loadedPercentage >= this.loadingThreshold && !this.hasAutoPlayed) {
-                this.handleVideoCanPlay();
-            }
+        if (duration > 0 && buffered / duration >= 0.99) {
+            this.hideLoading();
         }
     }
     
     handleVideoCanPlay() {
         this.hideLoading();
-        
-        if (!this.hasAutoPlayed) {
-            this.hasAutoPlayed = true;
-            
-            // Auto-play with error handling
-            const playPromise = this.video.play();
-            if (playPromise !== undefined) {
-                playPromise.catch(error => {
-                    console.log('Auto-play prevented:', error);
-                    this.isPlaying = false;
-                    this.updateButtonStates();
-                });
-            }
+        if (this.playWhenReady) {
+            this.attemptPlay();
         }
     }
     
@@ -607,13 +690,9 @@ class MemoryanVideoPlayer {
     
     seekVideo(event) {
         if (!this.video || !this.progressBar) return;
-        
-        const rect = this.progressBar.getBoundingClientRect();
-        const clickX = event.clientX - rect.left;
-        const percentage = clickX / rect.width;
-        const newTime = percentage * this.video.duration;
-        
-        this.video.currentTime = Math.max(0, Math.min(this.video.duration, newTime));
+        const x = event.clientX != null ? event.clientX : (event.changedTouches && event.changedTouches[0] && event.changedTouches[0].clientX);
+        if (x == null) return;
+        this.seekFromClientX(x);
         this.showControlsTemporarily();
     }
     
@@ -820,7 +899,12 @@ class MemoryanVideoPlayer {
     
     applyOptimizedSizing() {
         if (!this.videoWrapper) return;
-        
+        if (this.videoWrapper.classList.contains('video-player-wrapper--modal')) {
+            this.videoWrapper.style.width = '';
+            this.videoWrapper.style.height = '';
+            return;
+        }
+
         const dimensions = this.calculateOptimizedVideoSize();
         
         // Use transform for better performance than changing width/height
@@ -869,6 +953,10 @@ class MemoryanVideoPlayer {
         // Remove control listeners
         this.playPauseBtn?.removeEventListener('click', this.boundHandlers.playPauseClick);
         this.progressBar?.removeEventListener('click', this.boundHandlers.progressClick);
+        this.progressBar?.removeEventListener('pointerdown', this.boundHandlers.progressPointerDown);
+        this.progressBar?.removeEventListener('pointermove', this.boundHandlers.progressPointerMove);
+        this.progressBar?.removeEventListener('pointerup', this.boundHandlers.progressPointerUp);
+        this.progressBar?.removeEventListener('pointercancel', this.boundHandlers.progressPointerCancel);
         this.volumeBtn?.removeEventListener('click', this.boundHandlers.volumeClick);
         this.fullscreenBtn?.removeEventListener('click', this.boundHandlers.fullscreenClick);
         this.videoControls?.removeEventListener('click', this.boundHandlers.containerClick);
@@ -877,6 +965,7 @@ class MemoryanVideoPlayer {
         window.removeEventListener('resize', this.boundHandlers.resize);
         window.removeEventListener('orientationchange', this.boundHandlers.orientationChange);
         document.removeEventListener('languageChanged', this.boundHandlers.languageChange);
+        document.removeEventListener('memoryan:trailer-modal-open', this.boundHandlers.trailerModalOpen);
         document.removeEventListener('keydown', this.boundHandlers.keydown);
         
         // Remove device-specific listeners
