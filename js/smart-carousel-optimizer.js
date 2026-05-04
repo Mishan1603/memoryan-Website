@@ -24,7 +24,6 @@ class SmartCarouselOptimizer {
         this.init = this.init.bind(this);
         this.setupCarouselObserver = this.setupCarouselObserver.bind(this);
         this.overrideLazyLoading = this.overrideLazyLoading.bind(this);
-        this.preloadImages = this.preloadImages.bind(this);
         this.handleSlideChange = this.handleSlideChange.bind(this);
     }
     
