@@ -110,23 +110,50 @@ class MemoryanVideoPlayer {
     }
 
     onTrailerModalOpen() {
+        if (!this.video) return;
         this.playWhenReady = true;
+        try {
+            this.video.preload = 'auto';
+        } catch (_) {}
         this.loadVideo();
-        if (this.video && this.video.readyState >= HTMLMediaElement.HAVE_FUTURE_DATA) {
+        if (this.video.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA) {
             this.attemptPlay();
+        }
+    }
+
+    /** Resolve trailer file to absolute URL (works from subfolders; optional `window.MEMORYAN_TRAILER_BASE`). */
+    resolveTrailerUrl(filename) {
+        const custom = typeof window.MEMORYAN_TRAILER_BASE === 'string' ? window.MEMORYAN_TRAILER_BASE.trim() : '';
+        if (custom) {
+            const base = custom.replace(/\/?$/, '/');
+            try {
+                return new URL(filename, base).href;
+            } catch (_) {
+                return base + filename;
+            }
+        }
+        try {
+            return new URL(filename, window.location.href).href;
+        } catch (_) {
+            return filename;
         }
     }
 
     attemptPlay() {
         if (!this.video || !this.playWhenReady) return;
-        this.playWhenReady = false;
         const playPromise = this.video.play();
         if (playPromise !== undefined) {
-            playPromise.catch((error) => {
-                console.log('Play prevented:', error);
-                this.isPlaying = false;
-                this.updateButtonStates();
-            });
+            playPromise
+                .then(() => {
+                    this.playWhenReady = false;
+                })
+                .catch((error) => {
+                    console.log('Play prevented:', error);
+                    this.isPlaying = false;
+                    this.updateButtonStates();
+                });
+        } else {
+            this.playWhenReady = false;
         }
     }
 
@@ -196,7 +223,10 @@ class MemoryanVideoPlayer {
             // Video events
             loadstart: () => this.handleVideoLoadStart(),
             progress: this.debounce(() => this.handleVideoProgress(), 200),
+            loadedmetadata: () => this.handleVideoLoadedMetadata(),
+            loadeddata: () => this.handleVideoLoadedData(),
             canplay: () => this.handleVideoCanPlay(),
+            playing: () => this.handleVideoPlaying(),
             timeupdate: this.throttle(() => this.updateProgress(), this.progressUpdateInterval),
             ended: () => this.handleVideoEnded(),
             error: () => this.handleVideoError(),
@@ -274,7 +304,10 @@ class MemoryanVideoPlayer {
         // Video events
         this.video.addEventListener('loadstart', this.boundHandlers.loadstart);
         this.video.addEventListener('progress', this.boundHandlers.progress);
+        this.video.addEventListener('loadedmetadata', this.boundHandlers.loadedmetadata);
+        this.video.addEventListener('loadeddata', this.boundHandlers.loadeddata);
         this.video.addEventListener('canplay', this.boundHandlers.canplay);
+        this.video.addEventListener('playing', this.boundHandlers.playing);
         this.video.addEventListener('timeupdate', this.boundHandlers.timeupdate);
         this.video.addEventListener('ended', this.boundHandlers.ended);
         this.video.addEventListener('error', this.boundHandlers.error);
@@ -450,25 +483,27 @@ class MemoryanVideoPlayer {
 
         const webmFile = this.currentLanguage === 'ru' ? 'trailer_ru.webm' : 'trailer.webm';
         const mp4File = this.currentLanguage === 'ru' ? 'trailer_ru.mp4' : 'trailer.mp4';
+        const webmUrl = this.resolveTrailerUrl(webmFile);
+        const mp4Url = this.resolveTrailerUrl(mp4File);
 
-        if (this._loadedTrailerKey === webmFile) {
-            if (this.playWhenReady && this.video.readyState >= HTMLMediaElement.HAVE_FUTURE_DATA) {
+        if (this._loadedTrailerKey === webmUrl && !this.video.error) {
+            if (this.playWhenReady && this.video.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA) {
                 this.attemptPlay();
             }
             return;
         }
 
-        this._loadedTrailerKey = webmFile;
+        this._loadedTrailerKey = webmUrl;
         this.showLoading();
         this.hideError();
 
-        this.videoSource.src = webmFile;
+        this.videoSource.src = webmUrl;
         if (this.videoSourceFallback) {
-            this.videoSourceFallback.src = mp4File;
+            this.videoSourceFallback.src = mp4Url;
         }
         this.video.load();
 
-        console.log(`Loading video: ${webmFile} (WEBM) with fallback: ${mp4File} (MP4) for language: ${this.currentLanguage}`);
+        console.log(`Loading video: ${webmUrl} (fallback ${mp4Url}) lang=${this.currentLanguage}`);
     }
     
     // Optimized event handlers
@@ -485,15 +520,31 @@ class MemoryanVideoPlayer {
             this.hideLoading();
         }
     }
+
+    handleVideoLoadedMetadata() {
+        if (this.playWhenReady) this.attemptPlay();
+    }
+
+    handleVideoLoadedData() {
+        if (this.video && this.video.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA) {
+            this.hideLoading();
+        }
+        if (this.playWhenReady) this.attemptPlay();
+    }
     
     handleVideoCanPlay() {
-        this.hideLoading();
-        if (this.playWhenReady) {
-            this.attemptPlay();
+        if (this.video && this.video.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA) {
+            this.hideLoading();
         }
+        if (this.playWhenReady) this.attemptPlay();
+    }
+
+    handleVideoPlaying() {
+        this.hideLoading();
     }
     
     handleVideoError() {
+        this._loadedTrailerKey = null;
         this.hideLoading();
         this.showError();
         console.error('Video loading error');
@@ -936,7 +987,10 @@ class MemoryanVideoPlayer {
         if (this.video) {
             this.video.removeEventListener('loadstart', this.boundHandlers.loadstart);
             this.video.removeEventListener('progress', this.boundHandlers.progress);
+            this.video.removeEventListener('loadedmetadata', this.boundHandlers.loadedmetadata);
+            this.video.removeEventListener('loadeddata', this.boundHandlers.loadeddata);
             this.video.removeEventListener('canplay', this.boundHandlers.canplay);
+            this.video.removeEventListener('playing', this.boundHandlers.playing);
             this.video.removeEventListener('timeupdate', this.boundHandlers.timeupdate);
             this.video.removeEventListener('ended', this.boundHandlers.ended);
             this.video.removeEventListener('error', this.boundHandlers.error);
