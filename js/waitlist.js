@@ -2,7 +2,9 @@
 
   var REF_STORAGE = 'memoryan_waitlist_ref';
 
-  var JOINED_STORAGE = 'memoryan_waitlist_joined_v1';
+  var JOINED_V1 = 'memoryan_waitlist_joined_v1';
+
+  var JOINED_V2 = 'memoryan_waitlist_joined_v2';
 
   var turnstileWidgetId = null;
 
@@ -85,6 +87,82 @@
       return '';
 
     }
+
+  }
+
+
+
+  function migrateJoinedStorageOnce() {
+
+    try {
+
+      if (localStorage.getItem(JOINED_V2)) return;
+
+      var raw = localStorage.getItem(JOINED_V1);
+
+      if (!raw) return;
+
+      var o = JSON.parse(raw);
+
+      var rc = o && o.refCode;
+
+      if (typeof rc === 'string' && rc.length >= 4) {
+
+        var u = rc.trim().toUpperCase().replace(/[^A-Z0-9]/g, '');
+
+        if (u.length >= 4 && u.length <= 16) {
+
+          localStorage.setItem(JOINED_V2, JSON.stringify({ v: 2, refCode: u, already: true }));
+
+        }
+
+      }
+
+      localStorage.removeItem(JOINED_V1);
+
+    } catch (_) {}
+
+  }
+
+
+
+  /** @returns {{ refCode: string, already: boolean } | null} */
+
+  function readPersistedJoin() {
+
+    try {
+
+      var raw = localStorage.getItem(JOINED_V2);
+
+      if (!raw) return null;
+
+      var o = JSON.parse(raw);
+
+      if (!o || o.v !== 2 || typeof o.already !== 'boolean') return null;
+
+      var rc = typeof o.refCode === 'string' ? o.refCode.trim().toUpperCase().replace(/[^A-Z0-9]/g, '') : '';
+
+      return { refCode: rc, already: o.already };
+
+    } catch (_) {
+
+      return null;
+
+    }
+
+  }
+
+
+
+  function persistJoin(refCode, already) {
+
+    try {
+
+      var rc = (refCode || '').toString().trim().toUpperCase().replace(/[^A-Z0-9]/g, '');
+
+      localStorage.setItem(JOINED_V2, JSON.stringify({ v: 2, refCode: rc, already: !!already }));
+
+    } catch (_) {}
 
   }
 
@@ -389,42 +467,6 @@
 
 
 
-  function readStoredRefCode() {
-
-    try {
-
-      var raw = localStorage.getItem(JOINED_STORAGE);
-
-      if (!raw) return null;
-
-      var o = JSON.parse(raw);
-
-      var c = o && o.refCode;
-
-      if (typeof c === 'string' && /^[A-Z0-9]{4,16}$/.test(c)) return c;
-
-    } catch (_) {}
-
-    return null;
-
-  }
-
-
-
-  function persistJoinedRef(ref) {
-
-    if (!ref || typeof ref !== 'string') return;
-
-    try {
-
-      localStorage.setItem(JOINED_STORAGE, JSON.stringify({ v: 1, refCode: ref }));
-
-    } catch (_) {}
-
-  }
-
-
-
   function referUrlForCode(code) {
 
     try {
@@ -449,21 +491,53 @@
 
     var o = getEls();
 
+    var wrap = document.getElementById('waitlist-feedback-wrap');
+
     if (!o.msg) return;
 
     o.msg.textContent = text || '';
 
-    o.msg.classList.remove('is-success', 'is-error', 'has-text');
+    o.msg.classList.remove('is-success', 'is-error');
 
     if (text) {
-
-      o.msg.classList.add('has-text');
 
       if (variant === 'success') o.msg.classList.add('is-success');
 
       else if (variant === 'error') o.msg.classList.add('is-error');
 
+      if (wrap) {
+
+        wrap.setAttribute('aria-hidden', 'false');
+
+        requestAnimationFrame(function () {
+
+          wrap.classList.add('is-open');
+
+        });
+
+      }
+
+    } else if (wrap) {
+
+      wrap.classList.remove('is-open');
+
+      wrap.setAttribute('aria-hidden', 'true');
+
     }
+
+  }
+
+
+
+  function setInboxAlready(show, text) {
+
+    var el = document.getElementById('waitlist-inbox-status');
+
+    if (!el) return;
+
+    el.textContent = show && text ? text : '';
+
+    el.classList.toggle('is-open', !!(show && text));
 
   }
 
@@ -561,23 +635,29 @@
 
 
 
-  function showReferBlock(refCode) {
+  function showReferShell(refCode) {
 
-    var block = document.getElementById('waitlist-refer-block');
+    var shell = document.getElementById('waitlist-refer-shell');
 
-    var input = document.getElementById('waitlist-refer-url');
+    var link = document.getElementById('waitlist-refer-link');
 
-    if (!refCode || !block || !input) return;
+    if (!refCode || !shell || !link) return;
 
-    input.value = referUrlForCode(refCode);
+    var url = referUrlForCode(refCode);
 
-    block.setAttribute('aria-hidden', 'false');
+    link.href = url;
+
+    link.textContent = url;
+
+    link.setAttribute('title', url);
+
+    shell.setAttribute('aria-hidden', 'false');
 
     requestAnimationFrame(function () {
 
       requestAnimationFrame(function () {
 
-        block.classList.add('is-visible');
+        shell.classList.add('is-open');
 
       });
 
@@ -587,7 +667,21 @@
 
 
 
-  function applyJoinedState(refCode) {
+  function hideReferShell() {
+
+    var shell = document.getElementById('waitlist-refer-shell');
+
+    if (!shell) return;
+
+    shell.classList.remove('is-open');
+
+    shell.setAttribute('aria-hidden', 'true');
+
+  }
+
+
+
+  function applyAlreadyOnListUi(refCode) {
 
     var o = getEls();
 
@@ -597,17 +691,31 @@
 
     if (o.submitBtn) o.submitBtn.setAttribute('aria-expanded', 'false');
 
+    if (o.email) o.email.readOnly = true;
+
     if (typeof refCode === 'string' && /^[A-Z0-9]{4,16}$/i.test(refCode)) {
 
-      showReferBlock(refCode.toUpperCase());
+      showReferShell(refCode.toUpperCase());
 
     }
 
-    if (o.email) {
+  }
 
-      o.email.readOnly = true;
 
-    }
+
+  function applyNewSignupUi() {
+
+    var o = getEls();
+
+    flow = 'joined';
+
+    hideReferShell();
+
+    if (o.ctaWrap) o.ctaWrap.hidden = true;
+
+    if (o.submitBtn) o.submitBtn.setAttribute('aria-expanded', 'false');
+
+    if (o.email) o.email.readOnly = true;
 
   }
 
@@ -674,6 +782,8 @@
     var o = getEls();
 
     if (!o.email || !o.ctaWrap || !o.captchaStage) return;
+
+    if (flow === 'joined') return;
 
     var valid = isWaitlistEmailValid(o.email.value);
 
@@ -781,9 +891,9 @@
 
           var ref = typeof refRaw === 'string' ? refRaw.trim().toUpperCase().replace(/[^A-Z0-9]/g, '') : '';
 
-          if (ref.length >= 4 && ref.length <= 16) persistJoinedRef(ref);
-
           var already = !!res.json.alreadySignedUp;
+
+          persistJoin(ref, already);
 
           hideSubmitProgress();
 
@@ -791,9 +901,23 @@
 
             if (o.form) o.form.setAttribute('data-waitlist-msg', already ? 'already' : 'success');
 
-            setFormMessage(t(already ? 'waitlist.alreadyOnList' : 'waitlist.success'), 'success');
+            setFormMessage('', '');
 
-            applyJoinedState(ref);
+            setInboxAlready(false, '');
+
+            if (already) {
+
+              setInboxAlready(true, t('waitlist.alreadyOnList'));
+
+              applyAlreadyOnListUi(ref);
+
+            } else {
+
+              setFormMessage(t('waitlist.success'), 'success');
+
+              applyNewSignupUi();
+
+            }
 
             fetchStats();
 
@@ -855,6 +979,8 @@
 
     setFormMessage('', '');
 
+    setInboxAlready(false, '');
+
     flow = 'captcha';
 
     openCaptchaAnimated();
@@ -889,13 +1015,7 @@
 
     if (!isWaitlistEmailValid(o.email.value)) {
 
-      if (o.msg) {
-
-        o.msg.textContent = t('waitlist.errorEmail');
-
-        o.msg.classList.add('is-error');
-
-      }
+      setFormMessage(t('waitlist.errorEmail'), 'error');
 
       return;
 
@@ -955,6 +1075,8 @@
 
       setFormMessage('', '');
 
+      setInboxAlready(false, '');
+
       syncEmailStepUi();
 
     });
@@ -995,21 +1117,33 @@
 
     function initJoinedFromStorage() {
 
-      var code = readStoredRefCode();
+      var st = readPersistedJoin();
 
-      if (!code) return;
+      if (!st) return;
 
-      if (o.form) {
+      if (o.form) o.form.setAttribute('data-waitlist-msg', st.already ? 'already' : 'success');
 
-        o.form.classList.add('waitlist-form--from-storage');
+      if (st.already) {
 
-        o.form.setAttribute('data-waitlist-msg', 'already');
+        if (o.form) o.form.classList.add('waitlist-form--from-storage');
+
+        setFormMessage('', '');
+
+        setInboxAlready(true, t('waitlist.alreadyOnList'));
+
+        applyAlreadyOnListUi(st.refCode);
+
+      } else {
+
+        setInboxAlready(false, '');
+
+        hideReferShell();
+
+        setFormMessage(t('waitlist.success'), 'success');
+
+        applyNewSignupUi();
 
       }
-
-      setFormMessage(t('waitlist.alreadyOnList'), 'success');
-
-      applyJoinedState(code);
 
     }
 
@@ -1027,9 +1161,11 @@
 
       btn.addEventListener('click', function () {
 
-        var input = document.getElementById('waitlist-refer-url');
+        var link = document.getElementById('waitlist-refer-link');
 
-        if (!input || !input.value) return;
+        var url = link && link.href ? link.href : '';
+
+        if (!url || url === '#' || url.endsWith('#')) return;
 
         function flashToast() {
 
@@ -1047,13 +1183,21 @@
 
         if (navigator.clipboard && navigator.clipboard.writeText) {
 
-          navigator.clipboard.writeText(input.value).then(flashToast).catch(function () {
+          navigator.clipboard.writeText(url).then(flashToast).catch(function () {
 
             try {
 
-              input.select();
+              var ta = document.createElement('textarea');
+
+              ta.value = url;
+
+              document.body.appendChild(ta);
+
+              ta.select();
 
               document.execCommand('copy');
+
+              document.body.removeChild(ta);
 
               flashToast();
 
@@ -1067,9 +1211,17 @@
 
         try {
 
-          input.select();
+          var ta2 = document.createElement('textarea');
+
+          ta2.value = url;
+
+          document.body.appendChild(ta2);
+
+          ta2.select();
 
           document.execCommand('copy');
+
+          document.body.removeChild(ta2);
 
           flashToast();
 
@@ -1083,7 +1235,7 @@
 
     wireReferCopy();
 
-    if (readStoredRefCode()) initJoinedFromStorage();
+    if (readPersistedJoin()) initJoinedFromStorage();
 
     else syncEmailStepUi();
 
@@ -1105,7 +1257,7 @@
 
     if (window.i18n && typeof window.i18n.t === 'function') {
 
-      var rb = document.getElementById('waitlist-refer-block');
+      var rb = document.getElementById('waitlist-refer-shell');
 
       if (rb) {
 
@@ -1119,15 +1271,25 @@
 
       }
 
+      var inbox = document.getElementById('waitlist-inbox-status');
+
+      if (inbox && inbox.classList.contains('is-open')) {
+
+        inbox.textContent = window.i18n.t('waitlist.alreadyOnList');
+
+      }
+
       var msg = document.getElementById('waitlist-form-message');
 
       var wf = document.getElementById('waitlist-form');
 
       var kind = wf && wf.getAttribute('data-waitlist-msg');
 
-      if (msg && msg.classList.contains('has-text') && msg.classList.contains('is-success') && kind) {
+      var fb = document.getElementById('waitlist-feedback-wrap');
 
-        msg.textContent = window.i18n.t(kind === 'already' ? 'waitlist.alreadyOnList' : 'waitlist.success');
+      if (msg && fb && fb.classList.contains('is-open') && msg.classList.contains('is-success') && kind === 'success') {
+
+        msg.textContent = window.i18n.t('waitlist.success');
 
       }
 
@@ -1244,6 +1406,8 @@
 
 
   window.initMemoryanWaitlist = function () {
+
+    migrateJoinedStorageOnce();
 
     updateLocalDevBanner();
 
