@@ -2,11 +2,13 @@
 
   var REF_STORAGE = 'memoryan_waitlist_ref';
 
+  var JOINED_STORAGE = 'memoryan_waitlist_joined_v1';
+
   var turnstileWidgetId = null;
 
   var turnstileToken = null;
 
-  /** @type {'input'|'captcha'|'submitting'} */
+  /** @type {'input'|'captcha'|'submitting'|'joined'} */
 
   var flow = 'input';
 
@@ -387,6 +389,230 @@
 
 
 
+  function readStoredRefCode() {
+
+    try {
+
+      var raw = localStorage.getItem(JOINED_STORAGE);
+
+      if (!raw) return null;
+
+      var o = JSON.parse(raw);
+
+      var c = o && o.refCode;
+
+      if (typeof c === 'string' && /^[A-Z0-9]{4,16}$/.test(c)) return c;
+
+    } catch (_) {}
+
+    return null;
+
+  }
+
+
+
+  function persistJoinedRef(ref) {
+
+    if (!ref || typeof ref !== 'string') return;
+
+    try {
+
+      localStorage.setItem(JOINED_STORAGE, JSON.stringify({ v: 1, refCode: ref }));
+
+    } catch (_) {}
+
+  }
+
+
+
+  function referUrlForCode(code) {
+
+    try {
+
+      var u = new URL(window.location.href);
+
+      u.searchParams.set('ref', code);
+
+      return u.toString();
+
+    } catch (_) {
+
+      return window.location.origin + '/?ref=' + encodeURIComponent(code);
+
+    }
+
+  }
+
+
+
+  function setFormMessage(text, variant) {
+
+    var o = getEls();
+
+    if (!o.msg) return;
+
+    o.msg.textContent = text || '';
+
+    o.msg.classList.remove('is-success', 'is-error', 'has-text');
+
+    if (text) {
+
+      o.msg.classList.add('has-text');
+
+      if (variant === 'success') o.msg.classList.add('is-success');
+
+      else if (variant === 'error') o.msg.classList.add('is-error');
+
+    }
+
+  }
+
+
+
+  function closeCaptchaInstant() {
+
+    var el = document.getElementById('waitlist-captcha-stage');
+
+    if (el) {
+
+      el.classList.remove('is-open');
+
+      el.setAttribute('aria-hidden', 'true');
+
+    }
+
+    destroyTurnstile();
+
+  }
+
+
+
+  function openCaptchaAnimated() {
+
+    var el = document.getElementById('waitlist-captcha-stage');
+
+    if (!el) return;
+
+    el.setAttribute('aria-hidden', 'false');
+
+    requestAnimationFrame(function () {
+
+      requestAnimationFrame(function () {
+
+        el.classList.add('is-open');
+
+      });
+
+    });
+
+  }
+
+
+
+  function closeCaptchaAnimated(done) {
+
+    var el = document.getElementById('waitlist-captcha-stage');
+
+    if (!el || !el.classList.contains('is-open')) {
+
+      closeCaptchaInstant();
+
+      if (done) done();
+
+      return;
+
+    }
+
+    var finished = false;
+
+    function once() {
+
+      if (finished) return;
+
+      finished = true;
+
+      el.removeEventListener('transitionend', onEnd);
+
+      destroyTurnstile();
+
+      el.setAttribute('aria-hidden', 'true');
+
+      if (done) done();
+
+    }
+
+    function onEnd(e) {
+
+      if (e.target !== el) return;
+
+      if (e.propertyName !== 'max-height' && e.propertyName !== 'opacity') return;
+
+      once();
+
+    }
+
+    el.addEventListener('transitionend', onEnd);
+
+    el.classList.remove('is-open');
+
+    setTimeout(once, 480);
+
+  }
+
+
+
+  function showReferBlock(refCode) {
+
+    var block = document.getElementById('waitlist-refer-block');
+
+    var input = document.getElementById('waitlist-refer-url');
+
+    if (!refCode || !block || !input) return;
+
+    input.value = referUrlForCode(refCode);
+
+    block.setAttribute('aria-hidden', 'false');
+
+    requestAnimationFrame(function () {
+
+      requestAnimationFrame(function () {
+
+        block.classList.add('is-visible');
+
+      });
+
+    });
+
+  }
+
+
+
+  function applyJoinedState(refCode) {
+
+    var o = getEls();
+
+    flow = 'joined';
+
+    if (o.ctaWrap) o.ctaWrap.hidden = true;
+
+    if (o.submitBtn) o.submitBtn.setAttribute('aria-expanded', 'false');
+
+    if (typeof refCode === 'string' && /^[A-Z0-9]{4,16}$/i.test(refCode)) {
+
+      showReferBlock(refCode.toUpperCase());
+
+    }
+
+    if (o.email) {
+
+      o.email.readOnly = true;
+
+    }
+
+  }
+
+
+
   function showSubmitProgress(text, withSpinner) {
 
     var o = getEls();
@@ -459,11 +685,9 @@
 
         flow = 'input';
 
-        o.captchaStage.hidden = true;
-
         if (o.submitBtn) o.submitBtn.setAttribute('aria-expanded', 'false');
 
-        destroyTurnstile();
+        closeCaptchaInstant();
 
         hideSubmitProgress();
 
@@ -473,7 +697,7 @@
 
     }
 
-    if (flow === 'input') {
+    if (flow === 'input' || flow === 'captcha') {
 
       o.ctaWrap.hidden = false;
 
@@ -501,19 +725,13 @@
 
     var honeypot = o.form.querySelector('input[name="website"]');
 
-    if (o.msg) {
-
-      o.msg.textContent = '';
-
-      o.msg.classList.remove('is-success', 'is-error');
-
-    }
+    setFormMessage('', '');
 
     postInFlight = true;
 
     flow = 'submitting';
 
-    showSubmitProgress(t('waitlist.submitting'), false);
+    showSubmitProgress(t('waitlist.submitting'), true);
 
 
 
@@ -557,55 +775,49 @@
 
       .then(function (res) {
 
-        if (!o.msg) return;
-
-        o.msg.classList.remove('is-success', 'is-error');
-
         if (res.ok && res.json && res.json.ok === true) {
 
-          o.msg.textContent = t('waitlist.success');
+          var refRaw = res.json.refCode;
 
-          o.msg.classList.add('is-success');
+          var ref = typeof refRaw === 'string' ? refRaw.trim().toUpperCase().replace(/[^A-Z0-9]/g, '') : '';
 
-          o.form.reset();
+          if (ref.length >= 4 && ref.length <= 16) persistJoinedRef(ref);
 
-          flow = 'input';
-
-          o.ctaWrap.hidden = true;
-
-          o.captchaStage.hidden = true;
-
-          if (o.submitBtn) o.submitBtn.setAttribute('aria-expanded', 'false');
-
-          destroyTurnstile();
+          var already = !!res.json.alreadySignedUp;
 
           hideSubmitProgress();
 
-          fetchStats();
+          closeCaptchaAnimated(function () {
+
+            if (o.form) o.form.setAttribute('data-waitlist-msg', already ? 'already' : 'success');
+
+            setFormMessage(t(already ? 'waitlist.alreadyOnList' : 'waitlist.success'), 'success');
+
+            applyJoinedState(ref);
+
+            fetchStats();
+
+          });
 
         } else if (res.status === 429) {
 
-          o.msg.textContent = t('waitlist.errorRateLimit');
-
-          o.msg.classList.add('is-error');
+          setFormMessage(t('waitlist.errorRateLimit'), 'error');
 
           flow = 'captcha';
 
           resetTurnstile();
 
-          showSubmitProgress(t('waitlist.awaitingCaptcha'));
+          showSubmitProgress(t('waitlist.awaitingCaptcha'), true);
 
         } else {
 
-          o.msg.textContent = t('waitlist.errorGeneric');
-
-          o.msg.classList.add('is-error');
+          setFormMessage(t('waitlist.errorGeneric'), 'error');
 
           flow = 'captcha';
 
           resetTurnstile();
 
-          showSubmitProgress(t('waitlist.awaitingCaptcha'));
+          showSubmitProgress(t('waitlist.awaitingCaptcha'), true);
 
         }
 
@@ -613,19 +825,13 @@
 
       .catch(function () {
 
-        if (o.msg) {
-
-          o.msg.textContent = t('waitlist.errorNetwork');
-
-          o.msg.classList.add('is-error');
-
-        }
+        setFormMessage(t('waitlist.errorNetwork'), 'error');
 
         flow = 'captcha';
 
         resetTurnstile();
 
-        showSubmitProgress(t('waitlist.awaitingCaptcha'));
+        showSubmitProgress(t('waitlist.awaitingCaptcha'), true);
 
       })
 
@@ -647,23 +853,21 @@
 
     if (!o.submitBtn) return;
 
-    if (o.msg) {
-
-      o.msg.textContent = '';
-
-      o.msg.classList.remove('is-success', 'is-error');
-
-    }
+    setFormMessage('', '');
 
     flow = 'captcha';
 
-    o.captchaStage.hidden = false;
+    openCaptchaAnimated();
 
     o.submitBtn.setAttribute('aria-expanded', 'true');
 
-    showSubmitProgress(t('waitlist.awaitingCaptcha'));
+    showSubmitProgress(t('waitlist.awaitingCaptcha'), true);
 
-    mountTurnstile();
+    requestAnimationFrame(function () {
+
+      mountTurnstile();
+
+    });
 
     try {
 
@@ -681,9 +885,7 @@
 
     if (!o.email || postInFlight) return;
 
-    if (o.msg && o.msg.classList.contains('is-success')) return;
-
-
+    if (flow === 'joined') return;
 
     if (!isWaitlistEmailValid(o.email.value)) {
 
@@ -717,11 +919,9 @@
 
         doPost();
 
-      } else if (o.msg) {
+      } else {
 
-        o.msg.textContent = t('waitlist.errorCaptcha');
-
-        o.msg.classList.add('is-error');
+        setFormMessage(t('waitlist.errorCaptcha'), 'error');
 
       }
 
@@ -751,13 +951,9 @@
 
     o.email.addEventListener('input', function () {
 
-      if (o.msg) {
+      if (flow === 'joined') return;
 
-        o.msg.textContent = '';
-
-        o.msg.classList.remove('is-success', 'is-error');
-
-      }
+      setFormMessage('', '');
 
       syncEmailStepUi();
 
@@ -768,6 +964,8 @@
     o.email.addEventListener('keydown', function (e) {
 
       if (e.key !== 'Enter') return;
+
+      if (flow === 'joined') return;
 
       e.preventDefault();
 
@@ -795,7 +993,99 @@
 
 
 
-    syncEmailStepUi();
+    function initJoinedFromStorage() {
+
+      var code = readStoredRefCode();
+
+      if (!code) return;
+
+      if (o.form) {
+
+        o.form.classList.add('waitlist-form--from-storage');
+
+        o.form.setAttribute('data-waitlist-msg', 'already');
+
+      }
+
+      setFormMessage(t('waitlist.alreadyOnList'), 'success');
+
+      applyJoinedState(code);
+
+    }
+
+
+
+    function wireReferCopy() {
+
+      var btn = document.getElementById('waitlist-refer-copy');
+
+      var toast = document.getElementById('waitlist-refer-toast');
+
+      if (!btn || btn.dataset.bound === '1') return;
+
+      btn.dataset.bound = '1';
+
+      btn.addEventListener('click', function () {
+
+        var input = document.getElementById('waitlist-refer-url');
+
+        if (!input || !input.value) return;
+
+        function flashToast() {
+
+          if (!toast) return;
+
+          toast.textContent = t('waitlist.referCopied');
+
+          setTimeout(function () {
+
+            if (toast) toast.textContent = '';
+
+          }, 2200);
+
+        }
+
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+
+          navigator.clipboard.writeText(input.value).then(flashToast).catch(function () {
+
+            try {
+
+              input.select();
+
+              document.execCommand('copy');
+
+              flashToast();
+
+            } catch (_) {}
+
+          });
+
+          return;
+
+        }
+
+        try {
+
+          input.select();
+
+          document.execCommand('copy');
+
+          flashToast();
+
+        } catch (_) {}
+
+      });
+
+    }
+
+
+
+    wireReferCopy();
+
+    if (readStoredRefCode()) initJoinedFromStorage();
+
+    else syncEmailStepUi();
 
   }
 
@@ -812,6 +1102,36 @@
     var n = parseInt(valEl.textContent, 10);
 
     if (!isNaN(n)) updateCounterUi(n);
+
+    if (window.i18n && typeof window.i18n.t === 'function') {
+
+      var rb = document.getElementById('waitlist-refer-block');
+
+      if (rb) {
+
+        rb.querySelectorAll('[data-i18n]').forEach(function (el) {
+
+          var k = el.getAttribute('data-i18n');
+
+          if (k) el.textContent = window.i18n.t(k);
+
+        });
+
+      }
+
+      var msg = document.getElementById('waitlist-form-message');
+
+      var wf = document.getElementById('waitlist-form');
+
+      var kind = wf && wf.getAttribute('data-waitlist-msg');
+
+      if (msg && msg.classList.contains('has-text') && msg.classList.contains('is-success') && kind) {
+
+        msg.textContent = window.i18n.t(kind === 'already' ? 'waitlist.alreadyOnList' : 'waitlist.success');
+
+      }
+
+    }
 
   };
 
