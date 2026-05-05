@@ -69,41 +69,61 @@
                     </div>
                 </div>
                 <div class="waitlist-hero-aside">
-                    <section id="waitlist" class="waitlist-section glass-card" data-aos="fade-up" data-aos-delay="200" aria-labelledby="waitlist-heading">
+                    <section id="waitlist" class="waitlist-section glass-card" data-aos="fade-up" data-aos-delay="200" aria-labelledby="waitlist-heading" data-waitlist-state="signup">
                         <h2 id="waitlist-heading" class="visually-hidden">Waitlist</h2>
-                        <form id="waitlist-form" class="waitlist-form" novalidate>
-                            <label for="waitlist-email" class="waitlist-label visually-hidden" data-i18n="waitlist.emailLabel">Email</label>
-                            <input type="email" id="waitlist-email" name="email" class="waitlist-input" autocomplete="email" inputmode="email" spellcheck="false" maxlength="75" data-i18n-placeholder="waitlist.emailPlaceholder" placeholder="you@yourmail.com" />
-                            <input type="text" name="website" class="honeypot-field" tabindex="-1" autocomplete="off" aria-hidden="true" />
-                            <div id="waitlist-cta-wrap" class="waitlist-cta-wrap" hidden>
-                                <button type="button" class="store-button waitlist-submit btn-cta-primary" id="waitlist-submit" aria-expanded="false" aria-controls="waitlist-captcha-stage">
-                                    <span id="waitlist-submit-label" class="waitlist-submit-label" data-i18n="waitlist.submit">Get early access</span>
-                                    <span id="waitlist-submit-loading" class="waitlist-submit-loading" hidden>
-                                        <span class="waitlist-spinner" aria-hidden="true"></span>
-                                        <span id="waitlist-submit-loading-text" class="waitlist-submit-loading-text"></span>
-                                    </span>
-                                </button>
-                            </div>
-                            <div id="waitlist-captcha-stage" class="waitlist-captcha-stage waitlist-captcha-stage--collapsible" aria-hidden="true">
-                                <div class="waitlist-captcha-stage-inner">
-                                    <p id="waitlist-captcha-hint" class="waitlist-captcha-hint" data-i18n="waitlist.captchaHint">Complete the check below to finish.</p>
-                                    <div id="waitlist-turnstile-wrap" class="waitlist-turnstile-wrap">
-                                        <div id="waitlist-turnstile" class="waitlist-turnstile"></div>
-                                    </div>
+                        <div class="waitlist-state-wrap" id="waitlist-state-wrap">
+                            <div class="waitlist-state waitlist-state--signup" data-waitlist-panel="signup" aria-hidden="false">
+                                <div class="waitlist-email-panel">
+                                    <form id="waitlist-form" class="waitlist-form" novalidate>
+                                        <label for="waitlist-email" class="waitlist-label visually-hidden" data-i18n="waitlist.emailLabel">Email</label>
+                                        <input type="email" id="waitlist-email" name="email" class="waitlist-input" autocomplete="email" inputmode="email" spellcheck="false" maxlength="75" data-i18n-placeholder="waitlist.emailPlaceholder" placeholder="you@yourmail.com" />
+                                        <p id="waitlist-inbox-status" class="waitlist-inbox-status" aria-live="polite"></p>
+                                        <input type="text" name="website" class="honeypot-field" tabindex="-1" autocomplete="off" aria-hidden="true" />
+                                        <div id="waitlist-cta-wrap" class="waitlist-cta-wrap" hidden>
+                                            <button type="button" class="store-button waitlist-submit btn-cta-primary" id="waitlist-submit" aria-expanded="false" aria-controls="waitlist-captcha-stage">
+                                                <span id="waitlist-submit-label" class="waitlist-submit-label" data-i18n="waitlist.submit">Get early access</span>
+                                                <span id="waitlist-submit-loading" class="waitlist-submit-loading" hidden>
+                                                    <span class="waitlist-spinner" aria-hidden="true"></span>
+                                                    <span id="waitlist-submit-loading-text" class="waitlist-submit-loading-text"></span>
+                                                </span>
+                                            </button>
+                                        </div>
+                                        <div id="waitlist-captcha-stage" class="waitlist-captcha-stage waitlist-captcha-stage--collapsible" aria-hidden="true">
+                                            <div class="waitlist-captcha-stage-inner">
+                                                <p id="waitlist-captcha-hint" class="waitlist-captcha-hint" data-i18n="waitlist.captchaHint">Complete the check below to finish.</p>
+                                                <div id="waitlist-turnstile-wrap" class="waitlist-turnstile-wrap">
+                                                    <div id="waitlist-turnstile" class="waitlist-turnstile"></div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </form>
                                 </div>
                             </div>
-                            <div id="waitlist-refer-block" class="waitlist-refer-block" aria-hidden="true">
+
+                            <div class="waitlist-state waitlist-state--refer" data-waitlist-panel="refer" aria-hidden="true">
                                 <p class="waitlist-refer-kicker" data-i18n="waitlist.referKicker">Spread the word</p>
                                 <h3 class="waitlist-refer-title" data-i18n="waitlist.referTitle">Refer friends</h3>
                                 <p class="waitlist-refer-hint" data-i18n="waitlist.referHint">Your personal link — share it and invite others to the early list.</p>
+
                                 <div class="waitlist-refer-row">
-                                    <input type="text" id="waitlist-refer-url" class="waitlist-refer-url" readonly autocomplete="off" spellcheck="false" aria-label="Referral link" />
-                                    <button type="button" id="waitlist-refer-copy" class="waitlist-refer-copy store-button" data-i18n="waitlist.referCopy">Copy</button>
+                                    <input id="waitlist-refer-url" class="waitlist-refer-input" type="text" readonly aria-label="Referral link" />
+                                    <button type="button" id="waitlist-refer-copy-icon" class="waitlist-refer-copy-icon" aria-label="Copy referral link">
+                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                                            <path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 18H8V7h11v16z"/>
+                                        </svg>
+                                    </button>
                                 </div>
+
+                                <button type="button" id="waitlist-refer-copy" class="waitlist-refer-invite btn-cta-primary" data-i18n="waitlist.invite">Invite</button>
                                 <p id="waitlist-refer-toast" class="waitlist-refer-toast" role="status" aria-live="polite"></p>
                             </div>
-                            <p id="waitlist-form-message" class="waitlist-form-message" role="status"></p>
-                        </form>
+                        </div>
+
+                        <div id="waitlist-feedback-wrap" class="waitlist-feedback-wrap" aria-hidden="true">
+                            <div class="waitlist-feedback-inner">
+                                <p id="waitlist-form-message" class="waitlist-form-message" role="status"></p>
+                            </div>
+                        </div>
                     </section>
                 </div>
             </div>
@@ -537,78 +557,5 @@
     </div>
 </section>
     
-    <!-- Email Clipboard Copy Script -->
-    <script>
-        function copyEmail(event) {
-            event.preventDefault();
-            const emailLink = document.getElementById('copy-email');
-            const copyMessage = document.getElementById('copy-message');
-            const email = emailLink.getAttribute('data-email');
-            
-            // Create a temporary input element
-            const tempInput = document.createElement('input');
-            tempInput.value = email;
-            document.body.appendChild(tempInput);
-            
-            // Select and copy text
-            tempInput.select();
-            document.execCommand('copy');
-            
-            // Remove the temporary element
-            document.body.removeChild(tempInput);
-            
-            // Show success message
-            const currentLanguage = window.i18n && window.i18n.getCurrentLanguage ? window.i18n.getCurrentLanguage() : 'en';
-            copyMessage.style.opacity = 1;
-            copyMessage.textContent = window.i18n && window.i18n.t ? window.i18n.t('common.copied') : 'Copied!';
-            setTimeout(() => {
-                copyMessage.style.opacity = 0;
-            }, 2000);
-        }
-    </script>
-    
-    <!-- Carousel Translation Debug Script -->
-    <script>
-        // Helper function to check carousel translations
-        function checkCarouselTranslations() {
-            const currentLang = window.i18n ? window.i18n.getCurrentLanguage() : 'en';
-            console.log(`🔍 Checking carousel translations for language: ${currentLang}`);
-            
-            // Get all elements with data-i18n attribute in carousel
-            const carouselElements = document.querySelectorAll('.swiper-slide [data-i18n]');
-            
-            // Check if we have the expected translations
-            carouselElements.forEach((element, index) => {
-                const key = element.getAttribute('data-i18n');
-                const text = element.textContent;
-                console.log(`Element ${index}: ${key} = "${text}"`);
-                
-                // Try to get translation directly 
-                if (window.i18n && window.i18n.t) {
-                    window.i18n.t(key);
-                }
-            });
-        }
-        
-        // Run debugging after page load
-        window.addEventListener('load', function() {
-            // Wait for everything to be initialized
-            setTimeout(checkCarouselTranslations, 1000);
-            
-            // Register check to run when language changes
-            if (window.i18n) {
-                const originalChangeLanguage = window.i18n.changeLanguage;
-                if (originalChangeLanguage && typeof originalChangeLanguage === 'function') {
-                    window.i18n.changeLanguage = function(lang) {
-                        // Call original method
-                        originalChangeLanguage(lang);
-                        
-                        // Run our check after a delay
-                        setTimeout(checkCarouselTranslations, 1000);
-                    };
-                }
-            }
-        });
-    </script>
 </body>
 </html> 
