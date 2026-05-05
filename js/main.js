@@ -923,4 +923,55 @@
         
         // Initialize modals
         setupModals();
+
+        // Footer: copy email (no inline script => CSP-friendly)
+        window.copyEmail = function copyEmail(event) {
+            try { if (event) event.preventDefault(); } catch (_) {}
+            const emailLink = document.getElementById('copy-email');
+            const copyMessage = document.getElementById('copy-message');
+            const email = emailLink ? (emailLink.getAttribute('data-email') || '').trim() : '';
+            if (!email) return;
+
+            function toast() {
+                if (!copyMessage) return;
+                copyMessage.style.opacity = 1;
+                copyMessage.textContent = window.i18n && window.i18n.t ? window.i18n.t('common.copied') : 'Copied!';
+                setTimeout(() => { if (copyMessage) copyMessage.style.opacity = 0; }, 2000);
+            }
+
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(email).then(toast).catch(() => {
+                    try {
+                        const ta = document.createElement('textarea');
+                        ta.value = email;
+                        ta.setAttribute('readonly', '');
+                        ta.style.position = 'fixed';
+                        ta.style.top = '0';
+                        ta.style.left = '0';
+                        ta.style.opacity = '0';
+                        document.body.appendChild(ta);
+                        ta.select();
+                        document.execCommand('copy');
+                        document.body.removeChild(ta);
+                        toast();
+                    } catch (_) {}
+                });
+                return;
+            }
+
+            try {
+                const ta2 = document.createElement('textarea');
+                ta2.value = email;
+                ta2.setAttribute('readonly', '');
+                ta2.style.position = 'fixed';
+                ta2.style.top = '0';
+                ta2.style.left = '0';
+                ta2.style.opacity = '0';
+                document.body.appendChild(ta2);
+                ta2.select();
+                document.execCommand('copy');
+                document.body.removeChild(ta2);
+                toast();
+            } catch (_) {}
+        };
     }); 
