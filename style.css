@@ -241,6 +241,51 @@
         gap: 0;
     }
 
+    .waitlist-state-wrap {
+        display: grid;
+        grid-template-areas: "stack";
+        width: 100%;
+        min-width: 0;
+    }
+
+    .waitlist-state {
+        grid-area: stack;
+        transition: opacity 260ms ease, transform 260ms ease;
+        min-width: 0;
+    }
+
+    /* Default: show signup */
+    #waitlist[data-waitlist-state="signup"] .waitlist-state--signup {
+        opacity: 1;
+        transform: translateY(0);
+        pointer-events: auto;
+        position: relative;
+        z-index: 1;
+    }
+    #waitlist[data-waitlist-state="signup"] .waitlist-state--refer {
+        opacity: 0;
+        transform: translateY(8px);
+        pointer-events: none;
+        position: relative;
+        z-index: 0;
+    }
+
+    /* Refer state */
+    #waitlist[data-waitlist-state="refer"] .waitlist-state--signup {
+        opacity: 0;
+        transform: translateY(-6px);
+        pointer-events: none;
+        position: relative;
+        z-index: 0;
+    }
+    #waitlist[data-waitlist-state="refer"] .waitlist-state--refer {
+        opacity: 1;
+        transform: translateY(0);
+        pointer-events: auto;
+        position: relative;
+        z-index: 1;
+    }
+
     .waitlist-email-panel {
         width: 100%;
         min-width: 0;
@@ -302,72 +347,86 @@
         min-height: 0;
     }
 
-    .waitlist-refer-shell {
-        margin: 0;
-        max-height: 0;
-        opacity: 0;
-        overflow: hidden;
-        pointer-events: none;
-        border-radius: 12px;
-        transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease, margin 0.3s ease, padding 0.3s ease;
+    .waitlist-refer-kicker {
+        margin: 0 0 6px;
+        font-size: 0.9rem;
+        font-weight: 700;
+        letter-spacing: 0.02em;
+        color: rgba(197, 154, 255, 0.92);
+        text-transform: none;
     }
 
-    .waitlist-refer-shell.is-open {
-        max-height: 140px;
-        opacity: 1;
-        margin-top: 10px;
-        padding: 10px 12px;
-        pointer-events: auto;
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        background: rgba(12, 14, 17, 0.55);
+    .waitlist-refer-title {
+        margin: 0 0 8px;
+        font-size: 1.25rem;
+        font-weight: 800;
+        color: var(--color-primary-light);
     }
 
-    .waitlist-refer-shell-inner {
+    .waitlist-refer-hint {
+        margin: 0 0 14px;
+        font-size: 0.92rem;
+        line-height: 1.45;
+        color: rgba(242, 242, 247, 0.74);
+    }
+
+    .waitlist-refer-row {
         display: flex;
         align-items: center;
         gap: 10px;
-        flex-wrap: nowrap;
-        min-width: 0;
         width: 100%;
+        min-width: 0;
+        margin-bottom: 12px;
     }
 
-    .waitlist-refer-link {
+    .waitlist-refer-input {
         flex: 1 1 auto;
         min-width: 0;
-        font-size: clamp(0.7rem, 2.5vw, 0.82rem);
-        line-height: 1.35;
-        color: #93c5fd;
-        text-decoration: underline;
-        text-underline-offset: 2px;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
+        padding: 12px 14px;
+        border-radius: 12px;
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        background: rgba(12, 14, 17, 0.85);
+        color: rgba(242, 242, 247, 0.9);
+        font-size: 0.9rem;
+        outline: none;
     }
 
-    .waitlist-refer-copy-btn {
+    .waitlist-refer-input:focus {
+        outline: 2px solid rgba(96, 165, 250, 0.55);
+        outline-offset: 2px;
+    }
+
+    .waitlist-refer-copy-icon {
         flex: 0 0 auto;
-        padding: 8px 12px;
-        border-radius: 10px;
-        font-size: 0.8rem;
-        font-weight: 700;
-        letter-spacing: 0.04em;
+        width: 44px;
+        height: 44px;
+        border-radius: 12px;
         border: 1px solid rgba(255, 255, 255, 0.14);
-        background: rgba(96, 165, 250, 0.18);
+        background: rgba(96, 165, 250, 0.16);
         color: #e8f1ff;
         cursor: pointer;
-        transition: background 0.2s ease, filter 0.2s ease;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        transition: background 0.2s ease, filter 0.2s ease, transform 0.2s ease;
     }
 
-    .waitlist-refer-copy-btn:hover {
+    .waitlist-refer-copy-icon:hover {
         filter: brightness(1.08);
-        background: rgba(96, 165, 250, 0.28);
+        background: rgba(96, 165, 250, 0.26);
+        transform: translateY(-1px);
+    }
+
+    .waitlist-refer-invite {
+        width: 100%;
+        min-height: 48px;
     }
 
     .waitlist-refer-toast {
-        margin: 6px 0 0;
-        font-size: 0.78rem;
+        margin: 10px 0 0;
+        font-size: 0.82rem;
         color: var(--color-insights-green);
-        min-height: 0;
+        min-height: 1.1em;
     }
 
     .waitlist-feedback-wrap {
